@@ -246,3 +246,21 @@ erDiagram
    - Tombol satu klik: *"Pelunasan Diterima"*, status berubah menjadi `FULL_PAID`.
 3. **Peringatan Kondisi Cuaca & Status Merapi**:
    - Tombol mitigasi darurat cuaca (*Force Majeure*): Memungkinkan admin menjadwalkan ulang (*reschedule*) atau membatalkan trip dengan pengembalian dana (*refund*) resmi jika terjadi hujan badai atau peningkatan status aktivitas vulkanik.
+
+---
+
+## 7. Spesifikasi Teknologi & Arsitektur Sistem (Laravel 12 Full-Stack MVC)
+
+Untuk memenuhi kebutuhan akademis Tugas Akhir (TA) dan kemudahan deployment lokal di XAMPP, arsitektur sistem dirancang berbasis **Laravel 12 Full-Stack MVC**:
+
+| Lapisan Sistem | Teknologi / Pustaka | Peran & Implementasi |
+| :--- | :--- | :--- |
+| **Backend Framework** | **PHP 8.2+ / Laravel 12 MVC** | Menangani routing, business logic, validasi input, ORM, dan manajemen sesi. |
+| **Database Engine** | **MySQL (XAMPP 3306)** | Menyimpan data paket, jadwal slot, pesanan, riwayat pembayaran, armada jeep, dan driver. |
+| **ORM / Data Access** | **Eloquent ORM** | Pemetaan relasi tabel relasional secara aman menggunakan *parameterized queries* (anti SQL injection). |
+| **Frontend Templating** | **Laravel Blade Views** | Render halaman sisi server (SSR) yang cepat, modular (`layouts/app.blade.php`), dan SEO-friendly. |
+| **Styling & Desain** | **Tailwind CSS & Google Fonts** | Penataan layout responsif sesuai palet *Lush Forest Green* (`#1E3F20`) dan tipografi *Plus Jakarta Sans*. |
+| **Payment Gateway** | **Midtrans Snap API** | Pemrosesan pembayaran online aman via QRIS dan Virtual Account perbankan nasional. |
+| **Notifikasi & Tiket** | **WhatsApp API & QR Code** | Distribusi instan e-tiket dengan kode QR terenkripsi langsung ke nomor WhatsApp wisatawan. |
+| **Web Server Lokal** | **Apache (XAMPP) / Artisan** | Port `8000` via `php artisan serve` atau virtual host Apache `localhost/WebWukirsari`. |
+
