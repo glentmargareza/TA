@@ -6,7 +6,7 @@
 ---
 
 ## Progress Overview
-- [ ] **Fase 0: Inisialisasi Proyek Vite & Konfigurasi Styling** (0/5)
+- [x] **Fase 0: Inisialisasi Proyek Vite & Konfigurasi Styling** (5/5)
 - [ ] **Fase 1: Routing & Fondasi Komponen (React Router DOM)** (0/5)
 - [ ] **Fase 2: Mock Data & State Management (Zustand)** (0/5)
 - [ ] **Fase 3: Antarmuka Publik Sesuai Mockup Desain Resmi** (0/8)
@@ -21,11 +21,11 @@
 ## Rincian Tugas per Fase
 
 ### Fase 0: Inisialisasi Proyek Vite & Konfigurasi Styling
-- [ ] `0.1` Inisialisasi proyek Vite dengan template React TypeScript: `npm create vite@latest . -- --template react-ts`
-- [ ] `0.2` Instalasi dependensi styling: `npm install -D tailwindcss postcss autoprefixer` dan jalankan `npx tailwindcss init -p`
-- [ ] `0.3` Konfigurasi tema Tailwind di `tailwind.config.js` sesuai warna resmi di `DESIGN/STYLEGUIDE.md` (`#1E3F20` Deep Forest Green, `#F7F7F2` Cream Canvas, `#E8EFE9` Sage, `#F59E0B` Gold)
-- [ ] `0.4` Instalasi ikon & utilitas: `npm install lucide-react clsx tailwind-merge framer-motion`
-- [ ] `0.5` Konfigurasi path alias `@/*` pada `vite.config.ts` dan `tsconfig.json`
+- [x] `0.1` Inisialisasi proyek Vite dengan template React TypeScript: `npm create vite@latest . -- --template react-ts`
+- [x] `0.2` Instalasi dependensi styling: `npm install -D tailwindcss postcss autoprefixer` dan jalankan `npx tailwindcss init -p`
+- [x] `0.3` Konfigurasi tema Tailwind di `tailwind.config.js` sesuai warna resmi di `DESIGN/STYLEGUIDE.md` (`#1E3F20` Deep Forest Green, `#F7F7F2` Cream Canvas, `#E8EFE9` Sage, `#F59E0B` Gold)
+- [x] `0.4` Instalasi ikon & utilitas: `npm install lucide-react clsx tailwind-merge framer-motion`
+- [x] `0.5` Konfigurasi path alias `@/*` pada `vite.config.ts` dan `tsconfig.json`
 
 ### Fase 1: Routing & Fondasi Komponen (React Router DOM)
 - [ ] `1.1` Instalasi router: `npm install react-router-dom`
