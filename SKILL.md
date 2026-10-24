@@ -64,12 +64,14 @@ Skill ini memuat instruksi operasional standar bagi AI Agent & Pengembang dalam 
    - `bg-[#E8EFE9]` (*Sage Tint*) untuk kartu fitur & icon container.
    - `text-[#F59E0B]` (*Sunrise Gold*) untuk rating bintang & aksen fajar.
 3. Pastikan setiap form HTML memiliki proteksi CSRF token: `@csrf`.
+4. **Standar Ikon**: Dilarang menggunakan emoji untuk icon UI. Seluruh icon wajib menggunakan format SVG murni (inline `<svg>`) agar tajam, profesional, dan warnanya seragam dengan Tailwind CSS.
 
 ---
 
 ## 3. Checklist Verifikasi Selesai (Definition of Done)
 - [ ] Server `php artisan serve` berjalan normal di `http://127.0.0.1:8000` tanpa exception.
 - [ ] Seluruh migrasi (`php artisan migrate`) terpasang tanpa error SQL.
+- [ ] Seluruh icon antarmuka menggunakan vektor SVG murni (bebas dari karakter emoji).
 - [ ] Halaman Beranda (`/`) menampilkan Hero Merapi, 4 Value Bar, 3 Paket Resmi, Why Us, Galeri, dan Testimoni.
 - [ ] Alur Pemesanan (`/booking`) menghitung otomatis kuota jeep (maks 4 pax) dan kalkulasi DP/Full.
 - [ ] E-Tiket Boarding Pass (`/booking/{code}/success`) menampilkan QR Code, detail slot, dan kontak WhatsApp CS.

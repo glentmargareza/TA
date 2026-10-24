@@ -21,7 +21,8 @@
         <form action="{{ route('ticket.check') }}" method="GET" class="flex gap-2 mb-8">
             <input type="text" name="code" value="{{ $code ?? '' }}" required placeholder="Masukkan Kode Booking / No WhatsApp..." class="flex-1 px-4 py-3 rounded-full border border-wukirsari-border bg-white text-sm focus:outline-none focus:border-wukirsari-primary shadow-xs">
             <button type="submit" class="px-6 py-3 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-sm font-semibold flex items-center gap-2 shadow-sm">
-                🔍 Cari Tiket
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <span>Cari Tiket</span>
             </button>
         </form>
 

@@ -30,8 +30,8 @@
     <aside class="w-full md:w-64 bg-wukirsari-dark text-white p-6 flex flex-col justify-between shrink-0">
         <div>
             <div class="flex items-center gap-3 pb-6 border-b border-white/10 mb-6">
-                <div class="w-10 h-10 rounded-xl bg-wukirsari-primary text-white flex items-center justify-center font-bold text-lg">
-                    🚙
+                <div class="w-10 h-10 rounded-xl bg-wukirsari-primary text-white flex items-center justify-center shadow-sm">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1"/></svg>
                 </div>
                 <div>
                     <span class="block font-extrabold text-base text-white tracking-tight">ADMIN LOKET</span>
@@ -41,7 +41,8 @@
 
             <nav class="space-y-1.5">
                 <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium bg-wukirsari-primary text-white shadow-sm">
-                    📊 <span>Dashboard & Omzet</span>
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                    <span>Dashboard & Omzet</span>
                 </a>
             </nav>
         </div>
@@ -83,7 +84,9 @@
                         </span>
                         <span class="text-xs text-emerald-600 font-medium">Berdasarkan data tersimpan</span>
                     </div>
-                    <span class="text-3xl">💰</span>
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
                 </div>
 
                 <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
@@ -94,7 +97,9 @@
                         </span>
                         <span class="text-xs text-slate-500">Status Ready Pangkalan</span>
                     </div>
-                    <span class="text-3xl">🚙</span>
+                    <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1"/></svg>
+                    </div>
                 </div>
 
                 <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
@@ -105,7 +110,9 @@
                         </span>
                         <span class="text-xs text-amber-700 font-medium">{{ $pendingDpCount }} Booking Berstatus DP</span>
                     </div>
-                    <span class="text-3xl">⏳</span>
+                    <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
                 </div>
             </div>
 

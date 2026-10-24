@@ -27,11 +27,15 @@ Anda berperan sebagai **Lead Full-Stack Software Engineer** spesialis pengembang
    - Jangan gunakan kueri SQL mentah yang rentan SQL Injection; selalu manfaatkan Eloquent / Query Builder.
 4. **Prinsip Mobile-First**:
    - Antarmuka web harus selalu nyaman dibuka di smartphone dengan tombol *Sticky Bottom CTA* dan area sentuh minimal 48px $\times$ 48px.
+5. **Standar Ikonografi (SVG Only)**:
+   - Seluruh elemen ikon antarmuka (UI icons) **WAJIB** menggunakan format **vektor SVG** (inline `<svg>` Heroicons/Lucide style).
+   - Penggunaan SVG menjamin ketajaman resolusi tinggi, ukuran terstandar (`w-4 h-4`, `w-5 h-5`, `w-6 h-6`), dan warna yang dapat dikontrol dinamis via utility class Tailwind (`currentColor`, `text-wukirsari-primary`, dll.).
 
 ---
 
 ## 3. Larangan Keras Bagi AI Agent (Strict Guardrails)
 
+* ❌ **Dilarang menggunakan emoji untuk icon UI**: Dilarang keras menaruh karakter emoji (seperti 🚙, 🕒, 📍, 🛡️, ⭐, 💰, dll.) sebagai icon visual pada tombol, kartu, badge, navigasi, tabel, atau komponen antarmuka lainnya. Seluruh icon antarmuka wajib berupa **vektor SVG murni**.
 * ❌ **Dilarang melanggar kapasitas keamanan**: 1 armada Jeep Wukirsari maksimal 4 orang penumpang. Controller wajib memvalidasi dan memastikan `min_jeep = ceil(pax / 4)`.
 * ❌ **Dilarang hardcode kredensial rahasia**: Simpan seluruh kredensial database dan key payment gateway di dalam file `.env` menggunakan `config()` atau `env()`.
 * ❌ **Dilarang mengubah tema warna utama**: Wajib menggunakan `#1E3F20` (Forest Green) dan `#F7F7F2` (Cream Canvas) sesuai referensi resmi.

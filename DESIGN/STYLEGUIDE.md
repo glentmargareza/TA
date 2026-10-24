@@ -176,3 +176,21 @@ Berdasarkan referensi desain resmi, halaman utama tersusun dari 7 blok utama:
 * **Hero Image**: Foto Jeep Willys / Toyota Land Cruiser FJ40 warna hijau tentara di jalur berbatu lereng Gunung Merapi dengan cahaya fajar (*sunrise golden hour*).
 * **Watermark Ornamen**: Siluet daun tanaman herbal/pohon tropis lereng Merapi berwarna sage transparan (`opacity-10`) di latar belakang seksi *"Mengapa Memilih"*.
 * **Format Gambar**: Wajib menggunakan format **WebP** dengan *responsive srcset* untuk efisiensi loading di jaringan seluler.
+
+---
+
+## 8. Standar Ikonografi (SVG Only — Dilarang Menggunakan Emoji)
+
+Untuk menjaga estetika profesional, ketajaman tampilan pada layar Retina/HiDPI, dan konsistensi lintas peramban (*cross-browser consistency*):
+
+1. **Larangan Keras Emoji**:
+   - **Dilarang keras menggunakan karakter emoji** (seperti `🚙`, `🕒`, `📍`, `🛡️`, `⭐`, `💰`, dll.) sebagai pengganti ikon antarmuka (UI icons).
+   - Emoji memiliki rendering berbeda di tiap sistem operasi (Windows, Android, iOS, macOS) dan rentan mengalami encoding glitch (`??`).
+2. **Kewajiban Penggunaan SVG**:
+   - Seluruh ikon wajib menggunakan **vektor SVG** (inline `<svg>` style Heroicons atau Lucide).
+   - Penggunaan `stroke="currentColor"` dan `fill="none"` atau `fill="currentColor"` agar warna ikon dapat diatur dinamis dengan class Tailwind CSS (misal: `text-wukirsari-primary`, `text-sunrise-gold`, `text-merapiText-secondary`).
+3. **Standar Ukuran Ikon**:
+   - Ikon Mikro / Metadata: `w-3.5 h-3.5` atau `w-4 h-4` (durasi, kapasitas pax, pin lokasi).
+   - Ikon Tombol & Navigasi: `w-4 h-4` atau `w-5 h-5` (panah CTA, search, kontak).
+   - Ikon Fitur & Stat Card: `w-6 h-6` (di dalam squircle wadah `w-11 h-11` atau `w-12 h-12`).
+

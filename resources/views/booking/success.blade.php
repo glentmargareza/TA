@@ -115,8 +115,8 @@
                 <!-- QR Code Dummy / Display -->
                 <div class="flex flex-col sm:flex-row items-center justify-between p-4 border border-wukirsari-border rounded-2xl gap-4">
                     <div class="flex items-center gap-4">
-                        <div class="w-20 h-20 bg-slate-100 rounded-xl border border-wukirsari-border flex items-center justify-center p-2 text-3xl font-mono">
-                            🏁
+                        <div class="w-20 h-20 bg-slate-100 rounded-xl border border-wukirsari-border flex items-center justify-center p-2">
+                            <svg class="w-10 h-10 text-wukirsari-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
                         </div>
                         <div class="text-xs text-merapiText-secondary">
                             <span class="font-bold text-merapiText-primary block text-sm">Validasi Loket Check-in</span>
@@ -127,7 +127,9 @@
 
                 <!-- Alamat Titik Kumpul -->
                 <div class="flex items-start gap-3 text-xs text-merapiText-secondary bg-slate-50 p-3.5 rounded-xl border border-wukirsari-border">
-                    <span class="text-sunrise-gold text-base">📍</span>
+                    <span class="text-sunrise-gold text-base shrink-0 mt-0.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    </span>
                     <div>
                         <span class="font-bold text-merapiText-primary block">Lokasi Basecamp Jeep Wukirsari:</span>
                         <span>Jl. Cangkringan Km. 18, Wukirsari, Sleman, D.I. Yogyakarta (Tersedia parkir bus & mobil luas).</span>
@@ -139,7 +141,8 @@
             <!-- Tombol Aksi -->
             <div class="p-6 bg-slate-50 border-t border-wukirsari-border flex flex-col sm:flex-row items-center justify-between gap-3">
                 <button onclick="window.print()" class="w-full sm:w-auto px-6 py-2.5 rounded-full border border-wukirsari-border bg-white text-xs sm:text-sm font-semibold text-merapiText-primary hover:bg-slate-100 flex items-center justify-center gap-2">
-                    🖨️ Simpan / Cetak Tiket
+                    <svg class="w-4 h-4 text-merapiText-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                    <span>Simpan / Cetak Tiket</span>
                 </button>
 
                 @php
@@ -147,7 +150,8 @@
                     $waLink = "https://wa.me/6281234567890?text=" . urlencode($waMsg);
                 @endphp
                 <a href="{{ $waLink }}" target="_blank" class="w-full sm:w-auto px-6 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 shadow-sm">
-                    💬 Konfirmasi ke WhatsApp CS
+                    <svg class="w-4 h-4 fill-current text-white" viewBox="0 0 24 24"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0012.04 2z"/></svg>
+                    <span>Konfirmasi ke WhatsApp CS</span>
                 </a>
             </div>
 
