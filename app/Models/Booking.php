@@ -30,6 +30,7 @@ class Booking extends Model
         'payment_mode',
         'booking_status',
         'lock_expires_at',
+        'snap_token',
     ];
 
     protected $casts = [

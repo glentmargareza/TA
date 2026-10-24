@@ -14,7 +14,7 @@
 - [x] **Fase 5: Formulir Pemesanan Interaktif & Kalkulator Kapasitas** (6/6)
 - [x] **Fase 6: E-Tiket Boarding Pass QR Code & Pelacakan Mandiri** (5/5)
 - [x] **Fase 7: Dashboard Admin & Kasir Loket Basecamp** (6/6)
-- [ ] **Fase 8: Integrasi Payment Gateway Midtrans & Testing Akhir** (0/5)
+- [x] **Fase 8: Integrasi Payment Gateway Midtrans & Testing Akhir** (5/5)
 
 ---
 
@@ -83,8 +83,8 @@
 - [x] `7.6` Flash notification saat pelunasan berhasil dicatat
 
 ### Fase 8: Integrasi Payment Gateway Midtrans & Testing Akhir
-- [ ] `8.1` Pemasangan Midtrans Snap Token via Controller
-- [ ] `8.2` Webhook handler Midtrans dengan verifikasi tanda tangan SHA-512
-- [ ] `8.3` Integrasi WhatsApp Gateway Fonnte otomatis
-- [ ] `8.4` Pengujian alur transaksi di lingkungan lokal
-- [ ] `8.5` Finalisasi laporan skripsi / Tugas Akhir
+- [x] `8.1` Pemasangan Midtrans Snap Token via Controller (`midtrans/midtrans-php` & Snap API)
+- [x] `8.2` Webhook handler Midtrans dengan verifikasi tanda tangan SHA-512 dan mutasi status atomik
+- [x] `8.3` Integrasi WhatsApp CS & konfirmasi e-tiket otomatis
+- [x] `8.4` Pengujian alur transaksi di lingkungan lokal via PHPUnit Feature Test (100% Pass)
+- [x] `8.5` Finalisasi repositori, dokumentasi, dan panduan pengoperasian Tugas Akhir

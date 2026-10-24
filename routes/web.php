@@ -5,6 +5,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\PaymentWebhookController;
 
 // 1. Rute Publik Wisatawan
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -24,3 +25,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('/bookings/{id}/settle', [AdminController::class, 'settleDp'])->name('settle');
     Route::post('/bookings/{id}/assign', [AdminController::class, 'assignDriver'])->name('assign');
 });
+
+// 5. Payment Gateway Webhook (Midtrans)
+Route::post('/webhook/midtrans', [PaymentWebhookController::class, 'handle'])->name('midtrans.webhook');
+

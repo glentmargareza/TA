@@ -11,7 +11,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->validateCsrfTokens(except: [
+            'webhook/midtrans',
+            'api/payment-callback',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
