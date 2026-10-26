@@ -53,6 +53,9 @@
 <body class="min-h-screen flex flex-col selection:bg-wukirsari-sage selection:text-wukirsari-primary">
 
     <!-- NAVBAR HEADER -->
+    @hasSection('header')
+        @yield('header')
+    @else
     <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-wukirsari-border transition-all">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-20">
@@ -118,6 +121,7 @@
             </div>
         </div>
     </header>
+    @endif
 
     <!-- CONTENT WRAPPER -->
     <main class="flex-1">
@@ -125,6 +129,9 @@
     </main>
 
     <!-- FOOTER -->
+    @hasSection('footer')
+        @yield('footer')
+    @else
     <footer class="bg-wukirsari-dark text-white/80 pt-16 pb-12 border-t border-wukirsari-primary/30 mt-auto">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-white/10">
@@ -204,8 +211,10 @@
             </div>
         </div>
     </footer>
+    @endif
 
     <!-- STICKY BOTTOM BAR (MOBILE ONLY) -->
+    @if(!View::hasSection('hide_floating_cta'))
     <div class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-wukirsari-border px-4 py-3 shadow-lg flex items-center justify-between gap-3">
         <div>
             <span class="block text-[11px] font-medium text-merapiText-muted">Mulai dari</span>
@@ -216,6 +225,7 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
         </a>
     </div>
+    @endif
 
 </body>
 </html>

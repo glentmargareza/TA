@@ -20,38 +20,78 @@ class BookingController extends Controller
         
         $slots = ScheduleSlot::where('is_active', true)->get();
         $pickupZones = PickupZone::all();
+        $jeeps = \App\Models\Jeep::all();
 
-        return view('booking.create', compact('packages', 'selectedPackage', 'slots', 'pickupZones'));
+        return view('booking.create', compact('packages', 'selectedPackage', 'slots', 'pickupZones', 'jeeps'));
     }
 
     public function store(Request $request)
     {
+        // Auto fallback jika beberapa field dikirim melalui antarmuka booking modern
+        if (!$request->has('jeep_quantity') || empty($request->input('jeep_quantity'))) {
+            $passengerCount = (int) $request->input('passenger_count', 4);
+            $request->merge(['jeep_quantity' => max(1, (int) ceil($passengerCount / 4))]);
+        }
+        if (!$request->has('arrival_type') || empty($request->input('arrival_type'))) {
+            $zoneId = $request->input('pickup_zone_id');
+            $request->merge(['arrival_type' => (!empty($zoneId) && $zoneId > 1) ? 'pickup' : 'self_drive']);
+        }
+        if (!$request->has('payment_mode') || empty($request->input('payment_mode'))) {
+            $request->merge(['payment_mode' => 'FULL']);
+        }
+
         $validated = $request->validate([
             'package_id' => 'required|exists:packages,id',
             'slot_id' => 'required|exists:schedule_slots,id',
             'trip_date' => 'required|date|after_or_equal:today',
             'passenger_count' => 'required|integer|min:1',
-            'jeep_quantity' => 'required|integer|min:1',
-            'arrival_type' => 'required|in:self_drive,pickup',
+            'child_count' => 'nullable|integer|min:0',
+            'jeep_quantity' => 'nullable|integer|min:1',
+            'arrival_type' => 'nullable|in:self_drive,pickup',
             'pickup_zone_id' => 'nullable|exists:pickup_zones,id',
             'pickup_address' => 'nullable|string|max:500',
+            'notes' => 'nullable|string|max:500',
+            'vehicle_type' => 'nullable|string|max:100',
+            'duration' => 'nullable|string|max:100',
+            'companion_count' => 'nullable|integer|min:0',
             'customer_name' => 'required|string|max:100',
             'customer_phone' => 'required|string|max:20',
             'customer_email' => 'nullable|email|max:100',
             'payment_mode' => 'required|in:FULL,DP',
+        ], [
+            'customer_name.required' => 'Nama lengkap pemesan wajib diisi.',
+            'customer_phone.required' => 'Nomor WhatsApp aktif wajib diisi.',
+            'trip_date.required' => 'Tanggal wisata wajib dipilih.',
+            'trip_date.after_or_equal' => 'Tanggal wisata tidak boleh di masa lalu.',
+            'slot_id.required' => 'Jadwal waktu keberangkatan wajib dipilih.',
+            'package_id.required' => 'Paket wisata wajib dipilih.',
+            'passenger_count.required' => 'Jumlah orang wajib diisi.',
+            'passenger_count.min' => 'Jumlah peserta minimal 1 orang.',
         ]);
 
         $package = Package::findOrFail($validated['package_id']);
         
-        // Aturan Keselamatan Lereng Merapi: 1 Jeep maksimal 4 orang
-        $minJeeps = (int) ceil($validated['passenger_count'] / 4);
-        $jeepQuantity = max($validated['jeep_quantity'], $minJeeps);
+        $pax = (int) $validated['passenger_count'];
+        $childCount = (int) ($validated['child_count'] ?? 0);
 
-        // Kalkulasi Biaya
+        // Aturan Kapasitas Lereng Merapi:
+        // - Kapasitas normal maksimal 4 orang dewasa per Jeep.
+        // - Jika 5 orang dan ada minimal 1 anak-anak, diperbolehkan dalam 1 Jeep.
+        // - Jika 5 orang dewasa tanpa anak, membutuhkan minimal 2 armada Jeep.
+        if ($pax === 5 && $childCount >= 1) {
+            $minJeeps = 1;
+        } else {
+            $minJeeps = (int) ceil($pax / 4);
+        }
+
+        $jeepQuantity = max((int) ($validated['jeep_quantity'] ?? $minJeeps), $minJeeps);
+
+        // Kalkulasi Biaya Resmi Berdasarkan Paket & Jumlah Jeep
         $packageSubtotal = $package->price_per_jeep * $jeepQuantity;
         
+        // Biaya penjemputan di luar radius 5 km dikonfirmasi manual oleh admin jika ada
         $pickupFee = 0.00;
-        if ($validated['arrival_type'] === 'pickup' && !empty($validated['pickup_zone_id'])) {
+        if (!empty($validated['pickup_zone_id'])) {
             $zone = PickupZone::find($validated['pickup_zone_id']);
             if ($zone) {
                 $pickupFee = $zone->additional_fee;
@@ -118,7 +158,9 @@ class BookingController extends Controller
             'passenger_count' => $validated['passenger_count'],
             'arrival_type' => $validated['arrival_type'],
             'pickup_zone_id' => $validated['pickup_zone_id'] ?? null,
-            'pickup_address' => $validated['pickup_address'] ?? null,
+            'pickup_address' => !empty($validated['notes']) 
+                ? trim(($validated['pickup_address'] ?? '') . ' [Catatan: ' . $validated['notes'] . ']')
+                : ($validated['pickup_address'] ?? null),
             'package_subtotal' => $packageSubtotal,
             'pickup_fee' => $pickupFee,
             'total_amount' => $totalAmount,
