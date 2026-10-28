@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\Payment;
 use App\Models\Jeep;
 use App\Models\Driver;
 use App\Models\BookingAssignment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class AdminController extends Controller
 {
@@ -39,14 +42,37 @@ class AdminController extends Controller
 
     public function settleDp($id)
     {
-        $booking = Booking::findOrFail($id);
-        $booking->update([
-            'booking_status' => 'FULL_PAID',
-            'paid_amount' => $booking->total_amount,
-            'remaining_amount' => 0.00,
-        ]);
+        return DB::transaction(function () use ($id) {
+            $booking = Booking::where('id', $id)->lockForUpdate()->firstOrFail();
 
-        return redirect()->back()->with('success', "Pelunasan untuk booking {$booking->booking_code} berhasil diterima!");
+            // Guard: Hanya booking DP_PAID yang memiliki sisa tagihan valid yang boleh dilunasi
+            if ($booking->booking_status !== 'DP_PAID' || (float) $booking->remaining_amount <= 0) {
+                return redirect()->back()->with('error', "Pesanan {$booking->booking_code} tidak memiliki sisa tagihan untuk dilunasi.");
+            }
+
+            // Tangkap nilai sisa tagihan sebelum di-nol-kan
+            $settlementAmount = (int) round($booking->remaining_amount);
+
+            // Catat transaksi pelunasan tunai di kasir basecamp
+            Payment::create([
+                'booking_id' => $booking->id,
+                'transaction_ref' => 'LOKET-' . $booking->booking_code . '-' . strtoupper(Str::random(6)),
+                'payment_stage' => 'SETTLEMENT',
+                'payment_type' => 'CASH_BASECAMP',
+                'gross_amount' => $settlementAmount,
+                'payment_status' => 'SETTLED',
+                'paid_at' => now(),
+            ]);
+
+            // Perbarui status booking menjadi lunas
+            $booking->update([
+                'booking_status' => 'FULL_PAID',
+                'paid_amount' => $booking->total_amount,
+                'remaining_amount' => 0.00,
+            ]);
+
+            return redirect()->back()->with('success', "Pelunasan tunai sebesar Rp " . number_format($settlementAmount, 0, ',', '.') . " untuk booking {$booking->booking_code} berhasil dicatat!");
+        });
     }
 
     public function assignDriver(Request $request, $id)

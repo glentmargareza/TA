@@ -37,9 +37,17 @@
                 <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
                     LUNAS (100%)
                 </span>
-                @else
+                @elseif($booking->booking_status === 'DP_PAID')
                 <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
-                    UANG MUKA DITERIMA (DP 30%)
+                    UANG MUKA TERVERIFIKASI (DP)
+                </span>
+                @elseif($booking->booking_status === 'PENDING')
+                <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-900 border border-amber-300">
+                    MENUNGGU PEMBAYARAN
+                </span>
+                @else
+                <span class="px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800">
+                    {{ $booking->booking_status }}
                 </span>
                 @endif
             </div>
@@ -77,9 +85,19 @@
             </div>
 
             <div class="text-center pt-2">
-                <a href="{{ route('booking.success', $booking->booking_code) }}" class="inline-block px-6 py-2.5 rounded-full bg-wukirsari-primary text-white text-xs font-semibold">
-                    Buka E-Tiket Lengkap →
+                @if(in_array($booking->booking_status, ['FULL_PAID', 'DP_PAID']))
+                <a href="{{ route('booking.success', $booking->booking_code) }}" class="inline-block px-6 py-2.5 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-xs font-semibold transition-colors">
+                    {{ $booking->booking_status === 'FULL_PAID' ? 'Buka E-Tiket Lengkap →' : 'Buka E-Tiket DP →' }}
                 </a>
+                @elseif($booking->booking_status === 'PENDING')
+                <a href="{{ route('booking.payment', $booking->booking_code) }}" class="inline-block px-6 py-2.5 rounded-full bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold transition-colors">
+                    Selesaikan Pembayaran Sekarang →
+                </a>
+                @else
+                <a href="{{ route('booking.create') }}" class="inline-block px-6 py-2.5 rounded-full bg-gray-600 hover:bg-gray-700 text-white text-xs font-semibold transition-colors">
+                    Buat Reservasi Baru →
+                </a>
+                @endif
             </div>
         </div>
         @elseif($hasSearched && !$booking)

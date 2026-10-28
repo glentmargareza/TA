@@ -45,16 +45,17 @@ class BookingController extends Controller
         
         // Aturan Keselamatan Lereng Merapi: 1 Jeep maksimal 4 orang
         $minJeeps = (int) ceil($validated['passenger_count'] / 4);
-        $jeepQuantity = max($validated['jeep_quantity'], $minJeeps);
+        $jeepQuantity = max((int) $validated['jeep_quantity'], $minJeeps);
 
-        // Kalkulasi Biaya
-        $packageSubtotal = $package->price_per_jeep * $jeepQuantity;
+        // Kalkulasi Biaya secara Presisi (Integer Rupiah Murni)
+        $packagePrice = (int) $package->price_per_jeep;
+        $packageSubtotal = $packagePrice * $jeepQuantity;
         
-        $pickupFee = 0.00;
+        $pickupFee = 0;
         if ($validated['arrival_type'] === 'pickup' && !empty($validated['pickup_zone_id'])) {
             $zone = PickupZone::find($validated['pickup_zone_id']);
             if ($zone) {
-                $pickupFee = $zone->additional_fee;
+                $pickupFee = (int) $zone->additional_fee;
             }
         }
 
@@ -62,49 +63,15 @@ class BookingController extends Controller
         
         if ($validated['payment_mode'] === 'FULL') {
             $payableAmount = $totalAmount;
-            $remainingAmount = 0.00;
-            $status = 'FULL_PAID';
+            $remainingAmount = 0;
         } else {
-            $payableAmount = round($totalAmount * 0.30); // DP 30%
+            // DP minimal 30% dari total tagihan (pembulatan ke atas tanpa float)
+            $payableAmount = (int) intdiv(($totalAmount * 30) + 99, 100);
             $remainingAmount = $totalAmount - $payableAmount;
-            $status = 'DP_PAID';
         }
 
         // Generate Booking Code Unik
         $bookingCode = 'WKR-' . strtoupper(Str::random(6));
-
-        // Generate Midtrans Snap Token
-        $snapToken = null;
-        try {
-            \Midtrans\Config::$serverKey = config('services.midtrans.server_key');
-            \Midtrans\Config::$isProduction = config('services.midtrans.is_production', false);
-            \Midtrans\Config::$isSanitized = config('services.midtrans.is_sanitized', true);
-            \Midtrans\Config::$is3ds = config('services.midtrans.is_3ds', true);
-
-            $params = [
-                'transaction_details' => [
-                    'order_id' => $bookingCode,
-                    'gross_amount' => (int) $payableAmount,
-                ],
-                'customer_details' => [
-                    'first_name' => $validated['customer_name'],
-                    'phone' => $validated['customer_phone'],
-                    'email' => $validated['customer_email'] ?? 'wisatawan@jeepwukirsari.id',
-                ],
-                'item_details' => [
-                    [
-                        'id' => $package->id,
-                        'price' => (int) $payableAmount,
-                        'quantity' => 1,
-                        'name' => ($validated['payment_mode'] === 'DP' ? 'DP (30%) ' : 'Lunas (100%) ') . substr($package->name, 0, 30),
-                    ]
-                ]
-            ];
-
-            $snapToken = \Midtrans\Snap::getSnapToken($params);
-        } catch (\Exception $e) {
-            Log::warning('Midtrans Snap Token skipped: ' . $e->getMessage());
-        }
 
         $booking = Booking::create([
             'booking_code' => $bookingCode,
@@ -125,16 +92,69 @@ class BookingController extends Controller
             'paid_amount' => $payableAmount,
             'remaining_amount' => $remainingAmount,
             'payment_mode' => $validated['payment_mode'],
-            'booking_status' => $status,
-            'snap_token' => $snapToken,
+            'booking_status' => 'PENDING',
+            'lock_expires_at' => now()->addMinutes(30),
+            'snap_token' => null,
         ]);
 
-        return redirect()->route('booking.success', $booking->booking_code);
+        return redirect()->route('booking.payment', $booking->booking_code);
+    }
+
+    public function payment($code)
+    {
+        $booking = Booking::with(['package', 'slot', 'pickupZone', 'payments'])
+            ->where('booking_code', $code)
+            ->firstOrFail();
+
+        // Jika booking sudah selesai dibayar, langsung alihkan ke e-tiket
+        if (in_array($booking->booking_status, ['FULL_PAID', 'DP_PAID'])) {
+            return redirect()->route('booking.success', $booking->booking_code);
+        }
+
+        return view('booking.payment', compact('booking'));
     }
 
     public function success($code)
     {
-        $booking = Booking::with(['package', 'slot', 'pickupZone'])->where('booking_code', $code)->firstOrFail();
+        $booking = Booking::with(['package', 'slot', 'pickupZone', 'payments'])
+            ->where('booking_code', $code)
+            ->firstOrFail();
+
+        // 1. Guard Status Booking: Hanya izinkan tiket diakses jika sudah lunas atau DP
+        if (!in_array($booking->booking_status, ['FULL_PAID', 'DP_PAID'])) {
+            if ($booking->booking_status === 'PENDING') {
+                return redirect()->route('booking.payment', $booking->booking_code)
+                    ->with('warning', 'Selesaikan pembayaran Anda untuk menerbitkan E-Tiket resmi.');
+            }
+
+            return redirect()->route('booking.create')
+                ->with('error', 'Pesanan ini tidak valid atau telah dibatalkan.');
+        }
+
+        // 2. Guard Finansial: Verifikasi Silang Akumulasi Pembayaran Sah (SETTLED) di Basis Data
+        $totalAmountInt = (int) round($booking->total_amount);
+        $paidAmountInt  = (int) round($booking->paid_amount);
+        $remainingInt   = (int) round($booking->remaining_amount);
+
+        $settledPayments = $booking->payments->where('payment_status', 'SETTLED');
+        $accumulatedSettledInt = (int) round($settledPayments->sum('gross_amount'));
+
+        if ($booking->booking_status === 'FULL_PAID') {
+            // Skenario Lunas (Lunas Online ATAU DP Online + Pelunasan Kasir Basecamp)
+            if ($settledPayments->isEmpty() || $remainingInt !== 0 || $accumulatedSettledInt !== $totalAmountInt) {
+                Log::warning("Inkonsistensi finansial pada tiket FULL_PAID: {$booking->booking_code}. Akumulasi: {$accumulatedSettledInt}, Total: {$totalAmountInt}");
+                return redirect()->route('booking.payment', $booking->booking_code)
+                    ->with('error', 'Pembayaran sah belum terverifikasi secara lengkap oleh sistem.');
+            }
+        } elseif ($booking->booking_status === 'DP_PAID') {
+            // Skenario DP (Uang Muka Sah Online)
+            if ($settledPayments->isEmpty() || $remainingInt <= 0 || $accumulatedSettledInt !== $paidAmountInt) {
+                Log::warning("Inkonsistensi finansial pada tiket DP_PAID: {$booking->booking_code}. Akumulasi: {$accumulatedSettledInt}, Paid: {$paidAmountInt}");
+                return redirect()->route('booking.payment', $booking->booking_code)
+                    ->with('error', 'Pembayaran uang muka sah belum terverifikasi oleh sistem.');
+            }
+        }
+
         return view('booking.success', compact('booking'));
     }
 }

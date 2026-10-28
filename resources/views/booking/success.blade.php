@@ -81,7 +81,7 @@
                         </span>
                         @else
                         <span class="font-bold inline-block px-2.5 py-0.5 rounded-full text-xs mt-0.5 bg-amber-100 text-amber-800">
-                            UANG MUKA (DP 30%)
+                            UANG MUKA TERVERIFIKASI (DP)
                         </span>
                         @endif
                     </div>
@@ -135,20 +135,6 @@
                         <span>Jl. Cangkringan Km. 18, Wukirsari, Sleman, D.I. Yogyakarta (Tersedia parkir bus & mobil luas).</span>
                     </div>
                 </div>
-
-                @if($booking->snap_token && in_array($booking->booking_status, ['PENDING', 'DP_PAID']))
-                <div class="p-4 bg-emerald-50/70 border border-emerald-200 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3">
-                    <div class="text-xs text-emerald-900">
-                        <span class="font-bold block text-sm">Pembayaran Digital Midtrans</span>
-                        <span>Dukung QRIS, GoPay, ShopeePay, serta Virtual Account BCA, Mandiri, BNI, BRI.</span>
-                    </div>
-                    <button id="pay-button" class="w-full sm:w-auto px-5 py-2.5 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 shadow-sm transition-all">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                        <span>Buka Pembayaran Snap</span>
-                    </button>
-                </div>
-                @endif
-
             </div>
 
             <!-- Tombol Aksi -->
@@ -178,30 +164,5 @@
 
     </div>
 </div>
-
-@if($booking->snap_token)
-<script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('services.midtrans.client_key') }}"></script>
-<script>
-    const payBtn = document.getElementById('pay-button');
-    if (payBtn) {
-        payBtn.addEventListener('click', function () {
-            window.snap.pay('{{ $booking->snap_token }}', {
-                onSuccess: function(result){
-                    window.location.reload();
-                },
-                onPending: function(result){
-                    window.location.reload();
-                },
-                onError: function(result){
-                    alert('Pembayaran tidak berhasil atau telah dibatalkan.');
-                },
-                onClose: function(){
-                    // User closed popup
-                }
-            });
-        });
-    }
-</script>
-@endif
 
 @endsection
