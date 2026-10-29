@@ -31,7 +31,7 @@
                         <span>Pilih Paket Wisata</span>
                     </h3>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         @foreach($packages as $pkg)
                         <label class="p-3.5 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between package-radio-label {{ $pkg->id == $selectedPackage->id ? 'border-wukirsari-primary bg-wukirsari-sage/40 ring-1 ring-wukirsari-primary' : 'border-wukirsari-border hover:bg-slate-50' }}">
                             <input type="radio" name="package_id" value="{{ $pkg->id }}" data-price="{{ $pkg->price_per_jeep }}" {{ $pkg->id == $selectedPackage->id ? 'checked' : '' }} class="hidden package-radio">
@@ -41,7 +41,7 @@
                             </div>
                             <span class="flex items-center gap-1 text-[11px] text-merapiText-muted mt-2">
                                 <svg class="w-3 h-3 text-merapiText-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                <span>{{ $pkg->duration_minutes }} menit</span>
+                                <span>{{ $pkg->duration_text ?? ($pkg->duration_minutes . ' menit') }}</span>
                             </span>
                         </label>
                         @endforeach
@@ -97,7 +97,7 @@
                                 <input type="number" name="jeep_quantity" id="jeep_quantity" value="1" min="1" max="20" class="w-12 text-center text-base font-bold text-wukirsari-primary border-none bg-transparent">
                                 <button type="button" id="btnIncJeep" class="w-10 h-10 rounded-xl border border-wukirsari-border bg-slate-50 hover:bg-wukirsari-sage font-bold">+</button>
                             </div>
-                            <span class="block text-[11px] text-emerald-700 font-medium mt-1.5" id="jeepSummaryText">1 Jeep × Rp 450.000</span>
+                            <span class="block text-[11px] text-wukirsari-primary font-medium mt-1.5" id="jeepSummaryText">1 Jeep × Rp 450.000</span>
                         </div>
                     </div>
                 </div>
@@ -122,15 +122,37 @@
 
                     <!-- Pickup Box -->
                     <div id="pickupBox" class="hidden p-4 bg-wukirsari-sage/30 rounded-2xl border border-wukirsari-border space-y-3">
-                        <label class="block text-xs font-semibold text-merapiText-primary">Pilih Zona Penjemputan</label>
-                        <select name="pickup_zone_id" id="pickup_zone_id" class="w-full px-3 py-2 rounded-xl border border-wukirsari-border bg-white text-xs">
-                            @foreach($pickupZones as $zone)
-                            <option value="{{ $zone->id }}" data-fee="{{ $zone->additional_fee }}">
-                                {{ $zone->zone_name }} (+Rp {{ number_format($zone->additional_fee, 0, ',', '.') }})
-                            </option>
-                            @endforeach
-                        </select>
-                        <input type="text" name="pickup_address" placeholder="Nama hotel / alamat penjemputan lengkap" class="w-full px-3 py-2 rounded-xl border border-wukirsari-border bg-white text-xs">
+                        <div class="flex items-center justify-between gap-2">
+                            <label class="block text-xs font-semibold text-merapiText-primary">Pilih Zona Penjemputan</label>
+                            <button type="button" id="btnDetectLocation" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold bg-white hover:bg-wukirsari-sage text-wukirsari-primary border border-wukirsari-border shadow-xs hover:border-wukirsari-primary transition-all cursor-pointer active:scale-95">
+                                <svg id="detectSpinner" class="hidden animate-spin w-3.5 h-3.5 text-wukirsari-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                                </svg>
+                                <span id="detectIcon">📍</span>
+                                <span id="detectText">Deteksi Lokasi Saya</span>
+                            </button>
+                        </div>
+
+                        <!-- Notifikasi Status Lokasi GPS -->
+                        <div id="geoNotice" class="hidden text-xs p-3 rounded-xl border transition-all"></div>
+
+                        <!-- Dropdown Pilihan Zona Manual (Otomatis disembunyikan jika menggunakan GPS) -->
+                        <div id="pickupZoneSelectWrapper" class="transition-all">
+                            <label class="block text-[11px] font-medium text-merapiText-secondary mb-1">Pilih Zona Penjemputan:</label>
+                            <select name="pickup_zone_id" id="pickup_zone_id" class="w-full px-3 py-2.5 rounded-xl border border-wukirsari-border bg-white text-xs text-merapiText-primary focus:outline-none focus:border-wukirsari-primary">
+                                @foreach($pickupZones as $zone)
+                                <option value="{{ $zone->id }}" data-fee="{{ $zone->additional_fee }}">
+                                    {{ $zone->zone_name }} (+Rp {{ number_format($zone->additional_fee, 0, ',', '.') }})
+                                </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-medium text-merapiText-secondary mb-1">Alamat Penjemputan / Patokan:</label>
+                            <input type="text" name="pickup_address" id="pickup_address" placeholder="Contoh: Hotel Tentrem / Jl. Palagan Km 7 / Nama Villa..." class="w-full px-3 py-2.5 rounded-xl border border-wukirsari-border bg-white text-xs text-merapiText-primary focus:outline-none focus:border-wukirsari-primary">
+                        </div>
                     </div>
 
                     <!-- Kontak Pemesan -->
@@ -170,7 +192,7 @@
 
                         <div class="flex justify-between text-merapiText-secondary">
                             <span>Asuransi & BBM</span>
-                            <span class="font-semibold text-emerald-600">Gratis (Termasuk)</span>
+                            <span class="font-semibold text-emerald-700">Gratis (Termasuk)</span>
                         </div>
 
                         <div class="pt-3 border-t border-wukirsari-border flex justify-between items-baseline">
@@ -203,9 +225,9 @@
                             <span class="font-semibold text-merapiText-primary">Wajib Dibayar Sekarang:</span>
                             <span class="font-extrabold text-wukirsari-primary text-base font-display" id="valPaidAmount">Rp 450.000</span>
                         </div>
-                        <div id="rowRemaining" class="hidden justify-between text-xs text-amber-800 pt-1 border-t border-wukirsari-border">
+                        <div id="rowRemaining" class="hidden justify-between text-xs text-slate-700 pt-1 border-t border-wukirsari-border">
                             <span>Sisa Bayar di Loket:</span>
-                            <span class="font-bold" id="valRemainingAmount">Rp 0</span>
+                            <span class="font-bold text-slate-800" id="valRemainingAmount">Rp 0</span>
                         </div>
                     </div>
 
@@ -327,6 +349,12 @@
             });
             this.parentElement.classList.add('border-wukirsari-primary', 'bg-wukirsari-sage/40', 'text-wukirsari-primary');
             this.parentElement.classList.remove('border-wukirsari-border', 'text-merapiText-secondary');
+
+            // Jika memilih shuttle dan zona masih pada opsi basecamp (+Rp 0), otomatis pilih opsi penjemputan lokal
+            if (this.value === 'pickup' && pickupSelect.selectedIndex === 0 && pickupSelect.options.length > 1) {
+                pickupSelect.selectedIndex = 1;
+            }
+
             calculate();
         }));
 
@@ -339,6 +367,183 @@
             this.parentElement.classList.remove('border-wukirsari-border', 'text-merapiText-secondary');
             calculate();
         }));
+
+        // ==========================================
+        // FITUR DETEKSI LOKASI OTOMATIS (GPS & REVERSE GEOCODING)
+        // ==========================================
+        const btnDetectLocation = document.getElementById('btnDetectLocation');
+        const detectSpinner = document.getElementById('detectSpinner');
+        const detectIcon = document.getElementById('detectIcon');
+        const detectText = document.getElementById('detectText');
+        const geoNotice = document.getElementById('geoNotice');
+        const pickupAddressInput = document.getElementById('pickup_address');
+
+        // Koordinat Basecamp Wukirsari Cangkringan (Titik Acuan)
+        const BASECAMP_LAT = -7.6475;
+        const BASECAMP_LNG = 110.4560;
+
+        function calcDistanceKm(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Radius bumi (km)
+            const dLat = (lat2 - lat1) * (Math.PI / 180);
+            const dLon = (lon2 - lon1) * (Math.PI / 180);
+            const a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        }
+
+        function showGeoNotice(type, content) {
+            geoNotice.className = 'text-xs p-3 rounded-xl border transition-all';
+            if (type === 'loading') {
+                geoNotice.classList.add('bg-slate-100', 'text-merapiText-primary', 'border-wukirsari-border');
+            } else if (type === 'success') {
+                geoNotice.classList.add('bg-wukirsari-sage/70', 'text-wukirsari-primary', 'border-wukirsari-border');
+            } else {
+                geoNotice.classList.add('bg-rose-50', 'text-rose-800', 'border-rose-200');
+            }
+            geoNotice.innerHTML = content;
+        }
+
+        if (btnDetectLocation) {
+            btnDetectLocation.addEventListener('click', function () {
+                if (!navigator.geolocation) {
+                    showGeoNotice('error', '⚠️ Peramban/Browser Anda tidak mendukung Geolocation GPS. Silakan tentukan zona dan ketik alamat secara manual.');
+                    return;
+                }
+
+                // Loading State
+                detectSpinner.classList.remove('hidden');
+                detectIcon.classList.add('hidden');
+                detectText.innerText = 'Melacak GPS...';
+                btnDetectLocation.disabled = true;
+                showGeoNotice('loading', '<div class="flex items-center gap-2"><span>📡</span><span>Sedang mengambil titik koordinat GPS... Harap izinkan akses lokasi jika diminta browser.</span></div>');
+
+                navigator.geolocation.getCurrentPosition(
+                    async function (position) {
+                        const userLat = position.coords.latitude;
+                        const userLng = position.coords.longitude;
+                        const distanceKm = calcDistanceKm(BASECAMP_LAT, BASECAMP_LNG, userLat, userLng);
+
+                        let formattedAddress = `Titik GPS: ${userLat.toFixed(5)}, ${userLng.toFixed(5)}`;
+                        let rawData = null;
+
+                        try {
+                            // Reverse geocoding via OpenStreetMap Nominatim
+                            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${userLat}&lon=${userLng}`, {
+                                headers: { 'Accept-Language': 'id' }
+                            });
+                            if (response.ok) {
+                                rawData = await response.json();
+                                if (rawData && rawData.address) {
+                                    const a = rawData.address;
+                                    const road = a.road || a.pedestrian || a.suburb || '';
+                                    const village = a.village || a.neighbourhood || '';
+                                    const district = a.city_district || a.county || a.city || '';
+                                    const parts = [road, village, district].filter(Boolean);
+                                    if (parts.length > 0) {
+                                        formattedAddress = parts.join(', ');
+                                    } else if (rawData.display_name) {
+                                        formattedAddress = rawData.display_name.split(',').slice(0, 3).join(', ');
+                                    }
+                                }
+                            }
+                        } catch (err) {
+                            console.warn('Reverse geocode offline/fallback:', err);
+                        }
+
+                        // Isi alamat ke input
+                        pickupAddressInput.value = `${formattedAddress} (GPS: ${userLat.toFixed(5)}, ${userLng.toFixed(5)})`;
+
+                        // Analisis kata kunci & jarak untuk penyesuaian otomatis Dropdown Zona
+                        const searchContext = (formattedAddress + ' ' + (rawData?.display_name || '')).toLowerCase();
+                        const options = Array.from(pickupSelect.options);
+                        let matchedIdx = -1;
+
+                        if (searchContext.includes('kulon progo') || searchContext.includes('bandara') || searchContext.includes('yia') || distanceKm > 35) {
+                            matchedIdx = options.findIndex(o => o.text.toLowerCase().includes('kulon progo') || o.text.toLowerCase().includes('yia'));
+                        } else if (searchContext.includes('cangkringan') || searchContext.includes('pakem') || distanceKm <= 12) {
+                            matchedIdx = options.findIndex(o => o.text.toLowerCase().includes('cangkringan') || o.text.toLowerCase().includes('pakem'));
+                        } else {
+                            matchedIdx = options.findIndex(o => o.text.toLowerCase().includes('sleman') || o.text.toLowerCase().includes('kota yogyakarta'));
+                        }
+
+                        if (matchedIdx === -1 && options.length > 1) {
+                            matchedIdx = 1;
+                        }
+
+                        if (matchedIdx !== -1) {
+                            pickupSelect.selectedIndex = matchedIdx;
+                            calculate(); // Hitung ulang tagihan dengan biaya zona yang baru terpilih
+                        }
+
+                        const selectedZoneName = pickupSelect.options[pickupSelect.selectedIndex].text;
+
+                        // Otomatis sembunyikan dropdown pemilihan zona di bawahnya karena sudah di-set oleh GPS
+                        const pickupZoneSelectWrapper = document.getElementById('pickupZoneSelectWrapper');
+                        if (pickupZoneSelectWrapper) {
+                            pickupZoneSelectWrapper.classList.add('hidden');
+                        }
+
+                        showGeoNotice('success', `
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="flex items-start gap-2">
+                                    <span class="text-base">✅</span>
+                                    <div>
+                                        <p class="font-bold text-wukirsari-primary">Lokasi Berhasil Dideteksi!</p>
+                                        <p class="text-merapiText-primary mt-0.5">${formattedAddress} <span class="text-[11px] font-semibold text-merapiText-secondary">(Jarak ±${distanceKm.toFixed(1)} km dari Basecamp)</span></p>
+                                        <p class="text-merapiText-secondary text-[11px] mt-0.5">Zona otomatis diset: <strong>${selectedZoneName}</strong></p>
+                                    </div>
+                                </div>
+                                <button type="button" id="btnToggleManualZone" class="text-[11px] text-wukirsari-primary hover:underline font-semibold whitespace-nowrap cursor-pointer mt-0.5">
+                                    Ganti Zona
+                                </button>
+                            </div>
+                        `);
+
+                        const btnToggleManualZone = document.getElementById('btnToggleManualZone');
+                        if (btnToggleManualZone && pickupZoneSelectWrapper) {
+                            btnToggleManualZone.addEventListener('click', function () {
+                                pickupZoneSelectWrapper.classList.toggle('hidden');
+                                if (pickupZoneSelectWrapper.classList.contains('hidden')) {
+                                    btnToggleManualZone.innerText = 'Ganti Zona';
+                                } else {
+                                    btnToggleManualZone.innerText = 'Sembunyikan Pilihan';
+                                }
+                            });
+                        }
+
+                        detectSpinner.classList.add('hidden');
+                        detectIcon.classList.remove('hidden');
+                        detectText.innerText = 'Deteksi Ulang';
+                        btnDetectLocation.disabled = false;
+                    },
+                    function (geoError) {
+                        detectSpinner.classList.add('hidden');
+                        detectIcon.classList.remove('hidden');
+                        detectText.innerText = 'Coba Lagi';
+                        btnDetectLocation.disabled = false;
+
+                        let msg = 'Gagal mendeteksi lokasi.';
+                        if (geoError.code === geoError.PERMISSION_DENIED) {
+                            msg = 'Izin akses lokasi ditolak oleh browser. Silakan izinkan akses lokasi di pengaturan browser Anda, atau pilih zona & ketik alamat secara manual.';
+                        } else if (geoError.code === geoError.POSITION_UNAVAILABLE) {
+                            msg = 'Informasi lokasi tidak tersedia dari sensor perangkat saat ini.';
+                        } else if (geoError.code === geoError.TIMEOUT) {
+                            msg = 'Permintaan lokasi GPS melebihi batas waktu (timeout). Silakan klik coba lagi.';
+                        }
+
+                        showGeoNotice('error', `⚠️ <strong>Pemberitahuan:</strong> ${msg}`);
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 30000
+                    }
+                );
+            });
+        }
 
         calculate();
     });

@@ -7,22 +7,30 @@
     <!-- 1. HERO SECTION -->
     <section class="relative min-h-[580px] sm:min-h-[640px] lg:min-h-[720px] flex items-center justify-center overflow-hidden">
         <div class="absolute inset-0 z-0">
-            <img src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=2000&q=80" alt="Jeep Merapi Adventure" class="w-full h-full object-cover object-center filter brightness-[0.88]">
+            <img src="{{ asset('img/beranda.jpeg') }}" alt="Jeep Merapi Adventure" class="w-full h-full object-cover object-center filter brightness-[0.88]">
             <div class="absolute inset-0 bg-gradient-to-r from-black/75 via-black/40 to-transparent"></div>
             <div class="absolute inset-0 bg-gradient-to-t from-wukirsari-dark/80 via-transparent to-black/30"></div>
         </div>
 
         <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 w-full flex flex-col justify-between min-h-[580px] sm:min-h-[640px] lg:min-h-[720px]">
             <div class="max-w-2xl mt-8 sm:mt-12 space-y-6">
-                <!-- Pill Badge -->
-                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs sm:text-sm font-accent italic">
-                    <svg class="w-3.5 h-3.5 text-sunrise-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.286L13 21l-2.286-6.857L5 12l5.714-2.286L13 3z"/></svg>
-                    <span>Petualangan di Lereng Merapi</span>
+                <!-- Premium Hero Badge -->
+                <div class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-black/45 backdrop-blur-md border border-white/25 shadow-xl shadow-black/30 hover:border-emerald-400/40 transition-all">
+                    <span class="flex h-2 w-2 relative shrink-0">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+                    </span>
+                    <div class="text-xs sm:text-sm font-semibold tracking-wide text-white flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                        <span class="text-white font-extrabold uppercase tracking-wider text-[10px] sm:text-[11px] px-2.5 py-0.5 rounded-full bg-white/20 border border-white/30 shrink-0">
+                            OFFICIAL BASECAMP
+                        </span>
+                        <span class="text-white/95 font-medium">Petualangan Offroad Lereng Merapi</span>
+                    </div>
                 </div>
 
                 <!-- Headline -->
                 <h1 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white font-display leading-[1.12] tracking-tight">
-                    Jelajahi Keindahan Alam Merapi Bersama <span class="text-sunrise-gold">Jeep Wukirsari</span>
+                    Jelajahi Keindahan Alam Merapi Bersama <span class="text-white font-black drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">Jeep Wukirsari</span>
                 </h1>
 
                 <!-- Subtitle -->
@@ -30,15 +38,29 @@
                     Rasakan petualangan seru menyusuri jalur lava, menikmati panorama Merapi, dan menciptakan cerita perjalanan yang tak terlupakan.
                 </p>
 
-                <!-- Dual CTA Buttons -->
-                <div class="pt-2 flex flex-wrap items-center gap-4">
-                    <a href="{{ route('booking.create') }}" class="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-sm sm:text-base font-semibold shadow-lg shadow-black/30 hover:scale-[1.02] active:scale-95 transition-all">
-                        <span>Booking Sekarang</span>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                    </a>
+                <!-- Status Login Akun di Beranda -->
+                @auth
+                    @if(Auth::user()->isAdmin())
+                    <div class="inline-flex flex-wrap items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-900/80 backdrop-blur-md border border-emerald-500/40 text-emerald-100 text-xs shadow-lg">
+                        <span class="text-base">🛡️</span>
+                        <span>Login sebagai: <strong class="text-white">{{ Auth::user()->name }}</strong> (Admin Loket & Armada)</span>
+                        <a href="{{ route('admin.dashboard') }}" class="ml-1 font-bold text-emerald-300 hover:underline">Buka Dashboard Admin →</a>
+                    </div>
+                    @else
+                    <div class="inline-flex flex-wrap items-center gap-2 px-4 py-2.5 rounded-2xl bg-black/40 backdrop-blur-md border border-white/30 text-white text-xs shadow-lg">
+                        <span class="text-base">👋</span>
+                        <span>Selamat datang, <strong>{{ Auth::user()->name }}</strong></span>
+                        <span class="text-white/40">•</span>
+                        <a href="{{ route('profile') }}" class="font-bold text-emerald-300 hover:underline">Lihat Profil & Tiket Saya →</a>
+                    </div>
+                    @endif
+                @endauth
 
-                    <a href="#paket" class="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-black/25 hover:bg-white/20 backdrop-blur-md border border-white/40 text-white text-sm sm:text-base font-medium transition-all">
-                        <span>Jelajahi Paket</span>
+                <!-- CTA Button -->
+                <div class="pt-2 flex flex-wrap items-center gap-4">
+                    <a href="#paket" class="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-sm sm:text-base font-semibold shadow-lg shadow-black/30 hover:scale-[1.02] active:scale-95 transition-all">
+                        <span>Jelajahi Paket Wisata</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </a>
                 </div>
             </div>
@@ -46,7 +68,7 @@
             <!-- Bottom Hero Bar -->
             <div class="pt-8 pb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between text-white/80 gap-4 border-t border-white/15">
                 <div class="flex items-center gap-3 text-xs tracking-wider">
-                    <span class="font-bold text-white border-b-2 border-sunrise-gold pb-0.5">01</span>
+                    <span class="font-bold text-white border-b-2 border-emerald-400 pb-0.5">01</span>
                     <span>02</span>
                     <span>03</span>
                     <span>04</span>
@@ -54,7 +76,7 @@
                 </div>
 
                 <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/30 backdrop-blur-sm border border-white/20 text-xs text-white">
-                    <svg class="w-3.5 h-3.5 text-sunrise-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                     <span>Wukirsari, Sleman, Yogyakarta</span>
                 </div>
             </div>
@@ -118,7 +140,7 @@
                     <p class="text-merapiText-secondary text-sm sm:text-base mt-2 max-w-xl">Pilihan terbaik untuk pengalaman tak terlupakan di setiap perjalanan lereng Merapi.</p>
                 </div>
 
-                <a href="#paket" class="inline-flex items-center gap-1.5 text-sm font-semibold text-wukirsari-primary hover:text-wukirsari-hover transition-colors">
+                <a href="{{ route('packages.index') }}" class="inline-flex items-center gap-1.5 text-sm font-semibold text-wukirsari-primary hover:text-wukirsari-hover transition-colors">
                     <span>Lihat Semua</span>
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                 </a>
@@ -150,7 +172,7 @@
                         <div class="pt-2 flex items-center gap-5 text-xs text-merapiText-secondary border-t border-wukirsari-border/70">
                             <div class="flex items-center gap-1.5">
                                 <svg class="w-3.5 h-3.5 text-wukirsari-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                <span>{{ $pkg->duration_minutes }} menit</span>
+                                <span>{{ $pkg->effective_duration_text }}</span>
                             </div>
                             <div class="flex items-center gap-1.5">
                                 <svg class="w-3.5 h-3.5 text-wukirsari-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
@@ -281,75 +303,230 @@
         </div>
     </section>
 
-    <!-- 6. TESTIMONI PELANGGAN -->
+    <!-- 6. TESTIMONI & REVIEW WISATAWAN -->
     <section class="py-16 sm:py-20 bg-gradient-to-b from-wukirsari-cream to-white border-t border-wukirsari-border">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="mb-12">
-                <span class="text-xs font-bold uppercase tracking-wider text-wukirsari-primary font-display block mb-1">TESTIMONI</span>
-                <h2 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-merapiText-primary font-display">Apa Kata Mereka?</h2>
-                <p class="text-merapiText-secondary text-sm sm:text-base mt-2">Pengalaman nyata dari pelanggan yang sudah merasakan keseruannya.</p>
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-wukirsari-primary font-display block mb-1">TESTIMONI & ULASAN ASLI</span>
+                    <h2 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-merapiText-primary font-display">Apa Kata Wisatawan Lain?</h2>
+                    <p class="text-merapiText-secondary text-sm sm:text-base mt-2">
+                        Simak pengalaman seru dan penilaian nyata dari wisatawan yang sudah menikmati offroad lereng Gunung Merapi.
+                    </p>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-3">
+                    <a href="{{ route('reviews.index') }}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-xs font-bold transition-all shadow-sm shadow-wukirsari-primary/20">
+                        <span>⭐ Lihat Semua Ulasan ({{ $totalReviewsCount }} Review) →</span>
+                    </a>
+
+                    @guest
+                    <a href="{{ route('login') }}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-wukirsari-primary text-wukirsari-primary hover:bg-wukirsari-sage text-xs font-bold transition-all">
+                        <span>🔒 Masuk untuk Tulis Ulasan</span>
+                    </a>
+                    @endguest
+                </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Grid Kartu Ulasan Wisatawan Lain -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                @forelse($reviews as $rev)
                 <div class="bg-white p-6 rounded-3xl border border-wukirsari-border shadow-xs hover:shadow-lg transition-all flex flex-col justify-between space-y-4">
                     <div class="space-y-4">
-                        <div class="flex items-center gap-3.5">
-                            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" alt="Andi" class="w-11 h-11 rounded-full object-cover border-2 border-wukirsari-border">
-                            <div>
-                                <h4 class="text-sm font-bold text-merapiText-primary font-display">Andi Pratama</h4>
-                                <span class="text-xs text-merapiText-muted">Yogyakarta</span>
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="flex items-center gap-3.5 min-w-0">
+                                <div class="w-11 h-11 rounded-2xl bg-wukirsari-sage text-wukirsari-primary flex items-center justify-center font-bold text-sm shrink-0 border border-wukirsari-border font-display">
+                                    {{ strtoupper(substr($rev->user->name ?? 'W', 0, 1)) }}
+                                </div>
+                                <div class="min-w-0">
+                                    <h4 class="text-sm font-bold text-merapiText-primary font-display truncate">
+                                        {{ $rev->user->name ?? 'Wisatawan' }}
+                                    </h4>
+                                    <span class="text-xs text-merapiText-muted truncate block">
+                                        📍 {{ $rev->city ?? 'Indonesia' }} • {{ $rev->package->name ?? 'Tour Jeep Merapi' }}
+                                    </span>
+                                </div>
                             </div>
+
+                            @if(Auth::check() && (Auth::id() === $rev->user_id || Auth::user()->isAdmin()))
+                            <div class="flex items-center gap-1.5 shrink-0">
+                                <!-- Tombol Edit -->
+                                <button type="button" 
+                                    onclick="handleEditReviewClick(this)"
+                                    data-id="{{ $rev->id }}"
+                                    data-rating="{{ $rev->rating }}"
+                                    data-city="{{ $rev->city }}"
+                                    data-comment="{{ $rev->comment }}"
+                                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-wukirsari-sage/70 hover:bg-wukirsari-sage text-wukirsari-primary text-[11px] font-bold border border-wukirsari-border transition-all cursor-pointer shadow-xs" 
+                                    title="Edit Ulasan">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                    <span>Edit</span>
+                                </button>
+
+                                <!-- Tombol Delete -->
+                                <form action="{{ route('reviews.destroy', $rev->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus ulasan ini?');" class="inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" 
+                                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 text-[11px] font-bold border border-rose-200 transition-all cursor-pointer shadow-xs" 
+                                        title="Hapus Ulasan">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                        <span>Delete</span>
+                                    </button>
+                                </form>
+                            </div>
+                            @endif
                         </div>
+
                         <p class="text-xs sm:text-sm text-merapiText-secondary italic leading-relaxed">
-                            "Pengalaman yang luar biasa! Driver-nya ramah dan sangat berpengalaman. Pemandangannya keren banget!"
+                            "{{ $rev->comment }}"
                         </p>
                     </div>
-                    <div class="flex items-center gap-1 text-sunrise-gold pt-2">
-                        @for($i = 0; $i < 5; $i++)
-                        <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                        @endfor
+
+                    <div class="pt-3 border-t border-wukirsari-border/70 flex items-center justify-between">
+                        <div class="flex items-center gap-1 text-yellow-400">
+                            @for($i = 1; $i <= 5; $i++)
+                                @if($i <= $rev->rating)
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                @else
+                                <svg class="w-4 h-4 fill-slate-200" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                @endif
+                            @endfor
+                        </div>
+                        <span class="text-[10px] text-merapiText-muted">
+                            {{ $rev->created_at->diffForHumans() }}
+                        </span>
                     </div>
+                </div>
+                @empty
+                <div class="col-span-3 text-center py-8 text-merapiText-muted text-sm bg-white rounded-3xl border border-wukirsari-border">
+                    Belum ada ulasan yang dipublikasikan. Jadilah wisatawan pertama yang memberikan ulasan!
+                </div>
+                @endforelse
+            </div>
+
+            <!-- Tombol Navigasi Lihat Semua Review Orang Lain -->
+            <div class="text-center mb-12">
+                <a href="{{ route('reviews.index') }}" class="inline-flex items-center gap-2.5 px-6 py-3 rounded-full bg-white border border-wukirsari-border hover:border-wukirsari-primary text-merapiText-primary hover:text-wukirsari-primary text-xs sm:text-sm font-semibold shadow-xs hover:shadow-md transition-all">
+                    <span>Lihat Halaman Lengkap Semua Review Wisatawan</span>
+                    <svg class="w-4 h-4 text-wukirsari-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </a>
+            </div>
+
+            <!-- FORM TULIS ULASAN (HANYA UNTUK USER YANG SUDAH LOGIN) -->
+            <div id="tulis-ulasan" class="max-w-2xl mx-auto">
+                @auth
+                <div class="bg-white p-6 sm:p-8 rounded-3xl border border-wukirsari-border shadow-sm space-y-6">
+                    <div class="flex items-center gap-3 border-b border-wukirsari-border pb-4">
+                        <div class="w-10 h-10 rounded-2xl bg-wukirsari-sage text-wukirsari-primary flex items-center justify-center text-lg">
+                            ⭐
+                        </div>
+                        <div>
+                            <h3 class="text-base sm:text-lg font-bold text-merapiText-primary font-display">
+                                Berikan Ulasan Pengalaman Anda
+                            </h3>
+                            <p class="text-xs text-merapiText-secondary">
+                                Masuk sebagai: <strong class="text-wukirsari-primary">{{ Auth::user()->name }}</strong> (Wisatawan)
+                            </p>
+                        </div>
+                    </div>
+
+                    <form action="{{ route('reviews.store') }}" method="POST" class="space-y-4">
+                        @csrf
+
+                        <!-- Rating Bintang Interaktif -->
+                        <div>
+                            <label class="block text-xs font-semibold text-merapiText-primary mb-1.5">Penilaian Anda (Bintang) *</label>
+                            <div class="flex items-center gap-2" id="starRatingContainer">
+                                @for($s = 1; $s <= 5; $s++)
+                                <button type="button" class="star-btn text-2xl text-yellow-400 hover:scale-125 transition-transform cursor-pointer" data-val="{{ $s }}" title="{{ $s }} Bintang">
+                                    ★
+                                </button>
+                                @endfor
+                                <input type="hidden" name="rating" id="ratingInput" value="5">
+                                <span class="text-xs font-bold text-merapiText-secondary ml-2" id="ratingLabel">5 dari 5 Bintang (Sangat Puas)</span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-merapiText-primary mb-1.5">Paket yang Dinikmati</label>
+                                <select name="package_id" class="w-full px-3.5 py-2.5 rounded-xl border border-wukirsari-border bg-white text-xs focus:outline-none focus:border-wukirsari-primary">
+                                    <option value="">Pilih Paket Wisata (Opsional)</option>
+                                    @foreach($packages as $p)
+                                    <option value="{{ $p->id }}">{{ $p->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-merapiText-primary mb-1.5">Kota / Daerah Asal</label>
+                                <input type="text" name="city" placeholder="Contoh: Jakarta / Surabaya / Sleman" class="w-full px-3.5 py-2.5 rounded-xl border border-wukirsari-border text-xs focus:outline-none focus:border-wukirsari-primary">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-merapiText-primary mb-1.5">Ulasan / Cerita Pengalaman Anda *</label>
+                            <textarea name="comment" rows="3" required placeholder="Ceritakan bagaimana keseruan rute, keramahan driver, atau keindahan pemandangan lereng Merapi..." class="w-full px-3.5 py-2.5 rounded-xl border border-wukirsari-border text-xs focus:outline-none focus:border-wukirsari-primary"></textarea>
+                        </div>
+
+                        <button type="submit" class="w-full py-3.5 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-xs font-bold shadow-md shadow-wukirsari-primary/20 transition-all flex items-center justify-center gap-2">
+                            <span>Kirim Ulasan Saya Sekarang →</span>
+                        </button>
+                    </form>
                 </div>
 
-                <div class="bg-white p-6 rounded-3xl border border-wukirsari-border shadow-xs hover:shadow-lg transition-all flex flex-col justify-between space-y-4">
-                    <div class="space-y-4">
-                        <div class="flex items-center gap-3.5">
-                            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80" alt="Siti" class="w-11 h-11 rounded-full object-cover border-2 border-wukirsari-border">
-                            <div>
-                                <h4 class="text-sm font-bold text-merapiText-primary font-display">Siti Nurhaliza</h4>
-                                <span class="text-xs text-merapiText-muted">Sleman</span>
-                            </div>
-                        </div>
-                        <p class="text-xs sm:text-sm text-merapiText-secondary italic leading-relaxed">
-                            "Sunrise di Merapi benar-benar magical. Timnya profesional dan semua sesuai dengan yang dijanjikan."
-                        </p>
-                    </div>
-                    <div class="flex items-center gap-1 text-sunrise-gold pt-2">
-                        @for($i = 0; $i < 5; $i++)
-                        <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                        @endfor
-                    </div>
-                </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        const starBtns = document.querySelectorAll('.star-btn');
+                        const ratingInput = document.getElementById('ratingInput');
+                        const ratingLabel = document.getElementById('ratingLabel');
+                        const labels = {
+                            1: '1 dari 5 Bintang (Kurang)',
+                            2: '2 dari 5 Bintang (Cukup)',
+                            3: '3 dari 5 Bintang (Baik)',
+                            4: '4 dari 5 Bintang (Sangat Baik)',
+                            5: '5 dari 5 Bintang (Sangat Puas)'
+                        };
 
-                <div class="bg-white p-6 rounded-3xl border border-wukirsari-border shadow-xs hover:shadow-lg transition-all flex flex-col justify-between space-y-4">
-                    <div class="space-y-4">
-                        <div class="flex items-center gap-3.5">
-                            <img src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&q=80" alt="Rizky" class="w-11 h-11 rounded-full object-cover border-2 border-wukirsari-border">
-                            <div>
-                                <h4 class="text-sm font-bold text-merapiText-primary font-display">Rizky Maulana</h4>
-                                <span class="text-xs text-merapiText-muted">Bandung</span>
-                            </div>
+                        starBtns.forEach(btn => {
+                            btn.addEventListener('click', function () {
+                                const val = parseInt(this.dataset.val);
+                                ratingInput.value = val;
+                                ratingLabel.innerText = labels[val] || (val + ' Bintang');
+
+                                starBtns.forEach(s => {
+                                    const sVal = parseInt(s.dataset.val);
+                                    if (sVal <= val) {
+                                        s.classList.remove('text-slate-200');
+                                        s.classList.add('text-yellow-400');
+                                    } else {
+                                        s.classList.remove('text-yellow-400');
+                                        s.classList.add('text-slate-200');
+                                    }
+                                });
+                            });
+                        });
+                    });
+                </script>
+                @else
+                <!-- Banner Wajib Login untuk Menulis Ulasan -->
+                <div class="bg-gradient-to-r from-wukirsari-dark via-[#142B16] to-wukirsari-primary text-white p-6 sm:p-8 rounded-3xl shadow-lg border border-emerald-800/30 flex flex-col sm:flex-row items-center justify-between gap-6">
+                    <div class="space-y-2 text-center sm:text-left">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-emerald-300 text-xs font-semibold">
+                            <span>🔒</span>
+                            <span>Khusus Wisatawan Terverifikasi</span>
                         </div>
-                        <p class="text-xs sm:text-sm text-merapiText-secondary italic leading-relaxed">
-                            "Booking-nya mudah, adminnya responsif, dan semuanya sesuai dengan yang dijanjikan."
+                        <h3 class="text-lg font-bold font-display">Ingin Memberikan Ulasan Pengalaman Tour?</h3>
+                        <p class="text-xs text-white/80 max-w-md">
+                            Untuk menjaga keaslian ulasan, Anda harus masuk ke akun wisatawan terlebih dahulu sebelum mengirimkan testimoni.
                         </p>
                     </div>
-                    <div class="flex items-center gap-1 text-sunrise-gold pt-2">
-                        @for($i = 0; $i < 5; $i++)
-                        <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                        @endfor
-                    </div>
+                    <a href="{{ route('login') }}" class="px-6 py-3 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-950/30 transition-all whitespace-nowrap active:scale-95">
+                        Masuk untuk Tulis Ulasan →
+                    </a>
                 </div>
+                @endauth
             </div>
         </div>
     </section>

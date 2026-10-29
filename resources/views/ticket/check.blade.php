@@ -34,11 +34,11 @@
                     <span class="text-lg font-mono font-bold text-wukirsari-primary">{{ $booking->booking_code }}</span>
                 </div>
                 @if($booking->booking_status === 'FULL_PAID')
-                <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+                <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-600 text-white">
                     LUNAS (100%)
                 </span>
                 @else
-                <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
+                <span class="px-3 py-1 rounded-full text-xs font-bold bg-wukirsari-sage text-wukirsari-primary">
                     UANG MUKA DITERIMA (DP 30%)
                 </span>
                 @endif
@@ -70,8 +70,8 @@
                 </div>
                 @if($booking->remaining_amount > 0)
                 <div class="text-right">
-                    <span class="text-amber-800 block">Sisa Bayar di Loket</span>
-                    <span class="font-extrabold text-amber-800 text-base">Rp {{ number_format($booking->remaining_amount, 0, ',', '.') }}</span>
+                    <span class="text-slate-600 block">Sisa Bayar di Loket</span>
+                    <span class="font-extrabold text-slate-800 text-base">Rp {{ number_format($booking->remaining_amount, 0, ',', '.') }}</span>
                 </div>
                 @endif
             </div>

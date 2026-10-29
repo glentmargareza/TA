@@ -14,7 +14,7 @@ class BookingController extends Controller
 {
     public function create(Request $request)
     {
-        $selectedSlug = $request->query('package', 'adventure');
+        $selectedSlug = $request->query('package', 'short-trip');
         $packages = Package::where('is_active', true)->get();
         $selectedPackage = Package::where('slug', $selectedSlug)->first() ?? $packages->first();
         
@@ -132,7 +132,7 @@ class BookingController extends Controller
         return redirect()->route('booking.success', $booking->booking_code);
     }
 
-    public function success($code)
+    public function success(string $code)
     {
         $booking = Booking::with(['package', 'slot', 'pickupZone'])->where('booking_code', $code)->firstOrFail();
         return view('booking.success', compact('booking'));
