@@ -18,9 +18,9 @@
             </p>
         </div>
 
-        <form action="{{ route('ticket.check') }}" method="GET" class="flex gap-2 mb-8">
-            <input type="text" name="code" value="{{ $code ?? '' }}" required placeholder="Masukkan Kode Booking / No WhatsApp..." class="flex-1 px-4 py-3 rounded-full border border-wukirsari-border bg-white text-sm focus:outline-none focus:border-wukirsari-primary shadow-xs">
-            <button type="submit" class="px-6 py-3 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-sm font-semibold flex items-center gap-2 shadow-sm">
+        <form action="{{ route('ticket.check') }}" method="GET" class="flex flex-col sm:flex-row gap-2.5 mb-8">
+            <input type="text" name="code" value="{{ $code ?? '' }}" required placeholder="Masukkan Kode Booking / No WhatsApp..." class="w-full sm:flex-1 px-4 py-3 rounded-full border border-wukirsari-border bg-white text-sm focus:outline-none focus:border-wukirsari-primary shadow-xs">
+            <button type="submit" class="w-full sm:w-auto px-6 py-3 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-sm font-semibold flex items-center justify-center gap-2 shadow-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 <span>Cari Tiket</span>
             </button>
@@ -34,17 +34,17 @@
                     <span class="text-lg font-mono font-bold text-wukirsari-primary">{{ $booking->booking_code }}</span>
                 </div>
                 @if($booking->booking_status === 'FULL_PAID')
-                <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+                <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-600 text-white">
                     LUNAS (100%)
                 </span>
                 @else
-                <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
+                <span class="px-3 py-1 rounded-full text-xs font-bold bg-wukirsari-sage text-wukirsari-primary">
                     UANG MUKA DITERIMA (DP 30%)
                 </span>
                 @endif
             </div>
 
-            <div class="grid grid-cols-2 gap-4 text-xs sm:text-sm">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
                 <div>
                     <span class="text-merapiText-muted block">Nama Pemesan:</span>
                     <span class="font-bold text-merapiText-primary">{{ $booking->customer_name }}</span>
@@ -70,8 +70,8 @@
                 </div>
                 @if($booking->remaining_amount > 0)
                 <div class="text-right">
-                    <span class="text-amber-800 block">Sisa Bayar di Loket</span>
-                    <span class="font-extrabold text-amber-800 text-base">Rp {{ number_format($booking->remaining_amount, 0, ',', '.') }}</span>
+                    <span class="text-slate-600 block">Sisa Bayar di Loket</span>
+                    <span class="font-extrabold text-slate-800 text-base">Rp {{ number_format($booking->remaining_amount, 0, ',', '.') }}</span>
                 </div>
                 @endif
             </div>
@@ -84,7 +84,9 @@
         </div>
         @elseif($hasSearched && !$booking)
         <div class="bg-white rounded-3xl border border-wukirsari-border p-8 text-center space-y-3 shadow-xs">
-            <span class="text-3xl block">⚠️</span>
+            <div class="w-12 h-12 mx-auto rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-200">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            </div>
             <h3 class="text-base font-bold text-merapiText-primary">Tiket Tidak Ditemukan</h3>
             <p class="text-xs sm:text-sm text-merapiText-secondary max-w-sm mx-auto">
                 Pastikan kode booking atau nomor WhatsApp yang Anda masukkan sudah benar dan telah tersimpan di sistem.

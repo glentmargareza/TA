@@ -22,10 +22,10 @@
         <!-- E-Ticket Card Design -->
         <div class="bg-white rounded-3xl border border-wukirsari-border shadow-lg overflow-hidden relative">
             
-            <!-- Header Hijau Tiket -->
+            <!-- Header Tiket -->
             <div class="bg-wukirsari-dark text-white p-6 sm:p-8 flex items-center justify-between">
                 <div>
-                    <span class="text-[11px] font-medium text-sunrise-gold uppercase tracking-wider block">
+                    <span class="text-[11px] font-medium text-wukirsari-sage uppercase tracking-wider block">
                         E-TIKET WISATA RESMI
                     </span>
                     <h2 class="text-xl sm:text-2xl font-extrabold font-display">
@@ -52,7 +52,7 @@
             <!-- Detail Tiket -->
             <div class="p-6 sm:p-8 space-y-6">
                 
-                <div class="grid grid-cols-2 gap-4 text-xs sm:text-sm">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
                     <div>
                         <span class="text-merapiText-muted block">Nama Pemesan:</span>
                         <span class="font-bold text-merapiText-primary text-sm sm:text-base">{{ $booking->customer_name }}</span>
@@ -76,11 +76,11 @@
                     <div>
                         <span class="text-merapiText-muted block">Status Pembayaran:</span>
                         @if($booking->booking_status === 'FULL_PAID')
-                        <span class="font-bold inline-block px-2.5 py-0.5 rounded-full text-xs mt-0.5 bg-emerald-100 text-emerald-800">
+                        <span class="font-bold inline-block px-2.5 py-0.5 rounded-full text-xs mt-0.5 bg-emerald-600 text-white">
                             LUNAS (100%)
                         </span>
                         @else
-                        <span class="font-bold inline-block px-2.5 py-0.5 rounded-full text-xs mt-0.5 bg-amber-100 text-amber-800">
+                        <span class="font-bold inline-block px-2.5 py-0.5 rounded-full text-xs mt-0.5 bg-wukirsari-sage text-wukirsari-primary">
                             UANG MUKA (DP 30%)
                         </span>
                         @endif
@@ -104,8 +104,8 @@
                     </div>
                     @if($booking->remaining_amount > 0)
                     <div class="text-right">
-                        <span class="text-amber-800 block">Sisa Bayar di Loket</span>
-                        <span class="font-extrabold text-amber-800 text-base sm:text-lg">
+                        <span class="text-slate-600 block">Sisa Bayar di Loket</span>
+                        <span class="font-extrabold text-slate-800 text-base sm:text-lg">
                             Rp {{ number_format($booking->remaining_amount, 0, ',', '.') }}
                         </span>
                     </div>
@@ -127,7 +127,7 @@
 
                 <!-- Alamat Titik Kumpul -->
                 <div class="flex items-start gap-3 text-xs text-merapiText-secondary bg-slate-50 p-3.5 rounded-xl border border-wukirsari-border">
-                    <span class="text-sunrise-gold text-base shrink-0 mt-0.5">
+                    <span class="text-emerald-500 text-base shrink-0 mt-0.5">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                     </span>
                     <div>
@@ -137,8 +137,8 @@
                 </div>
 
                 @if($booking->snap_token && in_array($booking->booking_status, ['PENDING', 'DP_PAID']))
-                <div class="p-4 bg-emerald-50/70 border border-emerald-200 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3">
-                    <div class="text-xs text-emerald-900">
+                <div class="p-4 bg-wukirsari-sage/50 border border-wukirsari-border rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div class="text-xs text-wukirsari-primary">
                         <span class="font-bold block text-sm">Pembayaran Digital Midtrans</span>
                         <span>Dukung QRIS, GoPay, ShopeePay, serta Virtual Account BCA, Mandiri, BNI, BRI.</span>
                     </div>
