@@ -17,41 +17,21 @@
                     </svg>
                 </div>
                 <h1 class="text-2xl font-extrabold text-merapiText-primary font-display">
-                    Masuk ke Sistem
+                    Masuk ke Akun
                 </h1>
                 <p class="text-xs text-merapiText-secondary">
-                    Silakan pilih peran akun untuk melanjutkan
+                    Masukkan email dan kata sandi Anda untuk melanjutkan
                 </p>
-            </div>
-
-            <!-- Tab Pemilih Peran (User vs Admin) -->
-            <div class="grid grid-cols-2 p-1 bg-slate-100 rounded-2xl gap-1">
-                <button type="button" id="tabUser" class="py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 {{ $activeRole === 'admin' ? 'text-merapiText-secondary hover:text-merapiText-primary' : 'bg-white text-wukirsari-primary shadow-xs' }}">
-                    <span>🎒</span>
-                    <span>Wisatawan</span>
-                </button>
-                <button type="button" id="tabAdmin" class="py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 {{ $activeRole === 'admin' ? 'bg-white text-wukirsari-primary shadow-xs' : 'text-merapiText-secondary hover:text-merapiText-primary' }}">
-                    <span>🛡️</span>
-                    <span>Admin Loket</span>
-                </button>
-            </div>
-
-            <!-- Pesan Info Banner Sesuai Role -->
-            <div id="roleInfoBanner" class="p-3 rounded-xl text-xs flex items-center gap-2.5 {{ $activeRole === 'admin' ? 'bg-wukirsari-sage text-wukirsari-primary border border-wukirsari-border' : 'bg-wukirsari-sage/40 text-wukirsari-primary border border-wukirsari-border' }}">
-                <span id="roleInfoIcon">{{ $activeRole === 'admin' ? '🔒' : '👋' }}</span>
-                <span id="roleInfoText">
-                    {{ $activeRole === 'admin' ? 'Portal khusus staf loket, armada jeep & kasir basecamp.' : 'Masuk untuk mengelola e-tiket dan riwayat pesanan tour Anda.' }}
-                </span>
             </div>
 
             @if($errors->any())
             <div class="p-3.5 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs flex items-start gap-2">
-                <span class="text-sm">⚠️</span>
+                <svg class="w-4 h-4 text-rose-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                 <span>{{ $errors->first() }}</span>
             </div>
             @endif
 
-            <!-- Form Login -->
+            <!-- Form Login Tunggal -->
             <form action="{{ route('login.post') }}" method="POST" class="space-y-4">
                 @csrf
 
@@ -73,13 +53,13 @@
                     <span class="text-[11px] text-merapiText-muted">Sistem Wukirsari Merapi</span>
                 </div>
 
-                <button type="submit" id="btnSubmitLogin" class="w-full py-3.5 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-xs font-bold shadow-md shadow-wukirsari-primary/20 transition-all flex items-center justify-center gap-2">
-                    <span id="btnSubmitText">{{ $activeRole === 'admin' ? 'Masuk sebagai Admin Loket →' : 'Masuk sebagai Wisatawan →' }}</span>
+                <button type="submit" id="btnSubmitLogin" class="w-full py-3.5 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-xs font-bold shadow-md shadow-wukirsari-primary/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95">
+                    <span>Masuk Sekarang →</span>
                 </button>
             </form>
 
             <!-- Footer Pendaftaran -->
-            <div id="registerPrompt" class="text-center pt-2 {{ $activeRole === 'admin' ? 'hidden' : '' }}">
+            <div class="text-center pt-2 border-t border-wukirsari-border">
                 <p class="text-xs text-merapiText-secondary">
                     Belum punya akun wisatawan? 
                     <a href="{{ route('register') }}" class="font-bold text-wukirsari-primary hover:underline">Daftar sekarang</a>
@@ -90,47 +70,4 @@
 
     </div>
 </div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const tabUser = document.getElementById('tabUser');
-        const tabAdmin = document.getElementById('tabAdmin');
-        const btnSubmitText = document.getElementById('btnSubmitText');
-        const roleInfoBanner = document.getElementById('roleInfoBanner');
-        const roleInfoIcon = document.getElementById('roleInfoIcon');
-        const roleInfoText = document.getElementById('roleInfoText');
-        const registerPrompt = document.getElementById('registerPrompt');
-
-        function setRole(role) {
-            if (role === 'admin') {
-                tabAdmin.classList.add('bg-white', 'text-wukirsari-primary', 'shadow-xs');
-                tabAdmin.classList.remove('text-merapiText-secondary');
-                tabUser.classList.remove('bg-white', 'text-wukirsari-primary', 'shadow-xs');
-                tabUser.classList.add('text-merapiText-secondary');
-
-                btnSubmitText.innerText = 'Masuk sebagai Admin Loket →';
-                
-                roleInfoBanner.className = 'p-3 rounded-xl text-xs flex items-center gap-2.5 bg-wukirsari-sage text-wukirsari-primary border border-wukirsari-border';
-                roleInfoIcon.innerText = '🔒';
-                roleInfoText.innerText = 'Portal khusus staf loket, armada jeep & kasir basecamp.';
-                registerPrompt.classList.add('hidden');
-            } else {
-                tabUser.classList.add('bg-white', 'text-wukirsari-primary', 'shadow-xs');
-                tabUser.classList.remove('text-merapiText-secondary');
-                tabAdmin.classList.remove('bg-white', 'text-wukirsari-primary', 'shadow-xs');
-                tabAdmin.classList.add('text-merapiText-secondary');
-
-                btnSubmitText.innerText = 'Masuk sebagai Wisatawan →';
-
-                roleInfoBanner.className = 'p-3 rounded-xl text-xs flex items-center gap-2.5 bg-wukirsari-sage/40 text-wukirsari-primary border border-wukirsari-border';
-                roleInfoIcon.innerText = '👋';
-                roleInfoText.innerText = 'Masuk untuk mengelola e-tiket dan riwayat pesanan tour Anda.';
-                registerPrompt.classList.remove('hidden');
-            }
-        }
-
-        tabUser.addEventListener('click', () => setRole('user'));
-        tabAdmin.addEventListener('click', () => setRole('admin'));
-    });
-</script>
 @endsection

@@ -10,8 +10,8 @@ use App\Http\Controllers\AuthController;
 
 // 1. Rute Publik Wisatawan
 Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::get('/packages', [HomeController::class, 'packagesIndex'])->name('packages.index');
-Route::get('/paket-wisata', [HomeController::class, 'packagesIndex'])->name('packages.alias');
+Route::redirect('/packages', '/#paket')->name('packages.index');
+Route::redirect('/paket-wisata', '/#paket')->name('packages.alias');
 Route::get('/packages/{slug}', [HomeController::class, 'showPackage'])->name('packages.show');
 Route::get('/paket-wisata/{slug}', [HomeController::class, 'showPackage'])->name('packages.show.alias');
 

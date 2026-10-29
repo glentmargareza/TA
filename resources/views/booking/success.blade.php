@@ -52,7 +52,7 @@
             <!-- Detail Tiket -->
             <div class="p-6 sm:p-8 space-y-6">
                 
-                <div class="grid grid-cols-2 gap-4 text-xs sm:text-sm">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
                     <div>
                         <span class="text-merapiText-muted block">Nama Pemesan:</span>
                         <span class="font-bold text-merapiText-primary text-sm sm:text-base">{{ $booking->customer_name }}</span>

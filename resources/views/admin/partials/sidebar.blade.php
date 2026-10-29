@@ -88,7 +88,8 @@
         <form action="{{ route('logout') }}" method="POST">
             @csrf
             <button type="submit" class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold bg-rose-500/15 hover:bg-rose-500/25 text-rose-200 border border-rose-500/20 transition-all cursor-pointer shadow-xs active:scale-98">
-                <span>🚪</span> <span>Keluar (Logout)</span>
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                <span>Keluar (Logout)</span>
             </button>
         </form>
         <a href="{{ route('home') }}" class="flex items-center justify-center gap-1.5 text-xs text-white/60 hover:text-white transition-colors pt-1">

@@ -3,41 +3,24 @@
 @section('title', 'Paket Wisata Jeep Wukirsari | Petualangan Offroad Lereng Merapi')
 
 @section('content')
-<div class="bg-wukirsari-cream min-h-screen">
+<div class="bg-wukirsari-cream min-h-screen py-10 sm:py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Header Judul Halaman -->
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4 border-b border-wukirsari-border pb-6">
+            <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-wukirsari-primary font-display block mb-1">PILIHAN RESMI JEEP WUKIRSARI</span>
+                <h1 class="text-2xl sm:text-4xl font-extrabold text-merapiText-primary font-display">Paket Wisata</h1>
+                <p class="text-merapiText-secondary text-xs sm:text-sm mt-1">Tarif resmi dihitung per armada jeep (maksimal 4 penumpang per jeep).</p>
+            </div>
 
-    <!-- 1. HERO HEADER SECTION -->
-    <section class="relative min-h-[380px] sm:min-h-[440px] lg:min-h-[480px] flex items-center justify-center overflow-hidden">
-        <div class="absolute inset-0 z-0">
-            <img src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=2000&q=80" alt="Jeep Wukirsari Merapi Adventure" class="w-full h-full object-cover object-center filter brightness-[0.82]">
-            <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/25"></div>
-            <div class="absolute inset-0 bg-gradient-to-t from-wukirsari-cream via-transparent to-black/40"></div>
-        </div>
-
-        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 w-full text-center sm:text-left">
-            <div class="max-w-2xl space-y-4">
-                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs sm:text-sm font-accent italic">
-                    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                    </svg>
-                    <span>Lereng Gunung Merapi, Sleman, Yogyakarta</span>
-                </div>
-
-                <h1 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white font-display tracking-tight leading-tight">
-                    Paket Wisata
-                </h1>
-
-                <p class="text-white/90 text-sm sm:text-base lg:text-lg leading-relaxed max-w-xl font-normal">
-                    Pilih paket perjalanan yang sesuai dengan keinginanmu. Rasakan sensasi offroad 4x4 menyusuri keindahan dan sejarah alam lereng Gunung Merapi.
-                </p>
+            <div class="text-xs sm:text-sm text-merapiText-muted font-medium" id="package-counter">
+                Menampilkan <span class="font-bold text-merapiText-primary" id="visible-count">{{ $packages->count() }}</span> dari {{ $packages->count() }} paket
             </div>
         </div>
-    </section>
 
-    <!-- 2. FILTER BAR & SEARCH SECTION -->
-    <section class="relative z-20 -mt-10 sm:-mt-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="bg-white rounded-3xl p-3 sm:p-4 shadow-xl border border-wukirsari-border flex flex-col lg:flex-row items-center justify-between gap-4">
-            
+        <!-- Filter Bar & Search Section -->
+        <div class="bg-white rounded-3xl p-3 sm:p-4 shadow-sm border border-wukirsari-border flex flex-col lg:flex-row items-center justify-between gap-4 mb-8">
             <!-- Category Filter Pills -->
             <div class="flex items-center gap-2 overflow-x-auto w-full lg:w-auto pb-2 lg:pb-0 scrollbar-none" id="filter-container">
                 <button type="button" data-filter="all" class="filter-btn shrink-0 px-5 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 bg-wukirsari-primary text-white shadow-md shadow-wukirsari-primary/20">
@@ -66,42 +49,24 @@
                 </div>
                 <input type="text" id="package-search-input" placeholder="Cari paket wisata atau rute..." value="{{ $search ?? '' }}" class="w-full pl-10 pr-4 py-2.5 rounded-full bg-wukirsari-cream/80 border border-wukirsari-border focus:bg-white focus:border-wukirsari-primary focus:ring-2 focus:ring-wukirsari-primary/20 text-xs sm:text-sm text-merapiText-primary placeholder-merapiText-muted outline-none transition-all">
             </div>
-
         </div>
-    </section>
 
-    <!-- 3. MAIN PACKAGE LISTINGS -->
-    <section class="py-12 sm:py-16">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            
-            <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
-                <div>
-                    <span class="text-xs font-bold uppercase tracking-wider text-wukirsari-primary font-display block mb-1">PILIHAN RESMI JEEP WUKIRSARI</span>
-                    <h2 class="text-2xl sm:text-3xl font-extrabold text-merapiText-primary font-display">Paket Wisata Populer</h2>
-                    <p class="text-merapiText-secondary text-xs sm:text-sm mt-1">Tarif resmi dihitung per armada jeep (maksimal 4 penumpang per jeep).</p>
-                </div>
-
-                <div class="text-xs sm:text-sm text-merapiText-muted font-medium" id="package-counter">
-                    Menampilkan <span class="font-bold text-merapiText-primary" id="visible-count">{{ $packages->count() }}</span> dari {{ $packages->count() }} paket
-                </div>
+        <!-- Empty State jika pencarian tidak ditemukan -->
+        <div id="empty-state" class="hidden py-16 text-center bg-white rounded-3xl border border-wukirsari-border p-8 mb-8">
+            <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-wukirsari-sage flex items-center justify-center text-wukirsari-primary">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
             </div>
+            <h3 class="text-lg font-bold text-merapiText-primary font-display">Paket tidak ditemukan</h3>
+            <p class="text-sm text-merapiText-secondary mt-1 max-w-md mx-auto">Tidak ada paket wisata yang cocok dengan pencarian kata kunci tersebut. Coba pilih filter "Semua" atau kata kunci lain.</p>
+            <button type="button" onclick="resetFilters()" class="mt-4 px-5 py-2 rounded-full bg-wukirsari-primary text-white text-xs font-semibold hover:bg-wukirsari-hover transition-all">
+                Reset Filter
+            </button>
+        </div>
 
-            <!-- Empty State jika pencarian tidak ditemukan -->
-            <div id="empty-state" class="hidden py-16 text-center bg-white rounded-3xl border border-wukirsari-border p-8">
-                <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-wukirsari-sage flex items-center justify-center text-wukirsari-primary">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
-                <h3 class="text-lg font-bold text-merapiText-primary font-display">Paket tidak ditemukan</h3>
-                <p class="text-sm text-merapiText-secondary mt-1 max-w-md mx-auto">Tidak ada paket wisata yang cocok dengan pencarian kata kunci tersebut. Coba pilih filter "Semua" atau kata kunci lain.</p>
-                <button type="button" onclick="resetFilters()" class="mt-4 px-5 py-2 rounded-full bg-wukirsari-primary text-white text-xs font-semibold hover:bg-wukirsari-hover transition-all">
-                    Reset Filter
-                </button>
-            </div>
-
-            <!-- Grid 5 Kartu Paket Wisata -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8" id="packages-grid">
+        <!-- Grid 5 Kartu Paket Wisata -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8" id="packages-grid">
                 @foreach($packages as $pkg)
                 @php
                     $categoryGroup = 'all';
@@ -131,7 +96,7 @@
                         <!-- Badge Destinasi & Kategori -->
                         <div class="absolute top-3.5 left-3.5 flex flex-wrap gap-1.5 items-center">
                             <span class="px-3 py-1 rounded-full bg-wukirsari-primary/90 backdrop-blur-md text-white text-[11px] font-bold shadow-md">
-                                📍 {{ $pkg->destinations_count ?? count($routes) }} Destinasi
+                                {{ $pkg->destinations_count ?? count($routes) }} Destinasi
                             </span>
                             @if($pkg->category_badge)
                             <span class="px-3 py-1 rounded-full bg-emerald-700 text-white text-[11px] font-bold shadow-md">
@@ -236,7 +201,7 @@
             </div>
 
         </div>
-    </section>
+    </div>
 
     <!-- 4. BANNER INFO FASILITAS & KONTAK BASECAMP -->
     <section class="py-12 bg-white border-t border-wukirsari-border">
@@ -319,8 +284,6 @@
             </div>
         </div>
     </section>
-
-</div>
 
 <!-- JAVASCRIPT UNTUK FILTERING INSTAN & PENCARIAN -->
 <script>

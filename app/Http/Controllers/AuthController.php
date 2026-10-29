@@ -11,9 +11,9 @@ use Illuminate\Support\Facades\Hash;
 class AuthController extends Controller
 {
     /**
-     * Tampilkan formulir login dengan pembeda peran (User vs Admin)
+     * Tampilkan formulir login tunggal (Universal untuk Wisatawan & Admin)
      */
-    public function showLogin(Request $request)
+    public function showLogin()
     {
         /** @var User|null $user */
         $user = Auth::user();
@@ -25,9 +25,7 @@ class AuthController extends Controller
             return redirect()->route('home');
         }
 
-        $activeRole = $request->query('role', 'user'); // 'user' atau 'admin'
-
-        return view('auth.login', compact('activeRole'));
+        return view('auth.login');
     }
 
     /**

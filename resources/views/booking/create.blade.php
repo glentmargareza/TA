@@ -109,7 +109,7 @@
                         <span>Opsi Kedatangan & Kontak</span>
                     </h3>
 
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                         <label class="p-3 rounded-2xl border text-xs font-semibold text-center cursor-pointer transition-all arrival-label border-wukirsari-primary bg-wukirsari-sage/40 text-wukirsari-primary">
                             <input type="radio" name="arrival_type" value="self_drive" checked class="hidden arrival-radio">
                             Datang Sendiri ke Basecamp
@@ -129,7 +129,7 @@
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                                 </svg>
-                                <span id="detectIcon">📍</span>
+                                <svg id="detectIcon" class="w-3.5 h-3.5 text-wukirsari-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                                 <span id="detectText">Deteksi Lokasi Saya</span>
                             </button>
                         </div>
@@ -204,7 +204,7 @@
                     <!-- Opsi Bayar: Full vs DP -->
                     <div class="space-y-3 pt-3 border-t border-wukirsari-border">
                         <label class="block text-xs font-bold text-merapiText-primary">Pilih Skema Pembayaran</label>
-                        <div class="grid grid-cols-2 gap-2">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             <label class="p-3 rounded-xl border text-xs font-semibold cursor-pointer transition-all paymode-label border-wukirsari-primary bg-wukirsari-sage/40 text-wukirsari-primary font-bold">
                                 <input type="radio" name="payment_mode" value="FULL" checked class="hidden paymode-radio">
                                 Bayar Lunas (100%)
@@ -409,7 +409,7 @@
         if (btnDetectLocation) {
             btnDetectLocation.addEventListener('click', function () {
                 if (!navigator.geolocation) {
-                    showGeoNotice('error', '⚠️ Peramban/Browser Anda tidak mendukung Geolocation GPS. Silakan tentukan zona dan ketik alamat secara manual.');
+                    showGeoNotice('error', 'Peramban/Browser Anda tidak mendukung Geolocation GPS. Silakan tentukan zona dan ketik alamat secara manual.');
                     return;
                 }
 
@@ -418,7 +418,7 @@
                 detectIcon.classList.add('hidden');
                 detectText.innerText = 'Melacak GPS...';
                 btnDetectLocation.disabled = true;
-                showGeoNotice('loading', '<div class="flex items-center gap-2"><span>📡</span><span>Sedang mengambil titik koordinat GPS... Harap izinkan akses lokasi jika diminta browser.</span></div>');
+                showGeoNotice('loading', '<div class="flex items-center gap-2"><span>Sedang mengambil titik koordinat GPS... Harap izinkan akses lokasi jika diminta browser.</span></div>');
 
                 navigator.geolocation.getCurrentPosition(
                     async function (position) {
@@ -489,7 +489,9 @@
                         showGeoNotice('success', `
                             <div class="flex items-start justify-between gap-3">
                                 <div class="flex items-start gap-2">
-                                    <span class="text-base">✅</span>
+                                    <span class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                    </span>
                                     <div>
                                         <p class="font-bold text-wukirsari-primary">Lokasi Berhasil Dideteksi!</p>
                                         <p class="text-merapiText-primary mt-0.5">${formattedAddress} <span class="text-[11px] font-semibold text-merapiText-secondary">(Jarak ±${distanceKm.toFixed(1)} km dari Basecamp)</span></p>
@@ -534,7 +536,7 @@
                             msg = 'Permintaan lokasi GPS melebihi batas waktu (timeout). Silakan klik coba lagi.';
                         }
 
-                        showGeoNotice('error', `⚠️ <strong>Pemberitahuan:</strong> ${msg}`);
+                        showGeoNotice('error', `<strong>Pemberitahuan:</strong> ${msg}`);
                     },
                     {
                         enableHighAccuracy: true,

@@ -12,8 +12,7 @@
 
             <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                 <div class="lg:col-span-8 space-y-3">
-                    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 text-emerald-300 text-xs font-semibold backdrop-blur-sm">
-                        <span>⭐</span>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full bg-white/15 text-emerald-300 text-xs font-semibold backdrop-blur-sm">
                         <span>Ulasan & Testimoni Asli Wisatawan</span>
                     </span>
                     <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold font-display tracking-tight text-white">
@@ -81,14 +80,14 @@
             </div>
 
             <!-- Tombol Tulis Ulasan -->
-            <div class="w-full md:w-auto flex justify-end">
+            <div class="w-full md:w-auto flex justify-stretch sm:justify-end">
                 @auth
-                <a href="{{ route('home') }}#tulis-ulasan" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-xs font-bold shadow-sm shadow-wukirsari-primary/20 transition-all">
-                    <span>✍️ Tulis Ulasan Saya</span>
+                <a href="{{ route('home') }}#tulis-ulasan" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-xs font-bold shadow-sm shadow-wukirsari-primary/20 transition-all">
+                    <span>Tulis Ulasan Saya</span>
                 </a>
                 @else
-                <a href="{{ route('login') }}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-wukirsari-primary text-wukirsari-primary hover:bg-wukirsari-sage text-xs font-bold transition-all">
-                    <span>🔒 Masuk untuk Tulis Ulasan</span>
+                <a href="{{ route('login') }}" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full border border-wukirsari-primary text-wukirsari-primary hover:bg-wukirsari-sage text-xs font-bold transition-all">
+                    <span>Masuk untuk Tulis Ulasan</span>
                 </a>
                 @endauth
             </div>
@@ -110,7 +109,7 @@
                                     {{ $review->user->name ?? 'Wisatawan' }}
                                 </h3>
                                 <span class="text-xs text-merapiText-muted block truncate">
-                                    📍 {{ $review->city ?? 'Indonesia' }}
+                                    {{ $review->city ?? 'Indonesia' }}
                                 </span>
                             </div>
                         </div>
@@ -151,8 +150,9 @@
 
                     <!-- Label Paket Wisata -->
                     @if($review->package)
-                    <div class="inline-block px-2.5 py-0.5 rounded-lg bg-slate-100 text-[11px] font-semibold text-wukirsari-primary">
-                        🚙 {{ $review->package->name }}
+                    <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-slate-100 text-[11px] font-semibold text-wukirsari-primary">
+                        <svg class="w-3.5 h-3.5 text-wukirsari-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1"/></svg>
+                        <span>{{ $review->package->name }}</span>
                     </div>
                     @endif
 
@@ -172,7 +172,9 @@
             </div>
             @empty
             <div class="col-span-full bg-white p-12 rounded-3xl border border-wukirsari-border text-center space-y-3">
-                <span class="text-3xl block">🔍</span>
+                <div class="w-12 h-12 mx-auto rounded-2xl bg-wukirsari-sage text-wukirsari-primary flex items-center justify-center">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
                 <h3 class="text-base font-bold text-merapiText-primary font-display">Tidak Ada Ulasan yang Sesuai</h3>
                 <p class="text-xs text-merapiText-muted max-w-md mx-auto">
                     Belum ditemukan ulasan dengan filter yang dipilih. Silakan reset filter untuk melihat semua ulasan wisatawan lain.

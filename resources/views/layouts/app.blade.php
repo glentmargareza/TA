@@ -51,8 +51,9 @@
         }
     </script>
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #F7F7F2; color: #526054; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #F7F7F2; color: #526054; -webkit-tap-highlight-color: transparent; }
         h1, h2, h3, h4, h5, h6 { font-family: 'Outfit', sans-serif; }
+        html { scroll-behavior: smooth; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col selection:bg-wukirsari-sage selection:text-wukirsari-primary">
@@ -60,18 +61,18 @@
     <!-- NAVBAR HEADER -->
     <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-wukirsari-border transition-all">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-20 gap-3 xl:gap-6">
+            <div class="flex items-center justify-between h-16 sm:h-20 gap-3 xl:gap-6">
                 
                 <!-- Logo Brand -->
-                <a href="{{ route('home') }}" class="flex items-center gap-2.5 sm:gap-3 group shrink-0">
-                    <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-wukirsari-primary/10 p-1 flex items-center justify-center border border-wukirsari-border shadow-xs group-hover:scale-105 transition-transform shrink-0">
+                <a href="{{ route('home') }}" class="flex items-center gap-2 sm:gap-3 group shrink-0">
+                    <div class="w-8 h-8 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-wukirsari-primary/10 p-1 flex items-center justify-center border border-wukirsari-border shadow-xs group-hover:scale-105 transition-transform shrink-0">
                         <img src="{{ asset('img/logo.png') }}" alt="Logo Jeep Wukirsari" class="w-full h-full object-contain">
                     </div>
                     <div>
-                        <span class="block font-display font-extrabold text-base sm:text-lg text-merapiText-primary tracking-tight leading-none">
+                        <span class="block font-display font-extrabold text-sm sm:text-lg text-merapiText-primary tracking-tight leading-none">
                             JEEP WUKIRSARI
                         </span>
-                        <span class="block text-[10px] sm:text-[11px] font-medium text-merapiText-secondary uppercase tracking-widest mt-0.5">
+                        <span class="block text-[9px] sm:text-[11px] font-medium text-merapiText-secondary uppercase tracking-widest mt-0.5">
                             Adventure Tour
                         </span>
                     </div>
@@ -82,12 +83,6 @@
                     <a href="{{ route('home') }}" class="text-xs xl:text-sm py-1 relative whitespace-nowrap transition-colors {{ request()->routeIs('home') ? 'font-semibold text-wukirsari-primary' : 'font-medium text-merapiText-secondary hover:text-wukirsari-primary' }}">
                         Beranda
                         @if(request()->routeIs('home'))
-                        <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-wukirsari-primary rounded-full"></span>
-                        @endif
-                    </a>
-                    <a href="{{ route('packages.index') }}" class="text-xs xl:text-sm py-1 relative whitespace-nowrap transition-colors {{ request()->routeIs('packages.*') ? 'font-semibold text-wukirsari-primary' : 'font-medium text-merapiText-secondary hover:text-wukirsari-primary' }}">
-                        Paket Wisata
-                        @if(request()->routeIs('packages.*'))
                         <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-wukirsari-primary rounded-full"></span>
                         @endif
                     </a>
@@ -113,7 +108,7 @@
 
                 <!-- Right Action -->
                 <div class="hidden lg:flex items-center gap-2 xl:gap-3 shrink-0">
-                    <a href="{{ route('packages.index') }}" class="p-2 rounded-full hover:bg-wukirsari-sage text-merapiText-secondary hover:text-wukirsari-primary transition-colors shrink-0" title="Cari Paket Wisata">
+                    <a href="{{ route('home') }}#paket" class="p-2 rounded-full hover:bg-wukirsari-sage text-merapiText-secondary hover:text-wukirsari-primary transition-colors shrink-0" title="Cari Paket Wisata">
                         <svg class="w-4 h-4 xl:w-5 xl:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
@@ -131,7 +126,7 @@
                         <!-- Menu Khusus Admin -->
                         <div class="relative shrink-0">
                             <button type="button" id="btnAuthAdmin" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-wukirsari-sage/70 border border-wukirsari-border text-wukirsari-primary text-xs font-bold hover:bg-wukirsari-sage transition-all cursor-pointer whitespace-nowrap shrink-0">
-                                <span class="w-5 h-5 rounded-full bg-wukirsari-primary text-white flex items-center justify-center text-[10px] shrink-0">🛡️</span>
+                                <span class="w-5 h-5 rounded-full bg-wukirsari-primary text-white flex items-center justify-center text-[10px] font-extrabold shrink-0">A</span>
                                 <span class="max-w-[80px] xl:max-w-[110px] truncate">{{ Auth::user()->name }}</span>
                                 <span class="text-[9px] px-1.5 py-0.5 rounded bg-wukirsari-primary text-white font-extrabold uppercase tracking-wider shrink-0">Admin</span>
                                 <svg class="w-3 h-3 text-wukirsari-primary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -143,15 +138,15 @@
                                     <p class="text-[11px] text-merapiText-muted truncate">{{ Auth::user()->email }}</p>
                                 </div>
                                 <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-merapiText-primary hover:bg-wukirsari-sage/40 hover:text-wukirsari-primary transition-colors">
-                                    <span>📊</span> Dashboard Loket & Armada
+                                    Dashboard Loket & Armada
                                 </a>
                                 <a href="{{ route('home') }}" class="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-merapiText-primary hover:bg-wukirsari-sage/40 hover:text-wukirsari-primary transition-colors">
-                                    <span>🌐</span> Beranda Wisatawan
+                                    Beranda Wisatawan
                                 </a>
                                 <form action="{{ route('logout') }}" method="POST" class="border-t border-wukirsari-border mt-1 pt-1">
                                     @csrf
                                     <button type="submit" class="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50 transition-colors text-left cursor-pointer">
-                                        <span>🚪</span> Keluar (Logout)
+                                        Keluar (Logout)
                                     </button>
                                 </form>
                             </div>
@@ -173,59 +168,29 @@
                                     <p class="text-xs font-bold text-merapiText-primary truncate">{{ Auth::user()->name }}</p>
                                     <p class="text-[11px] text-merapiText-muted truncate">{{ Auth::user()->email }}</p>
                                 </div>
-                                    <p class="text-xs font-bold text-merapiText-primary truncate">{{ Auth::user()->name }}</p>
-                                    <p class="text-[11px] text-merapiText-muted truncate">{{ Auth::user()->email }}</p>
-                                </div>
                                 <a href="{{ route('profile') }}" class="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-merapiText-primary hover:bg-wukirsari-sage/40 hover:text-wukirsari-primary transition-colors">
-                                    <span>👤</span> Profil & Tiket Saya
+                                    Profil & Tiket Saya
                                 </a>
                                 <a href="{{ route('booking.create') }}" class="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-merapiText-primary hover:bg-wukirsari-sage/40 hover:text-wukirsari-primary transition-colors">
-                                    <span>🚙</span> Booking Jeep Baru
+                                    Booking Jeep Baru
                                 </a>
                                 <form action="{{ route('logout') }}" method="POST" class="border-t border-wukirsari-border mt-1 pt-1">
                                     @csrf
                                     <button type="submit" class="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50 transition-colors text-left cursor-pointer">
-                                        <span>🚪</span> Keluar (Logout)
+                                        Keluar (Logout)
                                     </button>
                                 </form>
                             </div>
                         </div>
                         @endif
                     @else
-                    <!-- Dropdown Pilihan Login (Belum Masuk) -->
-                    <div class="relative shrink-0">
-                        <button type="button" id="btnAuthGuest" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-full border border-wukirsari-border text-xs font-semibold text-merapiText-primary hover:border-wukirsari-primary hover:bg-wukirsari-sage/40 transition-all cursor-pointer whitespace-nowrap shrink-0">
-                            <svg class="w-4 h-4 text-wukirsari-primary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                            </svg>
-                            <span>Masuk / Akun</span>
-                            <svg class="w-3 h-3 text-merapiText-muted shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                        </button>
-                        <div id="menuAuthGuest" class="app-dropdown-menu hidden absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-wukirsari-border py-2 transition-all z-50">
-                            <div class="px-4 py-1.5 text-[10px] font-bold text-merapiText-muted uppercase tracking-wider border-b border-wukirsari-border">
-                                Pilih Jenis Akun
-                            </div>
-                            <a href="{{ route('login', ['role' => 'user']) }}" class="flex items-start gap-2.5 px-4 py-2.5 text-xs hover:bg-wukirsari-sage/40 transition-colors">
-                                <span class="text-base">🎒</span>
-                                <div>
-                                    <span class="font-bold text-merapiText-primary block">Login Wisatawan</span>
-                                    <span class="text-[10px] text-merapiText-muted block">Akses tiket & riwayat booking</span>
-                                </div>
-                            </a>
-                            <a href="{{ route('login', ['role' => 'admin']) }}" class="flex items-start gap-2.5 px-4 py-2.5 text-xs hover:bg-wukirsari-sage/40 transition-colors">
-                                <span class="text-base">🛡️</span>
-                                <div>
-                                    <span class="font-bold text-merapiText-primary block">Login Admin Loket</span>
-                                    <span class="text-[10px] text-merapiText-muted block">Khusus staf basecamp & armada</span>
-                                </div>
-                            </a>
-                            <div class="border-t border-wukirsari-border mt-1 pt-1.5 px-4 pb-1">
-                                <a href="{{ route('register') }}" class="text-[11px] font-bold text-wukirsari-primary hover:underline block text-center">
-                                    Belum punya akun? Daftar Wisatawan →
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Tombol Masuk Akun Tunggal -->
+                    <a href="{{ route('login') }}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-wukirsari-border text-xs font-semibold text-merapiText-primary hover:border-wukirsari-primary hover:text-wukirsari-primary hover:bg-wukirsari-sage/40 transition-all cursor-pointer whitespace-nowrap shrink-0">
+                        <svg class="w-4 h-4 text-wukirsari-primary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        <span>Masuk</span>
+                    </a>
                     @endauth
 
                     <a href="{{ route('booking.create') }}" class="whitespace-nowrap shrink-0 inline-flex items-center gap-1.5 px-4 xl:px-5 py-2.5 rounded-full bg-wukirsari-primary text-white text-xs font-semibold hover:bg-wukirsari-hover transition-all shadow-sm shadow-wukirsari-primary/20 hover:scale-[1.02]">
@@ -234,40 +199,172 @@
                     </a>
                 </div>
 
-                <!-- Mobile Header CTA -->
-                <div class="flex items-center gap-2 md:hidden">
-                    @auth
-                        @if(Auth::user()->isAdmin())
-                        <a href="{{ route('admin.dashboard') }}" class="px-3 py-1.5 rounded-full bg-wukirsari-primary text-white text-xs font-bold">
-                            Admin
-                        </a>
-                        @else
-                        <a href="{{ route('profile') }}" class="px-3 py-1.5 rounded-full bg-wukirsari-sage text-wukirsari-primary text-xs font-bold">
-                            Profil
-                        </a>
-                        @endif
-                    @else
-                    <a href="{{ route('login') }}" class="p-2 rounded-full border border-wukirsari-border text-merapiText-secondary hover:text-wukirsari-primary text-xs" title="Masuk">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                        </svg>
+                <!-- Mobile Header Actions & Hamburger Toggle (lg:hidden) -->
+                <div class="flex items-center gap-2 lg:hidden">
+                    <a href="https://wa.me/6281234567890" target="_blank" class="p-2 rounded-full border border-wukirsari-border text-merapiText-secondary hover:text-wukirsari-primary hover:bg-wukirsari-sage/40 transition-colors" title="Chat WhatsApp CS">
+                        <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
                     </a>
-                    @endauth
-                    <a href="{{ route('booking.create') }}" class="px-3.5 py-1.5 rounded-full bg-wukirsari-primary text-white text-xs font-semibold">
+
+                    <a href="{{ route('booking.create') }}" class="px-3 sm:px-4 py-1.5 rounded-full bg-wukirsari-primary text-white text-xs font-semibold shadow-xs hover:bg-wukirsari-hover transition-all">
                         Booking
                     </a>
+
+                    <!-- Hamburger Button -->
+                    <button type="button" id="btnMobileMenuToggle" aria-label="Buka Menu Navigasi" class="p-2 rounded-xl border border-wukirsari-border text-merapiText-primary hover:bg-wukirsari-sage/50 active:scale-95 transition-all cursor-pointer">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
                 </div>
 
             </div>
         </div>
     </header>
 
+    <!-- MOBILE NAVIGATION DRAWER & BACKDROP (lg:hidden) -->
+    <div id="mobileMenuBackdrop" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 transition-opacity duration-300 opacity-0 pointer-events-none lg:hidden"></div>
+
+    <aside id="mobileNavDrawer" class="fixed inset-y-0 right-0 w-[85%] max-w-sm bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col justify-between overflow-y-auto lg:hidden">
+        <!-- Top Drawer Section -->
+        <div>
+            <!-- Header Drawer with Logo & Close button -->
+            <div class="p-5 border-b border-wukirsari-border flex items-center justify-between bg-wukirsari-cream/60">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-wukirsari-primary/10 p-1 flex items-center justify-center border border-wukirsari-border">
+                        <img src="{{ asset('img/logo.png') }}" alt="Logo Jeep Wukirsari" class="w-full h-full object-contain">
+                    </div>
+                    <div>
+                        <span class="block font-display font-bold text-sm text-merapiText-primary leading-tight">JEEP WUKIRSARI</span>
+                        <span class="block text-[10px] text-merapiText-secondary uppercase tracking-wider">Adventure Tour</span>
+                    </div>
+                </div>
+                <button type="button" id="btnMobileMenuClose" aria-label="Tutup Menu" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-merapiText-secondary flex items-center justify-center text-base font-bold transition-colors cursor-pointer">
+                    ✕
+                </button>
+            </div>
+
+            <!-- Profile / Account Box in Drawer -->
+            <div class="p-4 border-b border-wukirsari-border bg-slate-50/70">
+                @auth
+                    @if(Auth::user()->isAdmin())
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-2xl bg-wukirsari-primary text-white flex items-center justify-center text-sm font-bold shadow-xs">
+                                ADM
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center gap-1.5">
+                                    <h4 class="text-xs font-bold text-merapiText-primary truncate">{{ Auth::user()->name }}</h4>
+                                    <span class="text-[9px] px-1.5 py-0.5 rounded bg-wukirsari-primary text-white font-extrabold uppercase tracking-wider">Admin</span>
+                                </div>
+                                <p class="text-[11px] text-merapiText-muted truncate">{{ Auth::user()->email }}</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 pt-1">
+                            <a href="{{ route('admin.dashboard') }}" class="px-3 py-2 rounded-xl bg-wukirsari-primary text-white text-xs font-semibold text-center shadow-xs">
+                                Dashboard Loket
+                            </a>
+                            <form action="{{ route('logout') }}" method="POST">
+                                @csrf
+                                <button type="submit" class="w-full px-3 py-2 rounded-xl border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-semibold transition-all">
+                                    Logout
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    @else
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-2xl bg-wukirsari-sage text-wukirsari-primary flex items-center justify-center text-sm font-bold shadow-xs">
+                                {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center gap-1.5">
+                                    <h4 class="text-xs font-bold text-merapiText-primary truncate">{{ Auth::user()->name }}</h4>
+                                    <span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-700 text-white font-extrabold uppercase tracking-wider">User</span>
+                                </div>
+                                <p class="text-[11px] text-merapiText-muted truncate">{{ Auth::user()->email }}</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 pt-1">
+                            <a href="{{ route('profile') }}" class="px-3 py-2 rounded-xl bg-wukirsari-sage text-wukirsari-primary text-xs font-bold text-center border border-wukirsari-border">
+                                Tiket Saya
+                            </a>
+                            <form action="{{ route('logout') }}" method="POST">
+                                @csrf
+                                <button type="submit" class="w-full px-3 py-2 rounded-xl border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-semibold transition-all">
+                                    Logout
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    @endif
+                @else
+                    <div class="space-y-2">
+                        <p class="text-[11px] font-bold text-merapiText-muted uppercase tracking-wider">Akses Akun</p>
+                        <div class="grid grid-cols-2 gap-2">
+                            <a href="{{ route('login') }}" class="px-3 py-2.5 rounded-xl bg-wukirsari-primary text-white text-xs font-bold text-center shadow-xs transition-colors">
+                                Masuk Akun
+                            </a>
+                            <a href="{{ route('register') }}" class="px-3 py-2.5 rounded-xl border border-wukirsari-border bg-white text-xs font-bold text-merapiText-primary text-center hover:bg-wukirsari-sage/40 transition-colors">
+                                Daftar Akun
+                            </a>
+                        </div>
+                    </div>
+                @endauth
+            </div>
+
+            <!-- Navigation Links in Drawer -->
+            <nav class="p-4 space-y-1">
+                <a href="{{ route('home') }}" class="mobile-nav-link flex items-center px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold transition-colors {{ request()->routeIs('home') ? 'bg-wukirsari-sage/70 text-wukirsari-primary font-bold' : 'text-merapiText-primary hover:bg-slate-50' }}">
+                    <span>Beranda</span>
+                </a>
+
+                <a href="{{ route('home') }}#paket" class="mobile-nav-link flex items-center px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold text-merapiText-primary hover:bg-slate-50 transition-colors">
+                    <span>Paket Wisata</span>
+                </a>
+
+                <a href="{{ route('home') }}#tentang" class="mobile-nav-link flex items-center px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold text-merapiText-primary hover:bg-slate-50 transition-colors">
+                    <span>Tentang Kami</span>
+                </a>
+
+                <a href="{{ route('home') }}#galeri" class="mobile-nav-link flex items-center px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold text-merapiText-primary hover:bg-slate-50 transition-colors">
+                    <span>Galeri Momen</span>
+                </a>
+
+                <a href="{{ route('reviews.index') }}" class="mobile-nav-link flex items-center px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold transition-colors {{ request()->routeIs('reviews.*') ? 'bg-wukirsari-sage/70 text-wukirsari-primary font-bold' : 'text-merapiText-primary hover:bg-slate-50' }}">
+                    <span>Ulasan Wisatawan</span>
+                </a>
+
+                <a href="{{ route('ticket.check') }}" class="mobile-nav-link flex items-center px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold transition-colors {{ request()->routeIs('ticket.*') ? 'bg-wukirsari-sage/70 text-wukirsari-primary font-bold' : 'text-merapiText-primary hover:bg-slate-50' }}">
+                    <span>Cek Status Tiket</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Bottom Drawer Actions -->
+        <div class="p-5 border-t border-wukirsari-border space-y-3 bg-wukirsari-cream/40">
+            <a href="{{ route('booking.create') }}" class="w-full py-3.5 px-4 rounded-full bg-wukirsari-primary text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-md shadow-wukirsari-primary/20 hover:bg-wukirsari-hover transition-all">
+                <span>Booking Jeep Sekarang →</span>
+            </a>
+
+            <a href="https://wa.me/6281234567890" target="_blank" class="w-full py-2.5 px-4 rounded-full border border-wukirsari-border bg-white text-merapiText-primary text-xs font-semibold flex items-center justify-center gap-2 hover:bg-wukirsari-sage/40 transition-colors">
+                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                <span>Bantuan CS WhatsApp</span>
+            </a>
+
+            <p class="text-[11px] text-center text-merapiText-muted pt-1">
+                Basecamp Jeep Wukirsari • Siaga 24 Jam
+            </p>
+        </div>
+    </aside>
+
     <!-- FLOATING TOAST NOTIFICATIONS (Floating overlay: 0 layout height/gap) -->
     <div id="flashToastContainer" class="fixed top-24 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4 pointer-events-none flex flex-col items-center gap-2 transition-all">
         @if(session('success'))
         <div class="toast-item pointer-events-auto bg-white/95 backdrop-blur-md border border-emerald-300 text-emerald-900 px-4 py-2.5 rounded-2xl text-xs flex items-center justify-between gap-3 shadow-xl shadow-black/10 transition-all duration-300">
             <div class="flex items-center gap-2">
-                <span class="text-sm shrink-0">✅</span>
+                <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                 <span class="font-semibold">{{ session('success') }}</span>
             </div>
             <button type="button" onclick="this.closest('.toast-item').remove()" class="text-slate-400 hover:text-slate-700 font-bold px-1.5 py-0.5 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors">✕</button>
@@ -277,7 +374,7 @@
         @if(session('info'))
         <div class="toast-item pointer-events-auto bg-white/95 backdrop-blur-md border border-emerald-300 text-emerald-950 px-4 py-2.5 rounded-2xl text-xs flex items-center justify-between gap-3 shadow-xl shadow-black/10 transition-all duration-300">
             <div class="flex items-center gap-2">
-                <span class="text-sm shrink-0">ℹ️</span>
+                <svg class="w-4 h-4 text-emerald-700 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 <span class="font-semibold">{{ session('info') }}</span>
             </div>
             <button type="button" onclick="this.closest('.toast-item').remove()" class="text-slate-400 hover:text-slate-700 font-bold px-1.5 py-0.5 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors">✕</button>
@@ -287,7 +384,7 @@
         @if(session('error'))
         <div class="toast-item pointer-events-auto bg-white/95 backdrop-blur-md border border-rose-300 text-rose-950 px-4 py-2.5 rounded-2xl text-xs flex items-center justify-between gap-3 shadow-xl shadow-black/10 transition-all duration-300">
             <div class="flex items-center gap-2">
-                <span class="text-sm shrink-0">⚠️</span>
+                <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                 <span class="font-semibold">{{ session('error') }}</span>
             </div>
             <button type="button" onclick="this.closest('.toast-item').remove()" class="text-slate-400 hover:text-slate-700 font-bold px-1.5 py-0.5 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors">✕</button>
@@ -308,12 +405,12 @@
     </script>
 
     <!-- CONTENT WRAPPER -->
-    <main class="flex-1">
+    <main class="flex-1 pb-20 md:pb-0">
         @yield('content')
     </main>
 
     <!-- FOOTER -->
-    <footer class="bg-wukirsari-dark text-white/80 pt-16 pb-12 border-t border-wukirsari-primary/30 mt-auto">
+    <footer class="bg-wukirsari-dark text-white/80 pt-14 pb-24 md:pb-12 border-t border-wukirsari-primary/30 mt-auto">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-white/10">
                 
@@ -337,7 +434,7 @@
                     <h4 class="text-white font-semibold text-sm tracking-wider uppercase mb-4">Navigasi</h4>
                     <ul class="space-y-2.5 text-sm">
                         <li><a href="{{ route('home') }}" class="hover:text-white transition-colors">Beranda</a></li>
-                        <li><a href="{{ route('packages.index') }}" class="hover:text-white transition-colors">Paket Wisata</a></li>
+                        <li><a href="{{ route('home') }}#paket" class="hover:text-white transition-colors">Paket Wisata</a></li>
                         <li><a href="{{ route('home') }}#tentang" class="hover:text-white transition-colors">Tentang Kami</a></li>
                         <li><a href="{{ route('home') }}#galeri" class="hover:text-white transition-colors">Galeri Dokumentasi</a></li>
                         <li><a href="{{ route('ticket.check') }}" class="hover:text-white transition-colors">Cek Status Tiket</a></li>
@@ -377,7 +474,7 @@
                         <span>Layanan booking online instan dengan konfirmasi e-tiket WhatsApp langsung.</span>
                     </div>
                     <a href="{{ route('admin.dashboard') }}" class="inline-block px-4 py-2 rounded-xl bg-white/10 hover:bg-wukirsari-primary text-white text-xs font-semibold transition-all">
-                        ⚙️ Portal Admin Loket
+                        Portal Admin Loket
                     </a>
                 </div>
 
@@ -393,25 +490,27 @@
         </div>
     </footer>
 
-    <!-- STICKY BOTTOM BAR (MOBILE ONLY) -->
-    <div class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-wukirsari-border px-4 py-3 shadow-lg flex items-center justify-between gap-3">
+    <!-- STICKY BOTTOM BAR (MOBILE ONLY - DISEMBUNYIKAN DI HALAMAN FORM RESERVASI / ADMIN) -->
+    @if(!request()->routeIs('booking.*') && !request()->routeIs('admin.*'))
+    <div class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-wukirsari-border px-4 py-2.5 shadow-lg flex items-center justify-between gap-3">
         <div>
-            <span class="block text-[11px] font-medium text-merapiText-muted">Mulai dari</span>
-            <span class="text-base font-bold text-merapiText-primary leading-tight">Rp 450.000<span class="text-xs font-normal text-merapiText-secondary">/jeep</span></span>
+            <span class="block text-[10px] font-medium text-merapiText-muted uppercase tracking-wider">Mulai dari</span>
+            <span class="text-sm font-extrabold text-merapiText-primary leading-tight">Rp 450.000<span class="text-[11px] font-normal text-merapiText-secondary">/jeep</span></span>
         </div>
-        <a href="{{ route('booking.create') }}" class="flex-1 max-w-[220px] py-2.5 px-4 rounded-full bg-wukirsari-primary text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-md shadow-wukirsari-primary/20 active:scale-95 transition-all">
+        <a href="{{ route('booking.create') }}" class="flex-1 max-w-[200px] py-2 px-3.5 rounded-full bg-wukirsari-primary text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-wukirsari-primary/20 active:scale-95 transition-all">
             <span>Booking Sekarang</span>
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
         </a>
     </div>
+    @endif
 
     <!-- MODAL EDIT ULASAN WISATAWAN -->
     <div id="editReviewModal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-wukirsari-border relative transition-all">
             <div class="flex items-center justify-between pb-4 border-b border-wukirsari-border">
                 <div class="flex items-center gap-2.5">
-                    <div class="w-10 h-10 rounded-2xl bg-wukirsari-sage text-wukirsari-primary flex items-center justify-center text-lg font-bold">
-                        ✏️
+                    <div class="w-10 h-10 rounded-2xl bg-wukirsari-sage text-wukirsari-primary flex items-center justify-center font-bold">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                     </div>
                     <div>
                         <h3 class="text-base font-bold text-merapiText-primary font-display">Edit Ulasan Wisatawan</h3>
@@ -463,7 +562,7 @@
         </div>
     </div>
 
-    <!-- Dropdown Menu & Edit Modal Controller -->
+    <!-- Dropdown Menu, Mobile Drawer & Modal Controller -->
     <script>
         function handleEditReviewClick(btn) {
             if (!btn) return;
@@ -496,7 +595,47 @@
             if (modal) modal.classList.add('hidden');
         }
 
+        // Mobile Menu Drawer Functions
+        function openMobileDrawer() {
+            const backdrop = document.getElementById('mobileMenuBackdrop');
+            const drawer = document.getElementById('mobileNavDrawer');
+            if (!backdrop || !drawer) return;
+            backdrop.classList.remove('opacity-0', 'pointer-events-none');
+            backdrop.classList.add('opacity-100', 'pointer-events-auto');
+            drawer.classList.remove('translate-x-full');
+            drawer.classList.add('translate-x-0');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeMobileDrawer() {
+            const backdrop = document.getElementById('mobileMenuBackdrop');
+            const drawer = document.getElementById('mobileNavDrawer');
+            if (!backdrop || !drawer) return;
+            backdrop.classList.remove('opacity-100', 'pointer-events-auto');
+            backdrop.classList.add('opacity-0', 'pointer-events-none');
+            drawer.classList.remove('translate-x-0');
+            drawer.classList.add('translate-x-full');
+            document.body.classList.remove('overflow-hidden');
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
+            // Mobile Menu Listeners
+            const btnOpen = document.getElementById('btnMobileMenuToggle');
+            const btnClose = document.getElementById('btnMobileMenuClose');
+            const backdrop = document.getElementById('mobileMenuBackdrop');
+            if (btnOpen) btnOpen.addEventListener('click', openMobileDrawer);
+            if (btnClose) btnClose.addEventListener('click', closeMobileDrawer);
+            if (backdrop) backdrop.addEventListener('click', closeMobileDrawer);
+
+            document.querySelectorAll('.mobile-nav-link').forEach(link => {
+                link.addEventListener('click', closeMobileDrawer);
+            });
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') closeMobileDrawer();
+            });
+
+            // Desktop Dropdown Setup
             function setupDropdownToggle(btnId, menuId) {
                 const btn = document.getElementById(btnId);
                 const menu = document.getElementById(menuId);

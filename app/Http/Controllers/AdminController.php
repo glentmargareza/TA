@@ -22,7 +22,7 @@ class AdminController extends Controller
         $user = Auth::user();
 
         if (!$user || $user->role !== 'admin') {
-            return redirect()->route('login', ['role' => 'admin'])->with('info', 'Silakan masuk dengan akun Admin Paguyuban untuk membuka portal ini.');
+            return redirect()->route('login')->with('info', 'Silakan masuk dengan akun Admin Paguyuban untuk membuka portal ini.');
         }
 
         $totalRevenue = Booking::whereIn('booking_status', ['FULL_PAID', 'DP_PAID'])->sum('paid_amount');
@@ -60,7 +60,7 @@ class AdminController extends Controller
         /** @var User|null $user */
         $user = Auth::user();
         if (!$user || $user->role !== 'admin') {
-            return redirect()->route('login', ['role' => 'admin'])->with('info', 'Silakan masuk dengan akun Admin.');
+            return redirect()->route('login')->with('info', 'Silakan masuk dengan akun Admin.');
         }
 
         $startDate = $request->query('start_date');
@@ -197,7 +197,7 @@ class AdminController extends Controller
         /** @var User|null $user */
         $user = Auth::user();
         if (!$user || $user->role !== 'admin') {
-            return redirect()->route('login', ['role' => 'admin'])->with('info', 'Silakan masuk dengan akun Admin.');
+            return redirect()->route('login')->with('info', 'Silakan masuk dengan akun Admin.');
         }
 
         $packages = Package::orderBy('id', 'asc')->get();
@@ -308,7 +308,7 @@ class AdminController extends Controller
         /** @var User|null $user */
         $user = Auth::user();
         if (!$user || $user->role !== 'admin') {
-            return redirect()->route('login', ['role' => 'admin'])->with('info', 'Silakan masuk dengan akun Admin.');
+            return redirect()->route('login')->with('info', 'Silakan masuk dengan akun Admin.');
         }
 
         $slots = ScheduleSlot::withCount('bookings')->orderBy('start_time', 'asc')->get();
@@ -384,7 +384,7 @@ class AdminController extends Controller
         $user = Auth::user();
 
         if (!$user || $user->role !== 'admin') {
-            return redirect()->route('login', ['role' => 'admin'])->with('info', 'Silakan masuk dengan akun Admin Paguyuban untuk membuka portal ini.');
+            return redirect()->route('login')->with('info', 'Silakan masuk dengan akun Admin Paguyuban untuk membuka portal ini.');
         }
 
         $rating = $request->query('rating');

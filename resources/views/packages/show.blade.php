@@ -8,11 +8,11 @@
         
         <!-- Tombol Kembali -->
         <div>
-            <a href="{{ route('packages.index') }}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-wukirsari-border text-merapiText-primary hover:text-wukirsari-primary hover:border-wukirsari-primary text-xs sm:text-sm font-semibold shadow-xs hover:shadow-md transition-all group">
+            <a href="{{ route('home') }}#paket" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-wukirsari-border text-merapiText-primary hover:text-wukirsari-primary hover:border-wukirsari-primary text-xs sm:text-sm font-semibold shadow-xs hover:shadow-md transition-all group">
                 <svg class="w-4 h-4 text-wukirsari-primary group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
-                <span>Kembali ke Paket Wisata</span>
+                <span>Kembali ke Beranda</span>
             </a>
         </div>
 
@@ -198,7 +198,7 @@
                 <div class="pt-2">
                     
                     <!-- Tab Headers -->
-                    <div class="flex items-center gap-2 border-b border-wukirsari-border pb-3" id="tab-nav">
+                    <div class="flex items-center gap-2 border-b border-wukirsari-border pb-3 overflow-x-auto whitespace-nowrap" id="tab-nav">
                         <button type="button" onclick="switchTab('itinerary', this)" class="tab-btn px-5 py-2 rounded-full text-xs sm:text-sm font-bold bg-wukirsari-primary text-white transition-all shadow-xs">
                             Itinerary ({{ count($package->routes_array) }} Destinasi)
                         </button>
@@ -328,11 +328,11 @@
 
                 <div class="flex flex-wrap items-center gap-3">
                     <a href="{{ route('reviews.index', ['package' => $package->slug]) }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-wukirsari-border hover:border-wukirsari-primary text-merapiText-primary hover:text-wukirsari-primary text-xs font-semibold shadow-xs transition-all">
-                        <span>⭐ Lihat Semua Ulasan ({{ $reviews->count() }})</span>
+                        <span>Lihat Semua Ulasan ({{ $reviews->count() }})</span>
                     </a>
                     @guest
                     <a href="{{ route('login') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-wukirsari-sage text-wukirsari-primary hover:bg-wukirsari-primary hover:text-white text-xs font-bold transition-all">
-                        <span>🔒 Masuk untuk Review</span>
+                        <span>Masuk untuk Review</span>
                     </a>
                     @endguest
                 </div>
@@ -353,7 +353,7 @@
                                         {{ $rev->user->name ?? 'Wisatawan' }}
                                     </h4>
                                     <span class="text-xs text-merapiText-muted truncate block">
-                                        📍 {{ $rev->city ?? 'Indonesia' }}
+                                        {{ $rev->city ?? 'Indonesia' }}
                                     </span>
                                 </div>
                             </div>
@@ -408,8 +408,8 @@
                 </div>
                 @empty
                 <div class="col-span-full bg-white p-8 rounded-3xl border border-wukirsari-border text-center space-y-3">
-                    <div class="w-12 h-12 rounded-2xl bg-wukirsari-cream text-wukirsari-primary flex items-center justify-center mx-auto text-xl">
-                        💬
+                    <div class="w-12 h-12 rounded-2xl bg-wukirsari-cream text-wukirsari-primary flex items-center justify-center mx-auto">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
                     </div>
                     <h4 class="text-base font-bold text-merapiText-primary font-display">Belum ada review khusus paket ini</h4>
                     <p class="text-xs text-merapiText-secondary max-w-md mx-auto">
@@ -429,7 +429,7 @@
             <div class="bg-white p-6 sm:p-8 rounded-3xl border border-wukirsari-border shadow-xs mt-6 space-y-4">
                 <div class="flex items-center justify-between border-b border-wukirsari-border pb-3">
                     <h4 class="text-sm sm:text-base font-bold text-merapiText-primary font-display flex items-center gap-2">
-                        <span>✍️</span>
+                        <svg class="w-4 h-4 text-wukirsari-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                         <span>Tulis Ulasan Anda untuk {{ $package->name }}</span>
                     </h4>
                     <span class="text-xs text-merapiText-muted">Sebagai: <strong class="text-wukirsari-primary">{{ Auth::user()->name }}</strong></span>
@@ -443,11 +443,11 @@
                         <div>
                             <label class="block text-xs font-semibold text-merapiText-primary mb-1">Penilaian (Bintang 1 - 5) *</label>
                             <select name="rating" required class="w-full px-3.5 py-2.5 rounded-xl border border-wukirsari-border text-xs focus:outline-none focus:border-wukirsari-primary bg-white">
-                                <option value="5" selected>⭐⭐⭐⭐⭐ (5/5) Sangat Puas</option>
-                                <option value="4">⭐⭐⭐⭐ (4/5) Puas</option>
-                                <option value="3">⭐⭐⭐ (3/5) Cukup</option>
-                                <option value="2">⭐⭐ (2/5) Kurang</option>
-                                <option value="1">⭐ (1/5) Kecewa</option>
+                                <option value="5" selected>5 Bintang (5/5) - Sangat Puas</option>
+                                <option value="4">4 Bintang (4/5) - Puas</option>
+                                <option value="3">3 Bintang (3/5) - Cukup</option>
+                                <option value="2">2 Bintang (2/5) - Kurang</option>
+                                <option value="1">1 Bintang (1/5) - Kecewa</option>
                             </select>
                         </div>
                         <div>
@@ -477,8 +477,8 @@
                     <span class="text-xs font-bold uppercase tracking-wider text-wukirsari-primary font-display block">PILIHAN LAIN</span>
                     <h3 class="text-xl sm:text-2xl font-extrabold text-merapiText-primary font-display">Paket Wisata Lainnya</h3>
                 </div>
-                <a href="{{ route('packages.index') }}" class="text-xs sm:text-sm font-semibold text-wukirsari-primary hover:text-wukirsari-hover transition-colors">
-                    Lihat Semua Paket →
+                <a href="{{ route('home') }}#paket" class="text-xs sm:text-sm font-semibold text-wukirsari-primary hover:text-wukirsari-hover transition-colors">
+                    Lihat Paket Lainnya di Beranda →
                 </a>
             </div>
 
@@ -496,9 +496,9 @@
                             {{ $other->name }}
                         </h4>
                         <div class="flex items-center gap-3 text-xs text-merapiText-secondary">
-                            <span>⏱️ {{ $other->effective_duration_text }}</span>
+                            <span>{{ $other->effective_duration_text }}</span>
                             <span>•</span>
-                            <span>👥 Max 4 orang</span>
+                            <span>Max 4 orang</span>
                         </div>
                     </div>
 

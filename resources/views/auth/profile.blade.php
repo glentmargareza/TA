@@ -18,13 +18,19 @@
                             {{ $user->name }}
                         </h1>
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-wukirsari-sage text-wukirsari-primary">
-                            🎒 Wisatawan
+                            Wisatawan
                         </span>
                     </div>
                     <p class="text-xs text-merapiText-secondary flex items-center justify-center sm:justify-start gap-1.5">
-                        <span>✉️ {{ $user->email }}</span>
+                        <span class="flex items-center gap-1">
+                            <svg class="w-3.5 h-3.5 text-wukirsari-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                            {{ $user->email }}
+                        </span>
                         @if($user->phone)
-                        <span>• 📱 {{ $user->phone }}</span>
+                        <span class="flex items-center gap-1">
+                            • <svg class="w-3.5 h-3.5 text-wukirsari-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                            {{ $user->phone }}
+                        </span>
                         @endif
                     </p>
                     <p class="text-[11px] text-merapiText-muted">
@@ -34,7 +40,7 @@
             </div>
 
             <!-- Action Logout & Booking -->
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 w-full sm:w-auto justify-center sm:justify-end">
                 <a href="{{ route('booking.create') }}" class="px-5 py-2.5 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5">
                     <span>+ Booking Baru</span>
                 </a>
@@ -51,7 +57,7 @@
         <div class="space-y-4">
             <div class="flex items-center justify-between">
                 <h2 class="text-lg font-bold text-merapiText-primary font-display flex items-center gap-2">
-                    <span>🎫 Riwayat Tiket & Pesanan Saya</span>
+                    <span>Riwayat Tiket & Pesanan Saya</span>
                     <span class="text-xs font-semibold px-2 py-0.5 bg-wukirsari-sage text-wukirsari-primary rounded-full">
                         {{ $myBookings->count() }}
                     </span>
@@ -63,8 +69,8 @@
 
             @if($myBookings->isEmpty())
             <div class="bg-white rounded-3xl border border-wukirsari-border p-8 text-center space-y-4">
-                <div class="w-16 h-16 rounded-full bg-wukirsari-sage/50 text-wukirsari-primary flex items-center justify-center mx-auto text-2xl">
-                    🚙
+                <div class="w-16 h-16 rounded-full bg-wukirsari-sage/50 text-wukirsari-primary flex items-center justify-center mx-auto">
+                    <svg class="w-8 h-8 text-wukirsari-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1"/></svg>
                 </div>
                 <div class="space-y-1">
                     <h3 class="text-base font-bold text-merapiText-primary font-display">Belum Ada Riwayat Pemesanan</h3>

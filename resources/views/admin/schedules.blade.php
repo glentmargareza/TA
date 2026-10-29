@@ -171,13 +171,13 @@
                                                 data-end="{{ $endTimeFormatted }}"
                                                 data-max="{{ $slot->max_jeeps }}"
                                                 onclick="handleEditScheduleClick(this)">
-                                                ✏️ Edit
+                                                Edit
                                             </button>
                                             <form action="{{ route('admin.schedules.destroy', $slot->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus sesi {{ addslashes($slot->slot_label) }}?')" class="inline-block">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="px-2.5 py-1.5 rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold shadow-2xs transition-colors cursor-pointer">
-                                                    🗑️ Hapus
+                                                    Hapus
                                                 </button>
                                             </form>
                                         </div>
@@ -204,7 +204,7 @@
             <div class="p-6 border-b border-slate-100 flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-wukirsari-sage text-wukirsari-primary flex items-center justify-center font-bold">
-                        ➕
+                        <svg class="w-5 h-5 text-wukirsari-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                     </div>
                     <div>
                         <h3 class="font-bold text-slate-800 text-base">Tambah Sesi Baru</h3>
@@ -256,7 +256,7 @@
             <div class="p-6 border-b border-slate-100 flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold">
-                        ✏️
+                        <svg class="w-5 h-5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                     </div>
                     <div>
                         <h3 class="font-bold text-slate-800 text-base">Edit Sesi Jadwal</h3>
