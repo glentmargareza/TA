@@ -33,6 +33,7 @@ class Booking extends Model
         'snap_token',
     ];
 
+    
     protected $casts = [
         'trip_date' => 'date',
         'package_subtotal' => 'float',

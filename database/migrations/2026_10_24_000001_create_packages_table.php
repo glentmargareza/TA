@@ -15,6 +15,10 @@ return new class extends Migration
             $table->text('description');
             $table->decimal('price_per_jeep', 12, 2);
             $table->integer('duration_minutes');
+            $table->string('duration_text', 50)->nullable();
+            $table->integer('destinations_count')->default(5);
+            $table->json('routes_list')->nullable();
+            $table->json('gallery_images')->nullable();
             $table->string('category_badge', 50)->nullable();
             $table->string('cover_image')->nullable();
             $table->boolean('is_active')->default(true);
