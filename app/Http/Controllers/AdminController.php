@@ -14,6 +14,7 @@ use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 class AdminController extends Controller
 {
@@ -31,8 +32,9 @@ class AdminController extends Controller
         $totalJeepsCount = Jeep::count();
         $pendingDpCount = Booking::where('booking_status', 'DP_PAID')->count();
         $pendingDpAmount = Booking::where('booking_status', 'DP_PAID')->sum('remaining_amount');
+        $waitingVerificationCount = Booking::where('booking_status', 'WAITING_CONFIRMATION')->count();
 
-        $bookings = Booking::with(['package', 'slot', 'assignments.jeep', 'assignments.driver'])
+        $bookings = Booking::with(['package', 'slot', 'assignments.jeep', 'assignments.driver', 'payments'])
             ->orderBy('id', 'desc')
             ->get();
 
@@ -46,6 +48,7 @@ class AdminController extends Controller
             'totalJeepsCount',
             'pendingDpCount',
             'pendingDpAmount',
+            'waitingVerificationCount',
             'bookings',
             'jeeps',
             'drivers',
@@ -424,7 +427,13 @@ class AdminController extends Controller
 
     public function settleDp(int $id)
     {
-        return DB::transaction(function () use ($id) {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!$user || $user->role !== 'admin') {
+            return redirect()->route('login')->with('info', 'Silakan masuk dengan akun Admin Paguyuban.');
+        }
+
+        return DB::transaction(function () use ($id, $user) {
             $booking = Booking::where('id', $id)->lockForUpdate()->firstOrFail();
 
             // Guard: Hanya booking DP_PAID yang memiliki sisa tagihan valid yang boleh dilunasi
@@ -435,15 +444,25 @@ class AdminController extends Controller
             // Tangkap nilai sisa tagihan sebelum di-nol-kan
             $settlementAmount = (int) round($booking->remaining_amount);
 
+            $adminSettlementMeta = [
+                'settled_by_admin_id' => $user->id,
+                'settled_by_admin_name' => $user->full_name ?? $user->name,
+                'settled_at' => now()->toDateTimeString(),
+                'method' => 'Pelunasan Tunai di Loket Basecamp',
+            ];
+
             // Catat transaksi pelunasan tunai di kasir basecamp
             Payment::create([
                 'booking_id' => $booking->id,
+                'order_id' => 'SETTLE-' . $booking->booking_code . '-' . strtoupper(Str::random(6)),
                 'transaction_ref' => 'LOKET-' . $booking->booking_code . '-' . strtoupper(Str::random(6)),
                 'payment_stage' => 'SETTLEMENT',
                 'payment_type' => 'CASH_BASECAMP',
+                'payment_method' => 'cash_counter',
                 'gross_amount' => $settlementAmount,
                 'payment_status' => 'SETTLED',
                 'paid_at' => now(),
+                'payload_response' => $adminSettlementMeta,
             ]);
 
             // Perbarui status booking menjadi lunas
@@ -451,6 +470,7 @@ class AdminController extends Controller
                 'booking_status' => 'FULL_PAID',
                 'paid_amount' => $booking->total_amount,
                 'remaining_amount' => 0.00,
+                'lock_expires_at' => null,
             ]);
 
             return redirect()->back()->with('success', "Pelunasan tunai sebesar Rp " . number_format($settlementAmount, 0, ',', '.') . " untuk booking {$booking->booking_code} berhasil dicatat!");
@@ -474,5 +494,260 @@ class AdminController extends Controller
         );
 
         return redirect()->back()->with('success', 'Armada dan driver berhasil ditugaskan!');
+    }
+
+    /**
+     * Menyetujui bukti transfer manual Bank BPD DIY
+     */
+    public function verifyPayment(Request $request, int $id)
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!$user || $user->role !== 'admin') {
+            return redirect()->route('login')->with('info', 'Silakan masuk dengan akun Admin Paguyuban.');
+        }
+
+        return DB::transaction(function () use ($id, $user) {
+            /** @var Booking $booking */
+            $booking = Booking::where('id', $id)->lockForUpdate()->firstOrFail();
+
+            // Guard status: hanya proses jika masih menunggu konfirmasi
+            if ($booking->booking_status !== 'WAITING_CONFIRMATION') {
+                return redirect()->back()->with('error', "Pesanan {$booking->booking_code} sudah diproses atau statusnya telah berubah.");
+            }
+
+            // Temukan transaksi pembayaran pending terkait transfer manual
+            $payment = Payment::where('booking_id', $booking->id)
+                ->where('payment_type', 'MANUAL_BPD_DIY')
+                ->where('payment_status', 'PENDING')
+                ->latest()
+                ->lockForUpdate()
+                ->first();
+
+            if (!$payment) {
+                return redirect()->back()->with('error', "Tidak ditemukan data bukti transfer pending untuk booking {$booking->booking_code}.");
+            }
+
+            $totalAmountInt = (int) round($booking->total_amount);
+            $grossInt = (int) round($payment->gross_amount);
+
+            // Tentukan status akhir: FULL_PAID atau DP_PAID
+            if ($payment->payment_stage === 'FULL_PAYMENT' || $booking->payment_mode === 'FULL' || $grossInt >= $totalAmountInt) {
+                $newBookingStatus = 'FULL_PAID';
+                $newPaidAmount = $totalAmountInt;
+                $newRemainingAmount = 0.00;
+            } else {
+                $newBookingStatus = 'DP_PAID';
+                $newPaidAmount = $grossInt;
+                $newRemainingAmount = max(0.00, $totalAmountInt - $grossInt);
+            }
+
+            $adminVerificationMeta = [
+                'verified_by_admin_id' => $user->id,
+                'verified_by_admin_name' => $user->full_name ?? $user->name,
+                'verified_at' => now()->toDateTimeString(),
+                'method' => 'Bank BPD DIY Manual Transfer Verification',
+            ];
+
+            // 1. Update Payment menjadi SETTLED sah dengan audit log admin
+            $payment->update([
+                'payment_status' => 'SETTLED',
+                'paid_at' => now(),
+                'payload_response' => $adminVerificationMeta,
+            ]);
+
+            // Batalkan pembayaran pending metode lain jika ada
+            Payment::where('booking_id', $booking->id)
+                ->where('id', '!=', $payment->id)
+                ->where('payment_status', 'PENDING')
+                ->update(['payment_status' => 'EXPIRED']);
+
+            // 2. Update status Booking dengan nominal sah dan bebaskan timer lock
+            $booking->update([
+                'booking_status' => $newBookingStatus,
+                'paid_amount' => $newPaidAmount,
+                'remaining_amount' => $newRemainingAmount,
+                'lock_expires_at' => null,
+            ]);
+
+            return redirect()->back()->with('success', "Pembayaran transfer Bank BPD DIY sebesar Rp " . number_format($grossInt, 0, ',', '.') . " untuk booking {$booking->booking_code} berhasil disetujui ({$newBookingStatus})!");
+        });
+    }
+
+    /**
+     * Mengonfirmasi penerimaan pembayaran uang tunai (Cash) di kasir loket basecamp
+     */
+    public function confirmCashPayment(Request $request, int $id)
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!$user || $user->role !== 'admin') {
+            return redirect()->route('login')->with('info', 'Silakan masuk dengan akun Admin Paguyuban.');
+        }
+
+        return DB::transaction(function () use ($id, $user) {
+            /** @var Booking $booking */
+            $booking = Booking::where('id', $id)->lockForUpdate()->firstOrFail();
+
+            // 1. Guard: Cegah konfirmasi ganda
+            if (in_array($booking->booking_status, ['FULL_PAID', 'DP_PAID'])) {
+                return redirect()->back()->with('error', "Pesanan {$booking->booking_code} sudah berstatus terbayar sah sebelumnya.");
+            }
+
+            // 2. Guard: Cegah booking yang sudah dibatalkan
+            if ($booking->booking_status === 'CANCELLED') {
+                return redirect()->back()->with('error', "Pesanan {$booking->booking_code} telah dibatalkan dan tidak dapat dikonfirmasi.");
+            }
+
+            // Temukan transaksi pembayaran pending terkait CASH
+            $payment = Payment::where('booking_id', $booking->id)
+                ->where('payment_type', 'CASH')
+                ->where('payment_status', 'PENDING')
+                ->latest()
+                ->lockForUpdate()
+                ->first();
+
+            $totalAmountInt = (int) round($booking->total_amount);
+            $payableAmount = (int) round($booking->paid_amount);
+            $grossInt = $payment ? (int) round($payment->gross_amount) : $payableAmount;
+
+            // Tentukan status akhir: FULL_PAID atau DP_PAID
+            if (($payment && $payment->payment_stage === 'FULL_PAYMENT') || $booking->payment_mode === 'FULL' || $grossInt >= $totalAmountInt) {
+                $newBookingStatus = 'FULL_PAID';
+                $newPaidAmount = $totalAmountInt;
+                $newRemainingAmount = 0.00;
+                $stage = 'FULL_PAYMENT';
+            } else {
+                $newBookingStatus = 'DP_PAID';
+                $newPaidAmount = $grossInt;
+                $newRemainingAmount = max(0.00, $totalAmountInt - $grossInt);
+                $stage = 'DOWN_PAYMENT';
+            }
+
+            $adminConfirmationMeta = [
+                'confirmed_by_admin_id' => $user->id,
+                'confirmed_by_admin_name' => $user->full_name ?? $user->name,
+                'confirmed_at' => now()->toDateTimeString(),
+                'location' => 'Loket Kasir Basecamp Jeep Wukirsari',
+            ];
+
+            if ($payment) {
+                $payment->update([
+                    'payment_status' => 'SETTLED',
+                    'paid_at' => now(),
+                    'payload_response' => $adminConfirmationMeta,
+                ]);
+            } else {
+                $payment = Payment::create([
+                    'booking_id' => $booking->id,
+                    'order_id' => 'CASH-' . $booking->booking_code . '-' . strtoupper(Str::random(6)),
+                    'transaction_ref' => 'LOKET-' . strtoupper(Str::random(8)),
+                    'payment_stage' => $stage,
+                    'payment_type' => 'CASH',
+                    'payment_method' => 'cash_counter',
+                    'gross_amount' => $grossInt,
+                    'payment_status' => 'SETTLED',
+                    'paid_at' => now(),
+                    'payload_response' => $adminConfirmationMeta,
+                ]);
+            }
+
+            // Batalkan pembayaran pending metode lain jika ada
+            Payment::where('booking_id', $booking->id)
+                ->where('id', '!=', $payment->id)
+                ->where('payment_status', 'PENDING')
+                ->update(['payment_status' => 'EXPIRED']);
+
+            // Perbarui status booking
+            $booking->update([
+                'booking_status' => $newBookingStatus,
+                'paid_amount' => $newPaidAmount,
+                'remaining_amount' => $newRemainingAmount,
+                'lock_expires_at' => null,
+            ]);
+
+            return redirect()->back()->with('success', "Pembayaran tunai sebesar Rp " . number_format($grossInt, 0, ',', '.') . " untuk booking {$booking->booking_code} berhasil dikonfirmasi ({$newBookingStatus}) oleh {$user->name}. E-Tiket resmi telah aktif!");
+        });
+    }
+
+    /**
+     * Menolak bukti transfer manual Bank BPD DIY
+     */
+    public function rejectPayment(Request $request, int $id)
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!$user || $user->role !== 'admin') {
+            return redirect()->route('login')->with('info', 'Silakan masuk dengan akun Admin Paguyuban.');
+        }
+
+        $validated = $request->validate([
+            'rejection_reason' => 'required|string|max:500',
+        ], [
+            'rejection_reason.required' => 'Alasan penolakan bukti transfer wajib diisi.',
+            'rejection_reason.max' => 'Alasan penolakan maksimal 500 karakter.',
+        ]);
+
+        return DB::transaction(function () use ($id, $validated) {
+            /** @var Booking $booking */
+            $booking = Booking::where('id', $id)->lockForUpdate()->firstOrFail();
+
+            if ($booking->booking_status !== 'WAITING_CONFIRMATION') {
+                return redirect()->back()->with('error', "Pesanan {$booking->booking_code} sudah diproses atau statusnya telah berubah.");
+            }
+
+            $payment = Payment::where('booking_id', $booking->id)
+                ->where('payment_type', 'MANUAL_BPD_DIY')
+                ->where('payment_status', 'PENDING')
+                ->latest()
+                ->lockForUpdate()
+                ->first();
+
+            if ($payment) {
+                $payment->update([
+                    'payment_status' => 'FAILED',
+                    'rejection_reason' => $validated['rejection_reason'],
+                ]);
+            }
+
+            // Hitung toleransi waktu perbaikan (maksimal 2 jam atau sampai sesi dimulai)
+            $slotStartTime = $booking->slot ? $booking->slot->start_time : '08:00:00';
+            $tripDateStr = $booking->trip_date instanceof \DateTimeInterface 
+                ? $booking->trip_date->format('Y-m-d') 
+                : \Illuminate\Support\Carbon::parse($booking->trip_date)->format('Y-m-d');
+            $sessionDateTime = \Illuminate\Support\Carbon::parse($tripDateStr . ' ' . $slotStartTime);
+            $reuploadExpiry = now()->addHours(2);
+            if ($reuploadExpiry->greaterThan($sessionDateTime)) {
+                $reuploadExpiry = $sessionDateTime;
+            }
+
+            // Kembalikan status booking menjadi PENDING agar customer dapat mengunggah bukti perbaikan
+            $booking->update([
+                'booking_status' => 'PENDING',
+                'lock_expires_at' => $reuploadExpiry,
+            ]);
+
+            return redirect()->back()->with('info', "Bukti transfer booking {$booking->booking_code} ditolak. Wisatawan dapat mengunggah ulang struk yang sah.");
+        });
+    }
+
+    /**
+     * Menyajikan berkas bukti transfer privat khusus untuk Admin Paguyuban
+     */
+    public function viewProof(int $id, int $paymentId)
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!$user || $user->role !== 'admin') {
+            abort(403, 'Akses ditolak. Berkas bukti pembayaran hanya dapat diakses oleh Admin Paguyuban.');
+        }
+
+        $payment = Payment::where('id', $paymentId)->where('booking_id', $id)->firstOrFail();
+
+        if (!$payment->proof_image || !Storage::disk('local')->exists($payment->proof_image)) {
+            abort(404, 'Berkas fisik bukti transfer tidak ditemukan di penyimpanan server.');
+        }
+
+        return Storage::disk('local')->response($payment->proof_image);
     }
 }

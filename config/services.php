@@ -43,4 +43,11 @@ return [
         'is_3ds' => true,
     ],
 
+    'bpd_diy' => [
+        'bank_name' => env('BPD_DIY_BANK_NAME', 'Bank BPD DIY'),
+        'account_number' => env('BPD_DIY_ACCOUNT_NUMBER', ''),
+        'account_name' => env('BPD_DIY_ACCOUNT_NAME', ''),
+        'branch' => env('BPD_DIY_BRANCH', 'Cabang Sleman / DIY'),
+    ],
+
 ];

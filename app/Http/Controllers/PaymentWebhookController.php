@@ -166,8 +166,8 @@ class PaymentWebhookController extends Controller
                     ]);
                 }
 
-                // DILARANG membatalkan booking jika pesanan sudah memiliki status pembayaran sah (FULL_PAID atau DP_PAID)!
-                if (in_array($lockedBooking->booking_status, ['FULL_PAID', 'DP_PAID'])) {
+                // DILARANG membatalkan booking jika pesanan sudah memiliki status pembayaran sah atau sedang dalam verifikasi bukti manual!
+                if (in_array($lockedBooking->booking_status, ['FULL_PAID', 'DP_PAID', 'WAITING_CONFIRMATION'])) {
                     Log::info("Webhook {$transactionStatus} untuk Order {$orderId} dicatat pada payment, tetapi booking {$lockedBooking->booking_code} tetap {$lockedBooking->booking_status}.");
                     return response()->json(['status' => 'success', 'message' => 'Status transaksi gagal dicatat tanpa merusak booking sah.']);
                 }

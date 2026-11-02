@@ -6,10 +6,14 @@ use App\Models\Booking;
 use App\Models\Package;
 use App\Models\ScheduleSlot;
 use App\Models\PickupZone;
+use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Carbon;
 
 class BookingController extends Controller
 {
@@ -235,7 +239,9 @@ class BookingController extends Controller
 
     public function payment($code)
     {
-        $booking = Booking::with(['package', 'slot', 'pickupZone', 'payments'])
+        $booking = Booking::with(['package', 'slot', 'pickupZone', 'payments' => function ($q) {
+                $q->orderBy('id', 'desc');
+            }])
             ->where('booking_code', $code)
             ->firstOrFail();
 
@@ -244,7 +250,193 @@ class BookingController extends Controller
             return redirect()->route('booking.success', $booking->booking_code);
         }
 
+        // Auto-expire jika booking PENDING telah melewati batas waktu lock (mencegah slot tertahan tanpa batas)
+        if ($booking->booking_status === 'PENDING' && $booking->lock_expires_at && $booking->lock_expires_at->isPast()) {
+            $booking->update([
+                'booking_status' => 'CANCELLED',
+            ]);
+            $booking->payments()->where('payment_status', 'PENDING')->update([
+                'payment_status' => 'EXPIRED',
+            ]);
+
+            return redirect()->route('booking.create')
+                ->with('error', 'Batas waktu pembayaran untuk reservasi ' . $booking->booking_code . ' telah berakhir. Silakan buat reservasi baru.');
+        }
+
         return view('booking.payment', compact('booking'));
+    }
+
+    /**
+     * Menangani pengunggahan bukti transfer manual ke Bank BPD DIY
+     */
+    public function uploadManualProof(Request $request, string $code)
+    {
+        $booking = Booking::where('booking_code', $code)->firstOrFail();
+
+        // 1. Guard: Booking sudah lunas atau DP sah terverifikasi
+        if (in_array($booking->booking_status, ['FULL_PAID', 'DP_PAID'])) {
+            return redirect()->route('booking.success', $booking->booking_code)
+                ->with('info', 'Pesanan ini sudah berhasil diverifikasi.');
+        }
+
+        // 2. Guard: Masih menunggu konfirmasi admin
+        if ($booking->booking_status === 'WAITING_CONFIRMATION') {
+            return redirect()->route('booking.payment', $booking->booking_code)
+                ->with('warning', 'Bukti transfer Anda sedang dalam antrean verifikasi Admin Loket Paguyuban.');
+        }
+
+        // 3. Guard: Cek apakah reservasi sudah kedaluwarsa
+        if ($booking->booking_status === 'PENDING' && $booking->lock_expires_at && $booking->lock_expires_at->isPast()) {
+            $booking->update(['booking_status' => 'CANCELLED']);
+            $booking->payments()->where('payment_status', 'PENDING')->update(['payment_status' => 'EXPIRED']);
+            return redirect()->route('booking.create')
+                ->with('error', 'Batas waktu pembayaran reservasi ini telah habis.');
+        }
+
+        $validated = $request->validate([
+            'sender_name' => 'required|string|max:100',
+            'sender_bank' => 'required|string|max:50',
+            'proof_file' => 'required|file|mimes:jpeg,jpg,png,webp,pdf|max:2048',
+        ], [
+            'sender_name.required' => 'Nama pemilik rekening / pengirim wajib diisi.',
+            'sender_bank.required' => 'Nama bank pengirim wajib diisi.',
+            'proof_file.required' => 'Berkas bukti transfer wajib dilampirkan.',
+            'proof_file.mimes' => 'Format berkas bukti transfer harus berupa JPG, JPEG, PNG, WEBP, atau PDF.',
+            'proof_file.max' => 'Ukuran berkas bukti transfer maksimal 2MB.',
+        ]);
+
+        return DB::transaction(function () use ($request, $booking, $validated) {
+            /** @var Booking $lockedBooking */
+            $lockedBooking = Booking::where('id', $booking->id)->lockForUpdate()->first();
+
+            // Simpan file ke direktori privat (storage/app/private/manual-proofs)
+            $file = $request->file('proof_file');
+            $filename = Str::random(40) . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('manual-proofs', $filename, 'local');
+
+            $payableAmount = (int) round($lockedBooking->paid_amount);
+            $stage = ($lockedBooking->payment_mode === 'DP') ? 'DOWN_PAYMENT' : 'FULL_PAYMENT';
+            $orderId = 'MANUAL-' . $lockedBooking->booking_code . '-' . strtoupper(Str::random(6));
+
+            // Batalkan pembayaran PENDING dari metode lain jika customer beralih ke transfer manual BPD
+            Payment::where('booking_id', $lockedBooking->id)
+                ->where('payment_status', 'PENDING')
+                ->where('payment_type', '!=', 'MANUAL_BPD_DIY')
+                ->update(['payment_status' => 'EXPIRED']);
+
+            // Buat record Payment baru dengan status PENDING (belum diverifikasi admin)
+            Payment::create([
+                'booking_id' => $lockedBooking->id,
+                'order_id' => $orderId,
+                'transaction_ref' => 'BPD-MANUAL-' . strtoupper(Str::random(8)),
+                'payment_stage' => $stage,
+                'payment_type' => 'MANUAL_BPD_DIY',
+                'payment_method' => 'manual_transfer',
+                'gross_amount' => $payableAmount,
+                'payment_status' => 'PENDING',
+                'proof_image' => $path,
+                'sender_name' => $validated['sender_name'],
+                'sender_bank' => $validated['sender_bank'],
+                'paid_at' => null,
+            ]);
+
+            // Ubah status booking ke WAITING_CONFIRMATION & set lock_expires_at null agar tidak hangus otomatis
+            $lockedBooking->update([
+                'booking_status' => 'WAITING_CONFIRMATION',
+                'lock_expires_at' => null,
+            ]);
+
+            return redirect()->route('booking.payment', $lockedBooking->booking_code)
+                ->with('success', 'Bukti transfer berhasil diunggah! Mohon menunggu verifikasi dari Admin Loket Paguyuban.');
+        });
+    }
+
+    /**
+     * Menangani pemilihan metode pembayaran tunai langsung di kasir loket basecamp (Cash)
+     */
+    public function confirmCashMethod(Request $request, string $code)
+    {
+        $booking = Booking::where('booking_code', $code)->firstOrFail();
+
+        // 1. Guard: Booking sudah lunas atau DP sah terverifikasi
+        if (in_array($booking->booking_status, ['FULL_PAID', 'DP_PAID'])) {
+            return redirect()->route('booking.success', $booking->booking_code)
+                ->with('info', 'Pesanan ini sudah berhasil diverifikasi.');
+        }
+
+        // 2. Guard: Masih dalam antrean verifikasi bukti transfer manual BPD
+        if ($booking->booking_status === 'WAITING_CONFIRMATION') {
+            return redirect()->route('booking.payment', $booking->booking_code)
+                ->with('warning', 'Bukti transfer Anda sedang dalam antrean verifikasi Admin Loket.');
+        }
+
+        // 3. Guard: Cek apakah reservasi sudah kedaluwarsa
+        if ($booking->booking_status === 'PENDING' && $booking->lock_expires_at && $booking->lock_expires_at->isPast()) {
+            $booking->update(['booking_status' => 'CANCELLED']);
+            $booking->payments()->where('payment_status', 'PENDING')->update(['payment_status' => 'EXPIRED']);
+            return redirect()->route('booking.create')
+                ->with('error', 'Batas waktu pemesanan untuk reservasi ' . $booking->booking_code . ' telah habis. Silakan buat reservasi baru.');
+        }
+
+        if ($booking->booking_status === 'CANCELLED') {
+            return redirect()->route('booking.create')
+                ->with('error', 'Reservasi ini telah dibatalkan.');
+        }
+
+        return DB::transaction(function () use ($booking) {
+            /** @var Booking $lockedBooking */
+            $lockedBooking = Booking::where('id', $booking->id)->lockForUpdate()->first();
+
+            // Batalkan pembayaran PENDING metode lain jika beralih ke Cash Loket
+            Payment::where('booking_id', $lockedBooking->id)
+                ->where('payment_status', 'PENDING')
+                ->where('payment_type', '!=', 'CASH')
+                ->update(['payment_status' => 'EXPIRED']);
+
+            $payableAmount = (int) round($lockedBooking->paid_amount);
+            $stage = ($lockedBooking->payment_mode === 'DP') ? 'DOWN_PAYMENT' : 'FULL_PAYMENT';
+
+            // Periksa apakah sudah ada record pembayaran CASH pending
+            $existingCash = Payment::where('booking_id', $lockedBooking->id)
+                ->where('payment_type', 'CASH')
+                ->where('payment_status', 'PENDING')
+                ->first();
+
+            if (!$existingCash) {
+                Payment::create([
+                    'booking_id' => $lockedBooking->id,
+                    'order_id' => 'CASH-' . $lockedBooking->booking_code . '-' . strtoupper(Str::random(6)),
+                    'transaction_ref' => 'LOKET-' . strtoupper(Str::random(8)),
+                    'payment_stage' => $stage,
+                    'payment_type' => 'CASH',
+                    'payment_method' => 'cash_counter',
+                    'gross_amount' => $payableAmount,
+                    'payment_status' => 'PENDING',
+                    'paid_at' => null,
+                ]);
+            }
+
+            // Hitung waktu sesi trip secara presisi
+            $slotStartTime = $lockedBooking->slot ? $lockedBooking->slot->start_time : '08:00:00';
+            $tripDateStr = $lockedBooking->trip_date instanceof \DateTimeInterface 
+                ? $lockedBooking->trip_date->format('Y-m-d') 
+                : Carbon::parse($lockedBooking->trip_date)->format('Y-m-d');
+            $sessionDateTime = Carbon::parse($tripDateStr . ' ' . $slotStartTime);
+
+            // Batasi waktu hold slot:
+            // Jika trip kurang dari 24 jam ke depan, hold sampai waktu mulai sesi trip.
+            // Jika trip lebih dari 24 jam ke depan, batas hold maksimal 24 jam dari sekarang agar armada tidak tertahan berminggu-minggu.
+            $maxHold = now()->addHours(24);
+            $cashLockExpiry = $maxHold->greaterThan($sessionDateTime) ? $sessionDateTime : $maxHold;
+
+            $lockedBooking->update([
+                'booking_status' => 'PENDING',
+                'lock_expires_at' => $cashLockExpiry,
+            ]);
+
+            return redirect()->route('booking.payment', $lockedBooking->booking_code)
+                ->with('success', 'Metode pembayaran Tunai di Loket berhasil dipilih. Silakan simpan Kode Booking Anda dan lakukan pembayaran di kasir basecamp sebelum batas waktu.');
+        });
     }
 
     public function success(string $code)
@@ -255,6 +447,11 @@ class BookingController extends Controller
 
         // 1. Guard Status Booking: Hanya izinkan tiket diakses jika sudah lunas atau DP
         if (!in_array($booking->booking_status, ['FULL_PAID', 'DP_PAID'])) {
+            if ($booking->booking_status === 'WAITING_CONFIRMATION') {
+                return redirect()->route('booking.payment', $booking->booking_code)
+                    ->with('info', 'Pembayaran Anda sedang dalam antrean verifikasi Admin Loket. E-Tiket resmi akan segera terbit setelah disetujui.');
+            }
+
             if ($booking->booking_status === 'PENDING') {
                 return redirect()->route('booking.payment', $booking->booking_code)
                     ->with('warning', 'Selesaikan pembayaran Anda untuk menerbitkan E-Tiket resmi.');

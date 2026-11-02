@@ -25,13 +25,20 @@ class PaymentController extends Controller
 
         $booking = Booking::where('booking_code', $code)->firstOrFail();
 
-        // 1. Guard: Booking sudah berstatus terbayar
+        // 1. Guard: Booking sudah berstatus terbayar atau sedang diverifikasi manual
         if (in_array($booking->booking_status, ['FULL_PAID', 'DP_PAID'])) {
             return response()->json([
                 'status' => 'already_paid',
                 'message' => 'Pesanan ini sudah selesai dibayar.',
                 'redirect_url' => route('booking.success', $booking->booking_code),
             ], 200);
+        }
+
+        if ($booking->booking_status === 'WAITING_CONFIRMATION') {
+            return response()->json([
+                'status' => 'waiting_confirmation',
+                'message' => 'Pesanan ini memiliki bukti transfer manual yang sedang dalam antrean verifikasi admin.',
+            ], 400);
         }
 
         // 2. Proteksi Concurrency & Double Request (Atomic Lock)
@@ -80,6 +87,12 @@ class PaymentController extends Controller
     {
         $booking = Booking::with('payments')->where('booking_code', $code)->firstOrFail();
 
+        // Auto-expire jika booking PENDING telah melewati batas waktu lock
+        if ($booking->booking_status === 'PENDING' && $booking->lock_expires_at && $booking->lock_expires_at->isPast()) {
+            $booking->update(['booking_status' => 'CANCELLED']);
+            $booking->payments()->where('payment_status', 'PENDING')->update(['payment_status' => 'EXPIRED']);
+        }
+
         $latestPayment = $booking->payments()->latest()->first();
 
         return response()->json([
@@ -91,6 +104,8 @@ class PaymentController extends Controller
             'paid_amount' => (int) round($booking->paid_amount),
             'remaining_amount' => (int) round($booking->remaining_amount),
             'is_paid' => in_array($booking->booking_status, ['FULL_PAID', 'DP_PAID']),
+            'is_waiting_confirmation' => $booking->booking_status === 'WAITING_CONFIRMATION',
+            'is_cancelled' => in_array($booking->booking_status, ['CANCELLED']),
             'redirect_url' => in_array($booking->booking_status, ['FULL_PAID', 'DP_PAID']) 
                 ? route('booking.success', $booking->booking_code) 
                 : null,

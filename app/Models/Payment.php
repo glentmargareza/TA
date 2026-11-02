@@ -28,6 +28,10 @@ class Payment extends Model
         'expires_at',
         'payload_response',
         'paid_at',
+        'proof_image',
+        'sender_bank',
+        'sender_name',
+        'rejection_reason',
     ];
 
     protected $casts = [

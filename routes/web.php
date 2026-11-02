@@ -20,6 +20,8 @@ Route::get('/paket-wisata/{slug}', [HomeController::class, 'showPackage'])->name
 Route::get('/booking', [BookingController::class, 'create'])->name('booking.create');
 Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
 Route::get('/booking/{code}/payment', [BookingController::class, 'payment'])->name('booking.payment');
+Route::post('/booking/{code}/manual-transfer', [BookingController::class, 'uploadManualProof'])->name('booking.manual_transfer');
+Route::post('/booking/{code}/cash', [BookingController::class, 'confirmCashMethod'])->name('booking.cash');
 Route::post('/booking/{code}/charge', [PaymentController::class, 'charge'])->name('booking.charge');
 Route::get('/booking/{code}/status', [PaymentController::class, 'status'])->name('booking.status');
 Route::get('/booking/{code}/active-payment', [PaymentController::class, 'activePayment'])->name('booking.active_payment');
@@ -33,6 +35,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminController::class, 'dashboard'])->name('dashboard');
     Route::post('/bookings/{id}/settle', [AdminController::class, 'settleDp'])->name('settle');
     Route::post('/bookings/{id}/assign', [AdminController::class, 'assignDriver'])->name('assign');
+    Route::post('/bookings/{id}/verify-payment', [AdminController::class, 'verifyPayment'])->name('verify_payment');
+    Route::post('/bookings/{id}/reject-payment', [AdminController::class, 'rejectPayment'])->name('reject_payment');
+    Route::post('/bookings/{id}/confirm-cash', [AdminController::class, 'confirmCashPayment'])->name('confirm_cash');
+    Route::get('/bookings/{id}/proof/{paymentId}', [AdminController::class, 'viewProof'])->name('proof');
 
     // Laporan Penjualan
     Route::get('/laporan', [AdminController::class, 'reports'])->name('reports');

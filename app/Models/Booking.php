@@ -64,6 +64,16 @@ class Booking extends Model
         return $this->hasMany(Payment::class);
     }
 
+    public function manualPayments()
+    {
+        return $this->hasMany(Payment::class)->where('payment_type', 'MANUAL_BPD_DIY');
+    }
+
+    public function latestManualPayment()
+    {
+        return $this->hasOne(Payment::class)->where('payment_type', 'MANUAL_BPD_DIY')->latestOfMany();
+    }
+
     public function assignments()
     {
         return $this->hasMany(BookingAssignment::class);
