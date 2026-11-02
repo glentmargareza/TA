@@ -59,6 +59,9 @@
 <body class="min-h-screen flex flex-col selection:bg-wukirsari-sage selection:text-wukirsari-primary">
 
     <!-- NAVBAR HEADER -->
+    @hasSection('header')
+        @yield('header')
+    @else
     <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-wukirsari-border transition-all">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16 sm:h-20 gap-3 xl:gap-6">
@@ -220,6 +223,7 @@
             </div>
         </div>
     </header>
+    @endif
 
     <!-- MOBILE NAVIGATION DRAWER & BACKDROP (lg:hidden) -->
     <div id="mobileMenuBackdrop" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 transition-opacity duration-300 opacity-0 pointer-events-none lg:hidden"></div>
@@ -410,6 +414,9 @@
     </main>
 
     <!-- FOOTER -->
+    @hasSection('footer')
+        @yield('footer')
+    @else
     <footer class="bg-wukirsari-dark text-white/80 pt-14 pb-24 md:pb-12 border-t border-wukirsari-primary/30 mt-auto">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-white/10">
@@ -486,9 +493,10 @@
             </div>
         </div>
     </footer>
+    @endif
 
-    <!-- STICKY BOTTOM BAR (MOBILE ONLY - DISEMBUNYIKAN DI HALAMAN FORM RESERVASI / ADMIN) -->
-    @if(!request()->routeIs('booking.*') && !request()->routeIs('admin.*'))
+    <!-- STICKY BOTTOM BAR (MOBILE ONLY - DISEMBUNYIKAN DI FORM BOOKING / ADMIN) -->
+    @if(!View::hasSection('hide_floating_cta') && !request()->routeIs('admin.*'))
     <div class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-wukirsari-border px-4 py-2.5 shadow-lg flex items-center justify-between gap-3">
         <div>
             <span class="block text-[10px] font-medium text-merapiText-muted uppercase tracking-wider">Mulai dari</span>
