@@ -5,40 +5,66 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\Package;
 use App\Models\ScheduleSlot;
-use App\Models\PickupZone;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 
 class BookingController extends Controller
 {
+    // ====== PENGATURAN PENJEMPUTAN ======
+    // GANTI koordinat basecamp dengan titik yang benar (klik kanan di Google Maps > salin koordinat)
+    private const BASECAMP_LAT = -7.6352;
+    private const BASECAMP_LNG = 110.4366;
+    private const FREE_KM      = 3;       // jarak jemput gratis (km)
+    private const FEE_PER_JEEP = 50000;   // biaya tambahan per jeep jika jarak > FREE_KM
+
     public function create(Request $request)
     {
         $selectedSlug = $request->query('package', 'short-trip');
         $packages = Package::where('is_active', true)->get();
         $selectedPackage = Package::where('slug', $selectedSlug)->first() ?? $packages->first();
-        
-        $slots = ScheduleSlot::where('is_active', true)->get();
-        $pickupZones = PickupZone::all();
-        $jeeps = \App\Models\Jeep::all();
 
-        return view('booking.create', compact('packages', 'selectedPackage', 'slots', 'pickupZones', 'jeeps'));
+        $slots = ScheduleSlot::where('is_active', true)->get();
+
+        // Data untuk JavaScript di halaman (harga dan sesi diambil dari database)
+        $bookingData = [
+            'basecamp'   => ['lat' => self::BASECAMP_LAT, 'lng' => self::BASECAMP_LNG],
+            'freeKm'     => self::FREE_KM,
+            'feePerJeep' => self::FEE_PER_JEEP,
+            'selectedId' => $selectedPackage?->id,
+            'packages'   => $packages->map(fn ($p) => [
+                'id'    => $p->id,
+                'name'  => $p->name,
+                'price' => (int) $p->price_per_jeep,
+                'dur'   => $p->duration ?? '',
+            ])->values(),
+            'slots'      => $slots->map(function ($s) {
+                $time  = substr((string) $s->start_time, 0, 5);          // contoh: 08:00
+                $label = $s->slot_label ?: ('Sesi ' . $s->id);
+                return [
+                    'id'    => $s->id,
+                    'label' => $label . ' (' . $time . ' WIB)',          // contoh: Sesi 1 (08:00 WIB)
+                    'time'  => $time,
+                ];
+            })->values(),
+        ];
+
+        return view('booking.create', compact('packages', 'selectedPackage', 'slots', 'bookingData'));
     }
 
     public function store(Request $request)
     {
-        // Auto fallback jika beberapa field dikirim melalui antarmuka booking modern
         if (!$request->has('jeep_quantity') || empty($request->input('jeep_quantity'))) {
             $passengerCount = (int) $request->input('passenger_count', 4);
             $request->merge(['jeep_quantity' => max(1, (int) ceil($passengerCount / 4))]);
         }
-        if (!$request->has('arrival_type') || empty($request->input('arrival_type'))) {
-            $zoneId = $request->input('pickup_zone_id');
-            $request->merge(['arrival_type' => (!empty($zoneId) && $zoneId > 1) ? 'pickup' : 'self_drive']);
-        }
         if (!$request->has('payment_mode') || empty($request->input('payment_mode'))) {
             $request->merge(['payment_mode' => 'FULL']);
         }
+
+        $needsCoords = $request->input('arrival_type') === 'pickup' && !$request->boolean('pickup_manual');
 
         $validated = $request->validate([
             'package_id' => 'required|exists:packages,id',
@@ -48,12 +74,11 @@ class BookingController extends Controller
             'child_count' => 'nullable|integer|min:0',
             'jeep_quantity' => 'nullable|integer|min:1',
             'arrival_type' => 'nullable|in:self_drive,pickup',
-            'pickup_zone_id' => 'nullable|exists:pickup_zones,id',
-            'pickup_address' => 'nullable|string|max:500',
+            'pickup_address' => 'required_if:arrival_type,pickup|nullable|string|max:500',
+            'pickup_lat' => ['nullable', 'numeric', 'between:-11.5,6.5', Rule::requiredIf($needsCoords)],
+            'pickup_lng' => ['nullable', 'numeric', 'between:94,141.5', Rule::requiredIf($needsCoords)],
+            'pickup_manual' => 'nullable|boolean',
             'notes' => 'nullable|string|max:500',
-            'vehicle_type' => 'nullable|string|max:100',
-            'duration' => 'nullable|string|max:100',
-            'companion_count' => 'nullable|integer|min:0',
             'customer_name' => 'required|string|max:100',
             'customer_phone' => 'required|string|max:20',
             'customer_email' => 'nullable|email|max:100',
@@ -67,39 +92,50 @@ class BookingController extends Controller
             'package_id.required' => 'Paket wisata wajib dipilih.',
             'passenger_count.required' => 'Jumlah orang wajib diisi.',
             'passenger_count.min' => 'Jumlah peserta minimal 1 orang.',
+            'pickup_address.required_if' => 'Nama hotel / alamat penjemputan wajib diisi.',
+            'pickup_lat.required' => 'Lokasi penjemputan belum ditentukan. Pilih hotel dari daftar atau bagikan lokasi.',
+            'pickup_lng.required' => 'Lokasi penjemputan belum ditentukan. Pilih hotel dari daftar atau bagikan lokasi.',
         ]);
 
         $package = Package::findOrFail($validated['package_id']);
-        
+
         $pax = (int) $validated['passenger_count'];
         $childCount = (int) ($validated['child_count'] ?? 0);
 
-        // Aturan Kapasitas Lereng Merapi:
-        // - Kapasitas normal maksimal 4 orang dewasa per Jeep.
-        // - Jika 5 orang dan ada minimal 1 anak-anak, diperbolehkan dalam 1 Jeep.
-        // - Jika 5 orang dewasa tanpa anak, membutuhkan minimal 2 armada Jeep.
-        if ($pax === 5 && $childCount >= 1) {
-            $minJeeps = 1;
-        } else {
-            $minJeeps = (int) ceil($pax / 4);
-        }
-
+        // Aturan kapasitas: maks. 4 dewasa per jeep; 5 orang boleh 1 jeep jika ada anak-anak.
+        $minJeeps = ($pax === 5 && $childCount >= 1) ? 1 : (int) ceil($pax / 4);
         $jeepQuantity = max((int) ($validated['jeep_quantity'] ?? $minJeeps), $minJeeps);
 
-        // Kalkulasi Biaya Resmi Berdasarkan Paket & Jumlah Jeep
         $packageSubtotal = $package->price_per_jeep * $jeepQuantity;
-        
-        // Biaya penjemputan di luar radius 5 km dikonfirmasi manual oleh admin jika ada
-        $pickupFee = 0.00;
-        if (!empty($validated['pickup_zone_id'])) {
-            $zone = PickupZone::find($validated['pickup_zone_id']);
-            if ($zone) {
-                $pickupFee = $zone->additional_fee;
+
+        // ====== BIAYA JEMPUT (dihitung ulang di server, bukan dari browser) ======
+        // Gratis sampai FREE_KM; lebih dari itu FEE_PER_JEEP x jumlah jeep.
+        $arrivalType = $validated['arrival_type'] ?? 'self_drive';
+        $address     = $validated['pickup_address'] ?? null;
+        $pickupFee   = 0.00;
+        $pickupKm    = null;
+        $pickupLat   = null;
+        $pickupLng   = null;
+
+        if ($arrivalType === 'pickup') {
+            if ($request->boolean('pickup_manual')) {
+                $address = trim(($address ?? '') . ' [Biaya jemput menunggu konfirmasi admin]');
+            } else {
+                $pickupLat = (float) $validated['pickup_lat'];
+                $pickupLng = (float) $validated['pickup_lng'];
+                $pickupKm  = $this->routeDistanceKm($pickupLat, $pickupLng);
+                $pickupFee = $pickupKm > self::FREE_KM ? self::FEE_PER_JEEP * $jeepQuantity : 0.00;
             }
+        } else {
+            $address = null;
+        }
+
+        if (!empty($validated['notes'])) {
+            $address = trim(($address ?? '') . ' [Catatan: ' . $validated['notes'] . ']');
         }
 
         $totalAmount = $packageSubtotal + $pickupFee;
-        
+
         if ($validated['payment_mode'] === 'FULL') {
             $payableAmount = $totalAmount;
             $remainingAmount = 0.00;
@@ -110,10 +146,9 @@ class BookingController extends Controller
             $status = 'DP_PAID';
         }
 
-        // Generate Booking Code Unik
         $bookingCode = 'WKR-' . strtoupper(Str::random(6));
 
-        // Generate Midtrans Snap Token
+        // Midtrans Snap Token
         $snapToken = null;
         try {
             \Midtrans\Config::$serverKey = config('services.midtrans.server_key');
@@ -156,11 +191,12 @@ class BookingController extends Controller
             'trip_date' => $validated['trip_date'],
             'jeep_quantity' => $jeepQuantity,
             'passenger_count' => $validated['passenger_count'],
-            'arrival_type' => $validated['arrival_type'],
-            'pickup_zone_id' => $validated['pickup_zone_id'] ?? null,
-            'pickup_address' => !empty($validated['notes']) 
-                ? trim(($validated['pickup_address'] ?? '') . ' [Catatan: ' . $validated['notes'] . ']')
-                : ($validated['pickup_address'] ?? null),
+            'arrival_type' => $arrivalType,
+            'pickup_zone_id' => null,
+            'pickup_address' => $address,
+            'pickup_lat' => $pickupLat,
+            'pickup_lng' => $pickupLng,
+            'pickup_distance_km' => $pickupKm,
             'package_subtotal' => $packageSubtotal,
             'pickup_fee' => $pickupFee,
             'total_amount' => $totalAmount,
@@ -178,5 +214,32 @@ class BookingController extends Controller
     {
         $booking = Booking::with(['package', 'slot', 'pickupZone'])->where('booking_code', $code)->firstOrFail();
         return view('booking.success', compact('booking'));
+    }
+
+    // ====== HITUNG JARAK RUTE JALAN DARI BASECAMP (OSRM, cadangan: garis lurus x 1.3) ======
+    private function routeDistanceKm(float $lat, float $lng): float
+    {
+        try {
+            $url = sprintf(
+                'https://router.project-osrm.org/route/v1/driving/%F,%F;%F,%F',
+                self::BASECAMP_LNG, self::BASECAMP_LAT, $lng, $lat
+            );
+            $res = Http::timeout(6)->get($url, ['overview' => 'false']);
+            if ($res->ok() && $res->json('code') === 'Ok') {
+                return round(((float) $res->json('routes.0.distance')) / 1000, 1);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('OSRM gagal, pakai jarak perkiraan: ' . $e->getMessage());
+        }
+        return round($this->haversineKm(self::BASECAMP_LAT, self::BASECAMP_LNG, $lat, $lng) * 1.3, 1);
+    }
+
+    private function haversineKm(float $lat1, float $lng1, float $lat2, float $lng2): float
+    {
+        $r = 6371;
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLng = deg2rad($lng2 - $lng1);
+        $a = sin($dLat / 2) ** 2 + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLng / 2) ** 2;
+        return 2 * $r * asin(sqrt($a));
     }
 }
