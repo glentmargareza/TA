@@ -339,15 +339,13 @@ button.res:hover{background:var(--green-50)}
 <div class="mobile-bar"><div><small>Total biaya</small><strong id="mTotal">Rp 0</strong></div><a href="#pay">Lihat Ringkasan</a></div>
 <div class="toast" id="toast"></div>
 
-<script>
-/* Data dari database (harga, sesi, pengaturan jemput) */
-window.BOOKING_DATA = @json($bookingData);
-</script>
+<script type="application/json" id="booking-data">@json($bookingData)</script>
 
 <script>
-@verbatim
 /* ====== PENGATURAN (diambil dari server) ====== */
-const D              = window.BOOKING_DATA;
+const bookingDataEl = document.getElementById('booking-data');
+const D              = bookingDataEl ? JSON.parse(bookingDataEl.textContent || '{}') : (window.BOOKING_DATA || {});
+window.BOOKING_DATA  = D;
 const BASECAMP       = D.basecamp;
 const FREE_KM        = D.freeKm;
 const EXTRA_PER_JEEP = D.feePerJeep;
@@ -685,7 +683,6 @@ $('#submit').onclick = ()=>{
 $('#notes').addEventListener('input', e=>{ $('#notesCount').textContent = e.target.value.length; });
 
 renderSessions(); update();
-@endverbatim
 </script>
 </body>
 </html>
