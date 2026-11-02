@@ -24,6 +24,7 @@ Route::post('/booking/{code}/charge', [PaymentController::class, 'charge'])->nam
 Route::get('/booking/{code}/status', [PaymentController::class, 'status'])->name('booking.status');
 Route::get('/booking/{code}/active-payment', [PaymentController::class, 'activePayment'])->name('booking.active_payment');
 Route::get('/booking/{code}/success', [BookingController::class, 'success'])->name('booking.success');
+Route::get('/lokasi-jemput', [BookingController::class, 'searchLocation'])->middleware('throttle:30,1')->name('booking.location');
 
 // 3. Pelacakan Tiket Mandiri
 Route::get('/cek-tiket', [TicketController::class, 'check'])->name('ticket.check');

@@ -8,16 +8,17 @@ use App\Models\ScheduleSlot;
 use App\Models\PickupZone;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class BookingController extends Controller
 {
     // ===== Pengaturan penjemputan otomatis (berdasarkan jarak) =====
-    public const PICKUP_FREE_KM      = 3;      // jarak jemput gratis (km)
-    public const PICKUP_EXTRA_PER_KM = 5000;   // biaya per km di atas batas gratis (Rp)
-    public const BASECAMP_LAT        = -7.6352; // GANTI: koordinat basecamp asli
-    public const BASECAMP_LNG        = 110.4366; // GANTI: koordinat basecamp asli
+    public const PICKUP_FREE_KM        = 3;       // jarak jemput gratis (km)
+    public const PICKUP_EXTRA_PER_JEEP = 50000;   // biaya tambahan PER JEEP bila jarak lebih dari batas gratis (Rp)
+    public const BASECAMP_LAT          = -7.6352; // GANTI: koordinat basecamp asli
+    public const BASECAMP_LNG          = 110.4366; // GANTI: koordinat basecamp asli
 
     public function create(Request $request)
     {
@@ -108,7 +109,7 @@ class BookingController extends Controller
         $packageSubtotal = $packagePrice * $jeepQuantity;
 
         // Biaya penjemputan otomatis berdasarkan jarak rute dari basecamp.
-        // Gratis sampai PICKUP_FREE_KM, selebihnya dikenakan per km (dibulatkan ke atas).
+        // Gratis sampai PICKUP_FREE_KM; lebih dari itu dikenakan biaya tetap per jeep.
         // Dihitung ulang di server agar tidak bisa dimanipulasi dari browser.
         $pickupFee = 0;
         $pickupInfo = '';
@@ -124,7 +125,7 @@ class BookingController extends Controller
             $clientKm = isset($validated['pickup_distance_km']) ? (float) $validated['pickup_distance_km'] : null;
             $km = $this->resolvePickupDistanceKm($lat, $lng, $clientKm);
 
-            $pickupFee = (int) (ceil(max(0.0, $km - self::PICKUP_FREE_KM)) * self::PICKUP_EXTRA_PER_KM);
+            $pickupFee = $km > self::PICKUP_FREE_KM ? $jeepQuantity * self::PICKUP_EXTRA_PER_JEEP : 0;
             $pickupInfo = sprintf(
                 '[Jarak jemput: %s km | https://maps.google.com/?q=%s,%s]',
                 number_format($km, 1, '.', ''),
@@ -190,8 +191,9 @@ class BookingController extends Controller
 
     /**
      * Jarak rute basecamp -> titik jemput (km, 1 desimal).
-     * Memakai OSRM; jika gagal dijangkau, cadangan: jarak garis lurus x 1,3.
-     * Nilai dari browser hanya dipakai jika selisihnya <= 1 km dari hitungan server.
+     * Memakai OSRM (nilai server adalah acuan). Jika OSRM tidak dapat dijangkau dari server,
+     * nilai dari browser dipakai selama tidak lebih kecil dari jarak garis lurus
+     * (rute jalan tidak mungkin lebih pendek dari garis lurus); jika tidak, pakai garis lurus x 1,3.
      */
     private function resolvePickupDistanceKm(float $lat, float $lng, ?float $clientKm): float
     {
@@ -210,17 +212,16 @@ class BookingController extends Controller
             Log::warning('OSRM tidak dapat dijangkau: ' . $e->getMessage());
         }
 
-        if ($serverKm === null) {
-            $serverKm = $this->haversineKm(self::BASECAMP_LAT, self::BASECAMP_LNG, $lat, $lng) * 1.3;
+        if ($serverKm !== null) {
+            return round($serverKm, 1);
         }
 
-        $serverKm = round($serverKm, 1);
-
-        if ($clientKm !== null && abs($clientKm - $serverKm) <= 1.0) {
+        $straight = $this->haversineKm(self::BASECAMP_LAT, self::BASECAMP_LNG, $lat, $lng);
+        if ($clientKm !== null && $clientKm >= $straight) {
             return round($clientKm, 1);
         }
 
-        return $serverKm;
+        return round($straight * 1.3, 1);
     }
 
     private function haversineKm(float $lat1, float $lng1, float $lat2, float $lng2): float
@@ -231,6 +232,158 @@ class BookingController extends Controller
         $a = sin($dLat / 2) ** 2 + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLng / 2) ** 2;
 
         return 2 * $r * asin(sqrt($a));
+    }
+
+    /**
+     * Pencarian nama hotel / villa / alamat -> koordinat (dipanggil dari form booking).
+     * Urutan: Google Places (jika GOOGLE_MAPS_API_KEY diisi) -> Photon -> Nominatim.
+     */
+    public function searchLocation(Request $request)
+    {
+        $q = trim((string) $request->query('q', ''));
+        if (mb_strlen($q) < 3 || mb_strlen($q) > 120) {
+            return response()->json(['results' => []]);
+        }
+
+        $cacheKey = 'geo:' . md5(mb_strtolower($q));
+        $results = Cache::get($cacheKey);
+
+        if ($results === null) {
+            $results = $this->geocode($q);
+            if (!empty($results)) {
+                Cache::put($cacheKey, $results, now()->addHours(6)); // hasil kosong tidak disimpan
+            }
+        }
+
+        return response()->json(['results' => $results]);
+    }
+
+    private function geocode(string $q): array
+    {
+        $queries = [$q];
+        if (!preg_match('/yogya|jogja|sleman|bantul|klaten|magelang|kulon ?progo|gunung ?kidul/i', $q)) {
+            $queries[] = $q . ' Yogyakarta';
+        }
+
+        foreach ($queries as $query) {
+            $found = $this->geocodeGoogle($query)
+                ?: $this->geocodePhoton($query)
+                ?: $this->geocodeNominatim($query);
+
+            if (!empty($found)) {
+                return $found;
+            }
+        }
+
+        return [];
+    }
+
+    private function geocodeGoogle(string $q): array
+    {
+        $key = config('services.google_maps.key');
+        if (empty($key)) {
+            return [];
+        }
+
+        try {
+            $res = Http::timeout(6)
+                ->withHeaders([
+                    'X-Goog-Api-Key'   => $key,
+                    'X-Goog-FieldMask' => 'places.displayName,places.formattedAddress,places.location',
+                ])
+                ->post('https://places.googleapis.com/v1/places:searchText', [
+                    'textQuery'      => $q,
+                    'languageCode'   => 'id',
+                    'regionCode'     => 'ID',
+                    'maxResultCount' => 5,
+                    'locationBias'   => ['circle' => [
+                        'center' => ['latitude' => self::BASECAMP_LAT, 'longitude' => self::BASECAMP_LNG],
+                        'radius' => 50000.0,
+                    ]],
+                ]);
+
+            if (!$res->ok()) {
+                Log::warning('Google Places gagal: ' . $res->status() . ' ' . $res->body());
+                return [];
+            }
+
+            $out = [];
+            foreach ((array) $res->json('places', []) as $pl) {
+                $lat = $pl['location']['latitude'] ?? null;
+                $lng = $pl['location']['longitude'] ?? null;
+                if ($lat === null || $lng === null) {
+                    continue;
+                }
+                $label = trim(($pl['displayName']['text'] ?? '') . ', ' . ($pl['formattedAddress'] ?? ''), ', ');
+                $out[] = ['label' => $label, 'lat' => (float) $lat, 'lng' => (float) $lng];
+            }
+            return $out;
+        } catch (\Throwable $e) {
+            Log::warning('Google Places error: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    private function geocodePhoton(string $q): array
+    {
+        try {
+            $res = Http::timeout(6)
+                ->withHeaders(['User-Agent' => 'JeepWukirsari/1.0 (booking)'])
+                ->get('https://photon.komoot.io/api/', [
+                    'q' => $q, 'limit' => 6, 'lat' => self::BASECAMP_LAT, 'lon' => self::BASECAMP_LNG,
+                ]);
+            if (!$res->ok()) {
+                return [];
+            }
+
+            $out = [];
+            foreach ((array) $res->json('features', []) as $f) {
+                $p = $f['properties'] ?? [];
+                if (($p['countrycode'] ?? '') !== 'ID') {
+                    continue;
+                }
+                $lng = $f['geometry']['coordinates'][0] ?? null;
+                $lat = $f['geometry']['coordinates'][1] ?? null;
+                if ($lat === null || $lng === null) {
+                    continue;
+                }
+                $label = implode(', ', array_filter([
+                    $p['name'] ?? null, $p['street'] ?? null, $p['district'] ?? ($p['locality'] ?? null),
+                    $p['city'] ?? ($p['county'] ?? null), $p['state'] ?? null,
+                ]));
+                $out[] = ['label' => $label, 'lat' => (float) $lat, 'lng' => (float) $lng];
+            }
+            return $out;
+        } catch (\Throwable $e) {
+            Log::warning('Photon error: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    private function geocodeNominatim(string $q): array
+    {
+        try {
+            $res = Http::timeout(6)
+                ->withHeaders(['User-Agent' => 'JeepWukirsari/1.0 (booking)'])
+                ->get('https://nominatim.openstreetmap.org/search', [
+                    'format' => 'json', 'limit' => 5, 'countrycodes' => 'id', 'q' => $q,
+                ]);
+            if (!$res->ok()) {
+                return [];
+            }
+
+            $out = [];
+            foreach ((array) $res->json() as $r) {
+                if (!isset($r['lat'], $r['lon'])) {
+                    continue;
+                }
+                $out[] = ['label' => (string) ($r['display_name'] ?? ''), 'lat' => (float) $r['lat'], 'lng' => (float) $r['lon']];
+            }
+            return $out;
+        } catch (\Throwable $e) {
+            Log::warning('Nominatim error: ' . $e->getMessage());
+            return [];
+        }
     }
 
     public function payment($code)

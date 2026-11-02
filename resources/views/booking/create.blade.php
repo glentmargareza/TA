@@ -53,6 +53,14 @@
 .bk .search .in{flex:1}
 .bk .btn-s{padding:0 18px;border-radius:12px;background:var(--g8);color:#fff;font-weight:700;font-size:14px;white-space:nowrap;border:0;cursor:pointer;min-height:46px}
 .bk .btn-s:hover{background:var(--g7)}
+.bk .results{border:1.5px solid var(--line);border-radius:12px;background:#fff;overflow:hidden;max-height:240px;overflow-y:auto;box-shadow:var(--shadow);margin-top:2px}
+.bk .res{display:block;width:100%;text-align:left;padding:11px 14px;font-size:13px;border:0;border-bottom:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;line-height:1.4}
+.bk .res:last-child{border-bottom:0}
+.bk .res:hover{background:var(--g05)}
+.bk details.alt{margin:0 0 16px;border:1.5px solid var(--line);border-radius:14px;padding:12px 16px;background:#fff}
+.bk details.alt summary{font-weight:700;font-size:13.5px;cursor:pointer;color:var(--g8)}
+.bk details.alt .f:last-child{margin-bottom:0}
+.bk .dist small.pl{margin-top:4px;color:var(--g7);font-weight:600}
 .bk .dist{display:flex;align-items:center;justify-content:space-between;gap:14px;border-radius:14px;padding:14px 16px;background:var(--g05);border:1.5px solid #cfe0d2;margin-bottom:16px}
 .bk .dist.over{background:#fff7e8;border-color:#f3dcae}
 .bk .dist .k{font-size:22px;font-weight:800;color:var(--g8)}
@@ -112,7 +120,8 @@
      data-base-lat="{{ \App\Http\Controllers\BookingController::BASECAMP_LAT }}"
      data-base-lng="{{ \App\Http\Controllers\BookingController::BASECAMP_LNG }}"
      data-free-km="{{ \App\Http\Controllers\BookingController::PICKUP_FREE_KM }}"
-     data-per-km="{{ \App\Http\Controllers\BookingController::PICKUP_EXTRA_PER_KM }}"
+     data-per-jeep="{{ \App\Http\Controllers\BookingController::PICKUP_EXTRA_PER_JEEP }}"
+     data-geo-url="{{ \Illuminate\Support\Facades\Route::has('booking.location') ? route('booking.location') : '' }}"
      data-base-zone="{{ $baseZone->id ?? '' }}"
      data-shuttle-zone="{{ $shuttleZone->id ?? '' }}">
 <div class="bk-in">
@@ -224,27 +233,36 @@
 
         <div id="pickupBox" hidden>
           <div class="f">
-            <label for="pickup_address">Nama Hotel / Alamat Penjemputan *</label>
-            <input type="text" name="pickup_address" id="pickup_address" class="in" maxlength="300" value="{{ old('pickup_address') }}" placeholder="Contoh: Hotel Tentrem, Jl. P. Mangkubumi, Yogyakarta">
-            <span class="hint">Informasi untuk driver saat menjemput.</span>
-          </div>
-          <div class="f" style="margin-bottom:12px">
-            <label>Titik Lokasi Penjemputan *</label>
-            <button type="button" class="btn-s" id="btnGps" style="padding:14px">Bagikan Lokasi Saya Sekarang</button>
-            <span class="hint">Tekan saat Anda berada di lokasi jemput. Jarak dari basecamp dihitung otomatis.</span>
-          </div>
-          <div class="f">
-            <label for="mapLink">Atau tempel link Google Maps / koordinat</label>
+            <label for="pickup_address">Nama Hotel / Villa / Alamat Penjemputan *</label>
             <div class="search">
-              <input id="mapLink" class="in" placeholder="https://www.google.com/maps/... atau -7.7956, 110.3695">
-              <button type="button" class="btn-s" id="btnLink">Hitung</button>
+              <input type="text" name="pickup_address" id="pickup_address" class="in" maxlength="300" value="{{ old('pickup_address') }}" placeholder="Contoh: Villa Padi Cangkringan, Yogyakarta" autocomplete="off">
+              <button type="button" class="btn-s" id="btnFind">Cari Lokasi</button>
             </div>
-            <span class="hint">Di Google Maps: tahan lama pada lokasi hotel, lalu salin angka koordinat yang muncul di bagian atas.</span>
+            <div class="results" id="results" hidden></div>
+            <span class="hint" id="findHint">Ketik nama hotel atau villa, lalu pilih lokasinya. Jarak dari basecamp dihitung otomatis.</span>
           </div>
+
           <div class="dist" id="dist">
-            <div><div class="k" id="distKm">—</div><small id="distTxt">Bagikan lokasi untuk menghitung jarak otomatis.</small></div>
+            <div><div class="k" id="distKm">—</div><small id="distTxt">Cari hotel atau villa untuk menghitung jarak otomatis.</small><small class="pl" id="pickedLbl"></small></div>
             <span class="tag" id="distTag">Belum dihitung</span>
           </div>
+
+          <details class="alt">
+            <summary>Lokasi tidak ketemu? Tentukan titik dengan cara lain</summary>
+            <div class="f" style="margin:14px 0 12px">
+              <label>Pakai lokasi saya saat ini</label>
+              <button type="button" class="btn-s" id="btnGps" style="padding:14px">Bagikan Lokasi Saya Sekarang</button>
+              <span class="hint">Tekan saat Anda berada di lokasi jemput.</span>
+            </div>
+            <div class="f">
+              <label for="mapLink">Atau tempel link Google Maps / koordinat</label>
+              <div class="search">
+                <input id="mapLink" class="in" placeholder="https://www.google.com/maps/... atau -7.7956, 110.3695">
+                <button type="button" class="btn-s" id="btnLink">Hitung</button>
+              </div>
+              <span class="hint">Di Google Maps: tahan lama pada lokasi hotel, lalu salin angka koordinat yang muncul di bagian atas.</span>
+            </div>
+          </details>
         </div>
 
         <div class="grid2">
@@ -296,14 +314,15 @@
     lat: parseFloat(root.dataset.baseLat),
     lng: parseFloat(root.dataset.baseLng),
     free: parseFloat(root.dataset.freeKm),
-    perKm: parseInt(root.dataset.perKm, 10)
+    perJeep: parseInt(root.dataset.perJeep, 10)
   };
   var ZONE = { base: root.dataset.baseZone, shuttle: root.dataset.shuttleZone };
+  var GEO_URL = root.dataset.geoUrl || '';
   var $ = function (s) { return root.querySelector(s); };
   var $$ = function (s) { return Array.prototype.slice.call(root.querySelectorAll(s)); };
   var rp = function (n) { return 'Rp ' + Number(n).toLocaleString('id-ID'); };
   var PER_JEEP = 4;
-  var st = { pax: 4, jeep: 1, shuttle: false, pay: 'FULL', km: null, approx: false, calc: false };
+  var st = { pax: 4, jeep: 1, shuttle: false, pay: 'FULL', km: null, approx: false, calc: false, label: '' };
   var calcId = 0, toastT;
 
   function toast(msg) {
@@ -385,9 +404,9 @@
     var h = Math.pow(Math.sin(dLat / 2), 2) + Math.cos(r(a)) * Math.cos(r(c)) * Math.pow(Math.sin(dLng / 2), 2);
     return 2 * R * Math.asin(Math.sqrt(h));
   }
-  function computeDistance(lat, lng) {
+  function computeDistance(lat, lng, label) {
     var id = ++calcId;
-    st.km = null; st.calc = true;
+    st.label = label || ''; st.km = null; st.calc = true;
     $('#pickup_lat').value = lat; $('#pickup_lng').value = lng; $('#pickup_distance_km').value = '';
     update();
     var ctl = new AbortController(), to = setTimeout(function () { ctl.abort(); }, 8000);
@@ -425,14 +444,14 @@
         : 'Format belum dikenali. Gunakan link lengkap Google Maps atau koordinat, mis. -7.7956, 110.3695');
       return;
     }
-    computeDistance(pt.lat, pt.lng);
+    computeDistance(pt.lat, pt.lng, 'Koordinat dari link Google Maps');
   };
   $('#mapLink').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); $('#btnLink').click(); } });
   $('#btnGps').onclick = function () {
     if (!navigator.geolocation) { toast('Browser tidak mendukung lokasi. Gunakan link/koordinat Google Maps.'); return; }
     toast('Mengambil lokasi Anda…');
     navigator.geolocation.getCurrentPosition(
-      function (p) { computeDistance(p.coords.latitude, p.coords.longitude); },
+      function (p) { computeDistance(p.coords.latitude, p.coords.longitude, 'Lokasi GPS Anda'); },
       function (err) {
         toast(err.code === 1 ? 'Izin lokasi diblokir. Klik ikon gembok di address bar > izinkan Lokasi, atau tempel link/koordinat Google Maps.'
           : err.code === 2 ? 'Lokasi perangkat tidak terdeteksi. Tempel link/koordinat Google Maps.'
@@ -440,6 +459,59 @@
       },
       { enableHighAccuracy: true, timeout: 10000 });
   };
+
+  /* ===== CARI HOTEL / VILLA ===== */
+  var findT, findCtl, found = [];
+  var addrEl = $('#pickup_address'), resEl = $('#results'), findHint = $('#findHint');
+  function hideResults() { resEl.hidden = true; resEl.innerHTML = ''; }
+  function pick(item) {
+    hideResults();
+    findHint.textContent = 'Lokasi dipilih. Jarak dihitung dari basecamp.';
+    computeDistance(item.lat, item.lng, item.label);
+  }
+  function showResults(list) {
+    found = list; resEl.innerHTML = '';
+    list.forEach(function (it, i) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'res'; b.textContent = it.label; b.dataset.i = i;
+      resEl.appendChild(b);
+    });
+    resEl.hidden = false;
+  }
+  resEl.addEventListener('click', function (e) {
+    var b = e.target.closest('.res'); if (!b) return;
+    var it = found[+b.dataset.i]; if (it) pick(it);
+  });
+  function find(auto) {
+    var q = addrEl.value.trim();
+    if (q.length < 3) { if (!auto) toast('Ketik nama hotel atau villa dulu.'); return; }
+    if (!GEO_URL) { if (!auto) toast('Pencarian lokasi belum aktif. Gunakan GPS atau link Google Maps.'); return; }
+    if (findCtl) findCtl.abort();
+    var ctl = findCtl = new AbortController(), btn = $('#btnFind');
+    btn.textContent = 'Mencari…'; findHint.textContent = 'Mencari lokasi…';
+    fetch(GEO_URL + '?q=' + encodeURIComponent(q), { headers: { 'Accept': 'application/json' }, signal: ctl.signal })
+      .then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); })
+      .then(function (j) {
+        var list = (j && j.results) || [];
+        if (!list.length) {
+          hideResults();
+          findHint.textContent = 'Lokasi belum ditemukan. Coba tambah nama daerah (mis. "Cangkringan Sleman"), atau buka "Tentukan titik dengan cara lain" di bawah.';
+        } else if (list.length === 1) { pick(list[0]); }
+        else { findHint.textContent = 'Pilih lokasi yang sesuai dari daftar di bawah.'; showResults(list); }
+      })
+      .catch(function (e) {
+        if (e.name === 'AbortError') return;
+        hideResults(); findHint.textContent = 'Pencarian gagal. Gunakan GPS atau link Google Maps pada "Tentukan titik dengan cara lain".';
+      })
+      .then(function () { if (findCtl === ctl) btn.textContent = 'Cari Lokasi'; });
+  }
+  $('#btnFind').onclick = function () { clearTimeout(findT); find(false); };
+  addrEl.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); clearTimeout(findT); find(false); } });
+  addrEl.addEventListener('input', function () {
+    clearTimeout(findT);
+    if (!st.shuttle || st.km !== null || st.calc) return;   // cari otomatis hanya sebelum ada lokasi terpilih
+    findT = setTimeout(function () { if (addrEl.value.trim().length >= 5) find(true); }, 900);
+  });
 
   /* ===== PEMBAYARAN ===== */
   $$('.po').forEach(function (b) {
@@ -453,7 +525,7 @@
   /* ===== RINGKASAN ===== */
   function pickupFee() {
     if (!st.shuttle || st.km === null) return 0;
-    return Math.ceil(Math.max(0, st.km - CFG.free)) * CFG.perKm;
+    return st.km > CFG.free ? st.jeep * CFG.perJeep : 0;
   }
   function update() {
     var p = pkg(); if (!p) return;
@@ -479,24 +551,24 @@
     else if (st.km === null) vp.textContent = 'Tentukan lokasi';
     else if (fee === 0) { vp.textContent = 'Gratis (' + st.km + ' km)'; vp.className = 'free'; }
     else {
-      var over = Math.ceil(st.km - CFG.free);
       vp.textContent = 'Jarak ' + st.km + ' km';
       rowExtra.style.display = 'flex';
-      $('#lExtra').innerHTML = 'Biaya Tambahan Jemput<small>Gratis ' + CFG.free + ' km, lebih ' + over + ' km × ' + rp(CFG.perKm) + '</small>';
+      $('#lExtra').innerHTML = 'Biaya Tambahan Jemput<small>Di atas ' + CFG.free + ' km · ' + st.jeep + ' jeep × ' + rp(CFG.perJeep) + '</small>';
       $('#vExtra').textContent = '+ ' + rp(fee);
     }
 
     var dist = $('#dist');
+    $('#pickedLbl').textContent = (st.shuttle && st.label) ? 'Titik jemput: ' + st.label : '';
     dist.classList.toggle('over', st.km !== null && st.km > CFG.free);
     if (st.calc) { $('#distKm').textContent = '…'; $('#distTxt').textContent = 'Menghitung jarak rute dari basecamp…'; $('#distTag').textContent = 'Menghitung'; }
-    else if (st.km === null) { $('#distKm').textContent = '—'; $('#distTxt').textContent = 'Bagikan lokasi untuk menghitung jarak otomatis.'; $('#distTag').textContent = 'Belum dihitung'; }
+    else if (st.km === null) { $('#distKm').textContent = '—'; $('#distTxt').textContent = 'Cari hotel atau villa untuk menghitung jarak otomatis.'; $('#distTag').textContent = 'Belum dihitung'; }
     else if (st.km <= CFG.free) {
       $('#distKm').textContent = st.km + ' km';
       $('#distTxt').textContent = 'Jarak ' + (st.approx ? 'perkiraan' : 'rute jalan') + ' dari basecamp. Masih dalam jangkauan jemput gratis.';
       $('#distTag').textContent = 'GRATIS';
     } else {
       $('#distKm').textContent = st.km + ' km';
-      $('#distTxt').textContent = 'Lebih ' + Math.ceil(st.km - CFG.free) + ' km dari batas gratis × ' + rp(CFG.perKm) + ' = ' + rp(fee) + (st.approx ? ' (jarak perkiraan)' : '') + '. Biaya final dihitung ulang oleh sistem.';
+      $('#distTxt').textContent = 'Lebih dari ' + CFG.free + ' km: ' + st.jeep + ' jeep × ' + rp(CFG.perJeep) + ' = ' + rp(fee) + (st.approx ? ' (jarak perkiraan)' : '') + '. Biaya final dihitung ulang oleh sistem.';
       $('#distTag').textContent = '+ ' + rp(fee);
     }
 
@@ -522,7 +594,7 @@
     if (st.shuttle) {
       if (addr.value.trim().length < 3) return stop(addr, 'Isi nama hotel / alamat penjemputan.');
       if (st.calc) return stop(null, 'Jarak penjemputan masih dihitung, tunggu sebentar.');
-      if (st.km === null) return stop($('#btnGps'), 'Bagikan lokasi atau tempel link Google Maps agar jarak bisa dihitung.');
+      if (st.km === null) return stop(addr, 'Cari hotel/villa lalu pilih lokasinya (atau gunakan GPS/link Google Maps) agar jarak bisa dihitung.');
     }
     if (name.value.trim().length < 3) return stop(name, 'Isi nama lengkap Anda.');
     if (!/^(\+?62|0)8\d{7,12}$/.test(phone.value.replace(/[\s-]/g, ''))) return stop(phone, 'Nomor WhatsApp belum valid.');
