@@ -55,7 +55,7 @@ button{cursor:pointer;border:0;background:none}
 .num{width:30px;height:30px;border-radius:50%;background:var(--green-800);color:#fff;display:grid;place-items:center;font-size:14px}
 .sub{color:var(--muted);font-size:14px;margin:0 0 20px 42px}
 
-/* PAKET (tanpa ikon & spot) */
+/* PAKET */
 .pk{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
 .pkg{position:relative;text-align:left;padding:18px 18px 16px;border:1.5px solid var(--line);border-radius:16px;background:#fff;transition:.2s;display:flex;flex-direction:column;gap:6px}
 .pkg:hover{border-color:var(--green-600);transform:translateY(-3px);box-shadow:0 12px 24px -14px rgba(20,48,27,.4)}
@@ -94,11 +94,11 @@ select.in{appearance:none;-webkit-appearance:none;padding-right:42px;cursor:poin
 .btn-s:hover{background:var(--green-700)}
 .btn-o{padding:10px 14px;border:1.5px solid var(--line);border-radius:12px;font-weight:700;font-size:13px;color:var(--green-800);background:#fff}
 .btn-o:hover{border-color:var(--green-600);background:var(--green-50)}
-.results{border:1.5px solid var(--line);border-radius:12px;background:#fff;overflow:hidden;max-height:220px;overflow-y:auto;box-shadow:var(--shadow)}
+.results{border:1.5px solid var(--line);border-radius:12px;background:#fff;overflow:hidden;max-height:240px;overflow-y:auto;box-shadow:var(--shadow)}
+.results[hidden]{display:none}
 .res{display:block;width:100%;text-align:left;padding:11px 14px;font-size:13px;border-bottom:1px solid var(--line);color:var(--ink)}
 .res:last-child{border-bottom:0}
-.res:hover{background:var(--green-50)}
-#map{height:270px;border-radius:14px;border:1.5px solid var(--line);margin:12px 0;z-index:1}
+button.res:hover{background:var(--green-50)}
 .dist{display:flex;align-items:center;justify-content:space-between;gap:14px;border-radius:14px;padding:14px 16px;background:var(--green-50);border:1.5px solid #cfe0d2;margin-bottom:16px}
 .dist.over{background:#fff7e8;border-color:#f3dcae}
 .dist .k{font-size:22px;font-weight:800;color:var(--green-800)}
@@ -249,8 +249,9 @@ select.in{appearance:none;-webkit-appearance:none;padding-right:42px;cursor:poin
       <div id="pickupBox" hidden>
         <div class="f">
           <label for="addr">Nama Hotel / Alamat Penjemputan *</label>
-          <input id="addr" class="in" placeholder="Contoh: Hotel Tentrem, Jl. P. Mangkubumi, Yogyakarta">
-          <span class="hint">Informasi untuk driver saat menjemput.</span>
+          <input id="addr" class="in" autocomplete="off" placeholder="Ketik nama hotel, mis. Artotel Yogyakarta">
+          <div class="results" id="addrRes" hidden></div>
+          <span class="hint">Ketik minimal 4 huruf, jarak dari basecamp dihitung otomatis.</span>
         </div>
         <div class="f" style="margin-bottom:12px">
           <label>Titik Lokasi Penjemputan *</label>
@@ -266,7 +267,7 @@ select.in{appearance:none;-webkit-appearance:none;padding-right:42px;cursor:poin
           <span class="hint">Di Google Maps: tahan lama pada lokasi hotel, lalu salin angka koordinat yang muncul di bagian atas.</span>
         </div>
         <div class="dist" id="dist">
-          <div><div class="k" id="distKm">—</div><small id="distTxt">Bagikan lokasi untuk menghitung jarak otomatis.</small></div>
+          <div><div class="k" id="distKm">—</div><small id="distTxt">Ketik nama hotel untuk menghitung jarak otomatis.</small></div>
           <span class="tag" id="distTag">Belum dihitung</span>
         </div>
         <button type="button" class="btn-o" id="btnManual" style="margin-bottom:18px">Lokasi tidak terdeteksi? Biaya dikonfirmasi admin via WhatsApp</button>
@@ -310,11 +311,11 @@ select.in{appearance:none;-webkit-appearance:none;padding-right:42px;cursor:poin
 
 <script>
 /* ====== PENGATURAN ====== */
-const WA_NUMBER   = "6281234567890";  // GANTI: nomor WhatsApp admin (format 62...)
-const BASECAMP    = {lat:-7.6352, lng:110.4366}; // GANTI: koordinat basecamp (klik kanan di Google Maps > salin koordinat)
-const FREE_KM     = 3;      // jarak jemput gratis (km)
-const EXTRA_PER_KM = 5000;  // biaya tambahan per km di atas 3 km (sesuaikan)
-const PER_JEEP    = 4;      // maks. penumpang per jeep
+const WA_NUMBER      = "6281234567890";  // GANTI: nomor WhatsApp admin (format 62...)
+const BASECAMP       = {lat:-7.6352, lng:110.4366}; // GANTI: koordinat basecamp (klik kanan di Google Maps > salin koordinat)
+const FREE_KM        = 3;      // jarak jemput gratis (km)
+const EXTRA_PER_JEEP = 50000;  // biaya tambahan jemput per jeep jika jarak > FREE_KM
+const PER_JEEP       = 4;      // maks. penumpang per jeep
 
 const PACKAGES = [
   {id:'short', name:'Short Trip',      price:450000, dur:'1.5 - 2 jam'},
@@ -332,7 +333,7 @@ const SESSIONS = [
 
 const $ = s => document.querySelector(s);
 const rp = n => 'Rp ' + n.toLocaleString('id-ID');
-const state = {pkg:'short', qty:1, pax:4, session:null, pickup:false, pay:'full', km:null, lat:null, lng:null, calc:false, manual:false};
+const state = {pkg:'short', qty:1, pax:4, session:null, pickup:false, pay:'full', km:null, lat:null, lng:null, calc:false, manual:false, approx:false};
 
 /* ====== PAKET ====== */
 const pkgsEl = $('#pkgs');
@@ -400,7 +401,7 @@ document.querySelectorAll('.ar').forEach(b=>b.onclick=()=>{
   update(); setStep(4);
 });
 
-/* ====== LOKASI PENJEMPUTAN OTOMATIS (tanpa peta) ====== */
+/* ====== LOKASI PENJEMPUTAN OTOMATIS ====== */
 let calcId = 0;
 function haversine(a,b,c,d){
   const R=6371, r=x=>x*Math.PI/180;
@@ -435,7 +436,7 @@ function parseLocation(t){
          || t.match(/^(-?\d{1,2}\.\d+)[,\s]+(-?\d{2,3}\.\d+)$/);
   if(!m) return null;
   const lat = parseFloat(m[1]), lng = parseFloat(m[2]);
-  if(lat<-11.5||lat>6.5||lng<94||lng>141.5) return null; // di luar Indonesia
+  if(lat<-11.5||lat>6.5||lng<94||lng>141.5) return null;
   return {lat,lng};
 }
 $('#btnLink').onclick = ()=>{
@@ -452,14 +453,14 @@ $('#btnLink').onclick = ()=>{
 };
 $('#link').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); $('#btnLink').click(); } });
 $('#btnGps').onclick = ()=>{
-  if(!navigator.geolocation){ toast('Browser tidak mendukung lokasi. Gunakan link/koordinat Google Maps.'); return; }
+  if(!navigator.geolocation){ toast('Browser tidak mendukung lokasi. Gunakan nama hotel atau link/koordinat Google Maps.'); return; }
   toast('Mengambil lokasi Anda…');
   navigator.geolocation.getCurrentPosition(
     p=>computeDistance(p.coords.latitude,p.coords.longitude),
     err=>{
-      toast(err.code===1 ? 'Izin lokasi diblokir. Klik ikon gembok di address bar > izinkan Lokasi, atau tempel link/koordinat Google Maps.'
-        : err.code===2 ? 'Lokasi perangkat tidak terdeteksi. Tempel link/koordinat Google Maps.'
-        : 'Waktu pencarian lokasi habis. Coba lagi atau tempel link/koordinat Google Maps.');
+      toast(err.code===1 ? 'Izin lokasi diblokir. Klik ikon gembok di address bar > izinkan Lokasi, atau ketik nama hotel.'
+        : err.code===2 ? 'Lokasi perangkat tidak terdeteksi. Ketik nama hotel atau tempel koordinat Google Maps.'
+        : 'Waktu pencarian lokasi habis. Coba lagi atau ketik nama hotel.');
     },
     {enableHighAccuracy:true,timeout:10000});
 };
@@ -468,9 +469,74 @@ $('#btnManual').onclick = ()=>{
   update(); toast('Baik, biaya jemput akan dikonfirmasi admin lewat WhatsApp.');
 };
 
+/* ====== CARI HOTEL -> JARAK OTOMATIS ====== */
+let searchT, searchId = 0;
+$('#addr').addEventListener('input', ()=>{
+  clearTimeout(searchT);
+  const q = $('#addr').value.trim();
+  if(q.length<4){ $('#addrRes').hidden = true; return; }
+  searchT = setTimeout(()=>searchPlace(q), 700);
+});
+
+async function searchPlace(q){
+  const box = $('#addrRes'), id = ++searchId;
+  const msg = t=>{ box.innerHTML=''; const n=document.createElement('div'); n.className='res'; n.textContent=t; box.appendChild(n); box.hidden=false; };
+  msg('Mencari lokasi…');
+
+  let items = [];
+  try{
+    const r = await fetch('https://photon.komoot.io/api/?limit=5&lat='+BASECAMP.lat+'&lon='+BASECAMP.lng+'&q='+encodeURIComponent(q));
+    const j = await r.json();
+    items = j.features.map(f=>({
+      lat:f.geometry.coordinates[1], lng:f.geometry.coordinates[0],
+      label:[f.properties.name,f.properties.street,f.properties.district,f.properties.city||f.properties.county,f.properties.state].filter(Boolean).join(', ')
+    }));
+  }catch(e){}
+
+  if(!items.length){
+    try{
+      const r = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=5&countrycodes=id&viewbox=109.8,-7.3,111.0,-8.4&q='+encodeURIComponent(q));
+      const j = await r.json();
+      items = j.map(x=>({lat:+x.lat, lng:+x.lon, label:x.display_name}));
+    }catch(e){}
+  }
+  if(id!==searchId) return;
+
+  if(!items.length){
+    msg('Hotel tidak ditemukan. Coba tambah kata "Yogyakarta", atau pakai Bagikan Lokasi / koordinat Google Maps.');
+    return;
+  }
+
+  // otomatis pakai hasil pertama
+  computeDistance(items[0].lat, items[0].lng);
+
+  box.innerHTML = '';
+  const head = document.createElement('div');
+  head.className = 'res';
+  head.style.cssText = 'font-weight:700;color:#1d4026;background:#f1f6f2';
+  head.textContent = '✓ Dipakai: ' + items[0].label;
+  box.appendChild(head);
+
+  if(items.length>1){
+    const alt = document.createElement('div');
+    alt.className = 'res'; alt.style.cssText = 'font-size:12px;color:#6b7a70';
+    alt.textContent = 'Bukan ini? Pilih yang lain:';
+    box.appendChild(alt);
+    items.slice(1).forEach(it=>{
+      const b = document.createElement('button');
+      b.type='button'; b.className='res'; b.textContent=it.label;
+      b.onclick = ()=>{ $('#addr').value = it.label; box.hidden=true; computeDistance(it.lat,it.lng); };
+      box.appendChild(b);
+    });
+  }
+  box.hidden = false;
+}
+document.addEventListener('click', e=>{ if(!e.target.closest('#addr,#addrRes')) $('#addrRes').hidden = true; });
+
+/* ====== BIAYA JEMPUT: gratis <= 3 km, lebih dari itu Rp 50.000 per jeep ====== */
 function pickupFee(){
   if(!state.pickup || state.km===null) return 0;
-  return Math.ceil(Math.max(0, state.km - FREE_KM)) * EXTRA_PER_KM;
+  return state.km > FREE_KM ? EXTRA_PER_JEEP * state.qty : 0;
 }
 
 /* ====== PEMBAYARAN ====== */
@@ -508,10 +574,9 @@ function update(){
   else if(state.km===null) vp.textContent = 'Tentukan lokasi';
   else if(fee===0){ vp.textContent = 'Gratis (' + state.km + ' km)'; vp.className='free'; }
   else {
-    const over = Math.ceil(state.km-FREE_KM);
     vp.textContent = 'Jarak ' + state.km + ' km';
     rowExtra.style.display = 'flex';
-    $('#lExtra').innerHTML = 'Biaya Tambahan Jemput<small>Gratis ' + FREE_KM + ' km, lebih ' + over + ' km × ' + rp(EXTRA_PER_KM) + '</small>';
+    $('#lExtra').innerHTML = 'Biaya Tambahan Jemput<small>Gratis ' + FREE_KM + ' km, lebih dari itu ' + rp(EXTRA_PER_JEEP) + ' × ' + state.qty + ' jeep</small>';
     $('#vExtra').textContent = '+ ' + rp(fee);
   }
 
@@ -523,15 +588,14 @@ function update(){
   } else if(state.calc){
     $('#distKm').textContent = '…'; $('#distTxt').textContent = 'Menghitung jarak rute dari basecamp…'; $('#distTag').textContent = 'Menghitung';
   } else if(state.km===null){
-    $('#distKm').textContent = '—'; $('#distTxt').textContent = 'Bagikan lokasi untuk menghitung jarak otomatis.'; $('#distTag').textContent = 'Belum dihitung';
+    $('#distKm').textContent = '—'; $('#distTxt').textContent = 'Ketik nama hotel untuk menghitung jarak otomatis.'; $('#distTag').textContent = 'Belum dihitung';
   } else if(state.km<=FREE_KM){
     $('#distKm').textContent = state.km + ' km';
     $('#distTxt').textContent = 'Jarak ' + (state.approx?'perkiraan':'rute jalan') + ' dari basecamp. Masih dalam jangkauan jemput gratis.';
     $('#distTag').textContent = 'GRATIS';
   } else {
-    const over = Math.ceil(state.km-FREE_KM);
     $('#distKm').textContent = state.km + ' km';
-    $('#distTxt').textContent = 'Lebih ' + over + ' km dari batas gratis × ' + rp(EXTRA_PER_KM) + ' = ' + rp(fee) + (state.approx?' (jarak perkiraan)':'');
+    $('#distTxt').textContent = 'Lebih dari batas gratis ' + FREE_KM + ' km: ' + rp(EXTRA_PER_JEEP) + ' × ' + state.qty + ' jeep = ' + rp(fee) + (state.approx?' (jarak perkiraan)':'');
     $('#distTag').textContent = '+ ' + rp(fee);
   }
 
@@ -569,7 +633,7 @@ $('#submit').onclick = ()=>{
   if(state.pickup){
     if(addr.value.trim().length<3){ addr.classList.add('err'); toast('Isi nama hotel / alamat penjemputan.'); return addr.focus(); }
     if(state.calc){ toast('Jarak penjemputan masih dihitung, tunggu sebentar.'); return; }
-    if(state.km===null && !state.manual){ toast('Bagikan lokasi atau tempel link Google Maps agar jarak bisa dihitung.'); return $('#btnGps').focus(); }
+    if(state.km===null && !state.manual){ toast('Jarak belum terhitung. Pilih hotel dari daftar, bagikan lokasi, atau tempel koordinat.'); return addr.focus(); }
   }
   if(name.value.trim().length<3){ name.classList.add('err'); toast('Isi nama lengkap Anda.'); return name.focus(); }
   if(!/^(\+?62|0)8\d{7,12}$/.test(wa.value.replace(/[\s-]/g,''))){ wa.classList.add('err'); toast('Nomor WhatsApp belum valid.'); return wa.focus(); }
