@@ -145,9 +145,6 @@ class PaymentWebhookController extends Controller
                         ]);
                     }
 
-                    // Notifikasi: Pembayaran berhasil diverifikasi
-                    ActivityLog::logPaymentSuccess($lockedBooking, $receivedGrossInt, strtoupper($paymentType));
-
                     Log::info("Booking {$lockedBooking->booking_code} berhasil diverifikasi dengan status {$newBookingStatus}.");
                     return response()->json(['status' => 'success', 'message' => "Pembayaran berhasil diverifikasi: {$newBookingStatus}"]);
                 }
@@ -184,8 +181,6 @@ class PaymentWebhookController extends Controller
 
                 if (!$hasOtherPending) {
                     $lockedBooking->update(['booking_status' => 'CANCELLED']);
-                    // Notifikasi: Pembatalan booking
-                    ActivityLog::logBookingCancelled($lockedBooking, 'Midtrans Gateway (' . strtoupper($transactionStatus) . ')');
                     Log::info("Booking {$lockedBooking->booking_code} dibatalkan karena transaksi {$orderId} {$transactionStatus}.");
                 }
 

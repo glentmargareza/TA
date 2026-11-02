@@ -493,11 +493,11 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const bookingCode = '{{ $booking->booking_code }}';
-        const chargeUrl = '{{ route('booking.charge', $booking->booking_code) }}';
-        const statusUrl = '{{ route('booking.status', $booking->booking_code) }}';
-        const activePaymentUrl = '{{ route('booking.active_payment', $booking->booking_code) }}';
-        const csrfToken = '{{ csrf_token() }}';
+        const bookingCode = "{{ $booking->booking_code }}";
+        const chargeUrl = "{{ route('booking.charge', $booking->booking_code) }}";
+        const statusUrl = "{{ route('booking.status', $booking->booking_code) }}";
+        const activePaymentUrl = "{{ route('booking.active_payment', $booking->booking_code) }}";
+        const csrfToken = "{{ csrf_token() }}";
 
         // DOM Elements
         const methodCards = document.querySelectorAll('.payment-method-card');
@@ -637,7 +637,7 @@
                         clearInterval(pollingInterval);
                         showAlert('Pembayaran terverifikasi! Mengalihkan ke E-Tiket...', false);
                         setTimeout(() => {
-                            window.location.href = json.redirect_url || '{{ route('booking.success', $booking->booking_code) }}';
+                            window.location.href = json.redirect_url || "{{ route('booking.success', $booking->booking_code) }}";
                         }, 1200);
                     }
                 } catch (e) {

@@ -14,7 +14,6 @@ use App\Models\Review;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
@@ -632,46 +631,25 @@ class AdminController extends Controller
 
     public function settleDp(int $id)
     {
-        return DB::transaction(function () use ($id) {
-            $booking = Booking::where('id', $id)->lockForUpdate()->firstOrFail();
+        $booking = Booking::findOrFail($id);
+        $remaining = (float) $booking->remaining_amount;
 
-            // Guard: Hanya booking DP_PAID yang memiliki sisa tagihan valid yang boleh dilunasi
-            if ($booking->booking_status !== 'DP_PAID' || (float) $booking->remaining_amount <= 0) {
-                return redirect()->back()->with('error', "Pesanan {$booking->booking_code} tidak memiliki sisa tagihan untuk dilunasi.");
-            }
+        $booking->update([
+            'booking_status' => 'FULL_PAID',
+            'paid_amount' => $booking->total_amount,
+            'remaining_amount' => 0.00,
+        ]);
 
-            // Tangkap nilai sisa tagihan sebelum di-nol-kan
-            $settlementAmount = (int) round($booking->remaining_amount);
+        // Notifikasi & Riwayat Aktivitas: Pembayaran Berhasil & Aksi Admin
+        ActivityLog::logPaymentSuccess($booking, $remaining, 'Loket Kasir Basecamp');
+        ActivityLog::logAdmin(
+            'Pelunasan Sisa Tagihan di Loket',
+            "Menerima pelunasan sisa tagihan Rp " . number_format($remaining, 0, ',', '.') . " untuk booking #{$booking->booking_code} ({$booking->customer_name}).",
+            'payment',
+            route('admin.dashboard', ['search' => $booking->booking_code])
+        );
 
-            // Catat transaksi pelunasan tunai di kasir basecamp
-            Payment::create([
-                'booking_id' => $booking->id,
-                'transaction_ref' => 'LOKET-' . $booking->booking_code . '-' . strtoupper(Str::random(6)),
-                'payment_stage' => 'SETTLEMENT',
-                'payment_type' => 'CASH_BASECAMP',
-                'gross_amount' => $settlementAmount,
-                'payment_status' => 'SETTLED',
-                'paid_at' => now(),
-            ]);
-
-            // Perbarui status booking menjadi lunas
-            $booking->update([
-                'booking_status' => 'FULL_PAID',
-                'paid_amount' => $booking->total_amount,
-                'remaining_amount' => 0.00,
-            ]);
-
-            // Notifikasi & Riwayat Aktivitas: Pembayaran Berhasil & Aksi Admin
-            ActivityLog::logPaymentSuccess($booking, (float) $settlementAmount, 'Loket Kasir Basecamp');
-            ActivityLog::logAdmin(
-                'Pelunasan Sisa Tagihan di Loket',
-                "Menerima pelunasan tunai sisa tagihan Rp " . number_format($settlementAmount, 0, ',', '.') . " untuk booking #{$booking->booking_code} ({$booking->customer_name}).",
-                'payment',
-                route('admin.dashboard', ['search' => $booking->booking_code])
-            );
-
-            return redirect()->back()->with('success', "Pelunasan tunai sebesar Rp " . number_format($settlementAmount, 0, ',', '.') . " untuk booking {$booking->booking_code} berhasil dicatat!");
-        });
+        return redirect()->back()->with('success', "Pelunasan untuk booking {$booking->booking_code} berhasil diterima!");
     }
 
     public function assignDriver(Request $request, int $id)
