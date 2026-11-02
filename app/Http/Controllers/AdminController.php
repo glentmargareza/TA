@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+
 class AdminController extends Controller
 {
     public function dashboard(Request $request)
@@ -29,7 +30,7 @@ class AdminController extends Controller
         }
 
         $totalRevenue = Booking::whereIn('booking_status', ['FULL_PAID', 'DP_PAID'])->sum('paid_amount');
-        
+
         // Monitoring Armada Jeep Counts
         $readyJeepsCount = Jeep::where('status', 'READY')->count();
         $onTripJeepsCount = Jeep::where('status', 'ON_TRIP')->count();
@@ -49,7 +50,7 @@ class AdminController extends Controller
         $completedBookingsCount = Booking::where('booking_status', 'COMPLETED')
             ->orWhere(function ($q) use ($today) {
                 $q->whereDate('trip_date', '<', $today)
-                  ->whereIn('booking_status', ['FULL_PAID', 'DP_PAID']);
+                    ->whereIn('booking_status', ['FULL_PAID', 'DP_PAID']);
             })
             ->count();
 
@@ -68,15 +69,15 @@ class AdminController extends Controller
             $rev = Booking::whereIn('booking_status', ['FULL_PAID', 'DP_PAID'])
                 ->where(function ($q) use ($dateStr) {
                     $q->whereDate('created_at', $dateStr)
-                      ->orWhereDate('trip_date', $dateStr);
+                        ->orWhereDate('trip_date', $dateStr);
                 })
                 ->sum('paid_amount');
             $chartRevenue[] = (int) $rev;
 
             $bCount = Booking::where(function ($q) use ($dateStr) {
-                    $q->whereDate('created_at', $dateStr)
-                      ->orWhereDate('trip_date', $dateStr);
-                })
+                $q->whereDate('created_at', $dateStr)
+                    ->orWhereDate('trip_date', $dateStr);
+            })
                 ->count();
             $chartBookings[] = (int) $bCount;
         }
@@ -158,9 +159,9 @@ class AdminController extends Controller
         if (!empty($search)) {
             $query->where(function ($q) use ($search) {
                 $q->where('booking_code', 'like', "%{$search}%")
-                  ->orWhere('customer_name', 'like', "%{$search}%")
-                  ->orWhere('customer_phone', 'like', "%{$search}%")
-                  ->orWhere('customer_email', 'like', "%{$search}%");
+                    ->orWhere('customer_name', 'like', "%{$search}%")
+                    ->orWhere('customer_phone', 'like', "%{$search}%")
+                    ->orWhere('customer_email', 'like', "%{$search}%");
             });
         }
 
@@ -607,10 +608,10 @@ class AdminController extends Controller
         if (!empty($search)) {
             $query->where(function ($q) use ($search) {
                 $q->where('comment', 'like', "%{$search}%")
-                  ->orWhere('city', 'like', "%{$search}%")
-                  ->orWhereHas('user', function ($uq) use ($search) {
-                      $uq->where('name', 'like', "%{$search}%");
-                  });
+                    ->orWhere('city', 'like', "%{$search}%")
+                    ->orWhereHas('user', function ($uq) use ($search) {
+                        $uq->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 

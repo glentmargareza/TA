@@ -137,14 +137,6 @@ class BookingController extends Controller
             $address = trim(($address ?? '') . ' [Catatan: ' . $validated['notes'] . ']');
         }
 
-        $pickupAddress = !empty($validated['notes'])
-            ? trim(($validated['pickup_address'] ?? '') . ' [Catatan: ' . $validated['notes'] . ']')
-            : ($validated['pickup_address'] ?? null);
-
-        if ($pickupInfo !== '') {
-            $pickupAddress = trim(Str::limit((string) $pickupAddress, 330, '') . ' ' . $pickupInfo);
-        }
-
         $totalAmount = $packageSubtotal + $pickupFee;
 
         if ($validated['payment_mode'] === 'FULL') {
