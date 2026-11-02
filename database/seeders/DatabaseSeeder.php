@@ -31,10 +31,10 @@ class DatabaseSeeder extends Seeder
                     'Manuver Air',
                 ],
                 'gallery_images' => [
-                    'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1000&q=80',
-                    'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1000&q=80',
-                    'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1000&q=80',
-                    'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1000&q=80',
+                    'img/7.jpeg',
+                    'img/12.jpeg',
+                    'img/13.jpeg',
+                    'img/5.jpeg',
                 ],
                 'category_badge' => 'Paling Populer',
                 'cover_image' => 'img/short_trip.jpeg',
@@ -57,10 +57,10 @@ class DatabaseSeeder extends Seeder
                     'Manuver Air',
                 ],
                 'gallery_images' => [
-                    'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1000&q=80',
-                    'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1000&q=80',
-                    'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1000&q=80',
-                    'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1000&q=80',
+                    'img/1.jpeg',
+                    'img/6.jpeg',
+                    'img/11.jpeg',
+                    'img/10.jpeg',
                 ],
                 'category_badge' => 'Medium Rute A',
                 'cover_image' => 'img/medium_trip_a.jpeg',
@@ -83,10 +83,10 @@ class DatabaseSeeder extends Seeder
                     'Manuver Air',
                 ],
                 'gallery_images' => [
-                    'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1000&q=80',
-                    'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1000&q=80',
-                    'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1000&q=80',
-                    'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1000&q=80',
+                    'img/3.jpeg',
+                    'img/4.jpeg',
+                    'img/6.jpeg',
+                    'img/15.jpeg',
                 ],
                 'category_badge' => 'Medium Rute B',
                 'cover_image' => 'img/medium_trip_b.jpeg',
@@ -111,10 +111,10 @@ class DatabaseSeeder extends Seeder
                     'Manuver Air',
                 ],
                 'gallery_images' => [
-                    'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1000&q=80',
-                    'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1000&q=80',
-                    'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1000&q=80',
-                    'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1000&q=80',
+                    'img/12.jpeg',
+                    'img/8.jpeg',
+                    'img/4.jpeg',
+                    'img/manuver_air.png',
                 ],
                 'category_badge' => 'Jalur Terlengkap',
                 'cover_image' => 'img/long_trip.jpeg',
@@ -138,12 +138,12 @@ class DatabaseSeeder extends Seeder
                     'Manuver Air',
                 ],
                 'gallery_images' => [
-                    'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1000&q=80',
-                    'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1000&q=80',
-                    'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1000&q=80',
-                    'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1000&q=80',
+                    'img/16.jpeg',
+                    'img/5.jpeg',
+                    'img/13.jpeg',
+                    'img/3.jpeg',
                 ],
-                'category_badge' => 'Sunrise Spesial',
+                'category_badge' => 'Spesial Sunrise',
                 'cover_image' => 'img/sunrise_trip.jpeg',
                 'is_active' => true,
             ],
@@ -162,7 +162,7 @@ class DatabaseSeeder extends Seeder
 
         // 2. Seed Sesi Jam Operasional
         $slots = [
-            ['slot_label' => 'Sunrise Tour (04:30 WIB)', 'start_time' => '04:30:00', 'end_time' => '08:00:00', 'max_jeeps' => 15],
+            ['slot_label' => 'Sunrise Tour (04:30 WIB)', 'start_time' => '04:30:00', 'end_time' => '08:00:00', 'max_jeeps' => 20],
             ['slot_label' => 'Sesi Pagi 1 (08:00 WIB)', 'start_time' => '08:00:00', 'end_time' => '10:30:00', 'max_jeeps' => 20],
             ['slot_label' => 'Sesi Pagi 2 (10:30 WIB)', 'start_time' => '10:30:00', 'end_time' => '13:00:00', 'max_jeeps' => 20],
             ['slot_label' => 'Sesi Siang / Sore (13:30 WIB)', 'start_time' => '13:30:00', 'end_time' => '16:00:00', 'max_jeeps' => 20],
@@ -182,15 +182,71 @@ class DatabaseSeeder extends Seeder
             PickupZone::updateOrCreate(['zone_name' => $zone['zone_name']], $zone);
         }
 
-        // 4. Seed Armada Jeep
-        Jeep::updateOrCreate(['plate_number' => 'AB 1024 WK'], ['model_name' => 'Toyota Hardtop FJ40 (Hijau)', 'status' => 'READY']);
-        Jeep::updateOrCreate(['plate_number' => 'AB 2048 WK'], ['model_name' => 'Suzuki Jimny Katana (Hitam)', 'status' => 'READY']);
-        Jeep::updateOrCreate(['plate_number' => 'AB 3072 WK'], ['model_name' => 'Mitsubishi Willys 4x4', 'status' => 'READY']);
+        // 4. Seed 20 Armada Jeep Paguyuban (13 Ready, 5 On Trip, 2 Maintenance)
+        $armadaOwners = [
+            1 => 'Ruswantoro',
+            2 => 'Joko Irianto',
+            3 => 'Ganang',
+            4 => 'Sriyatin',
+            5 => 'Fendi H',
+            6 => 'Yani Faturohman',
+            7 => 'Pak Haryono',
+            8 => 'Ariyanto',
+            9 => 'Marjuki',
+            10 => 'Ditiya',
+            11 => 'Benyamin',
+            12 => 'Yogel',
+            13 => 'Suwanti',
+            14 => 'Erni',
+            15 => 'Rubiso',
+            16 => 'Subagyo',
+            17 => 'Triyono',
+            18 => 'Bambang',
+            19 => 'Supriyadi',
+            20 => 'Wahyudi',
+        ];
+        $onTripIds = [2, 5, 15, 18, 19];
+        $maintenanceIds = [13, 20];
 
-        // 5. Seed Driver Paguyuban
-        Driver::updateOrCreate(['full_name' => 'Mas Joko Wukirsari'], ['phone_number' => '081234567801', 'is_active' => true]);
-        Driver::updateOrCreate(['full_name' => 'Pak Slamet Merapi'], ['phone_number' => '081234567802', 'is_active' => true]);
-        Driver::updateOrCreate(['full_name' => 'Bambang Kalikuning'], ['phone_number' => '081234567803', 'is_active' => true]);
+        foreach ($armadaOwners as $no => $ownerName) {
+            $numPad = str_pad($no, 4, '0', STR_PAD_LEFT);
+            $plate = "AB {$numPad} WK";
+            $status = 'READY';
+            if (in_array($no, $onTripIds)) {
+                $status = 'ON_TRIP';
+            } elseif (in_array($no, $maintenanceIds)) {
+                $status = 'MAINTENANCE';
+            }
+
+            Jeep::updateOrCreate(
+                ['plate_number' => $plate],
+                [
+                    'model_name' => "Jeep #{$no} ({$ownerName})",
+                    'status' => $status,
+                ]
+            );
+        }
+
+        // 5. Seed Driver Paguyuban (Jeep Wukirsari Adventure)
+        $driversData = [
+            ['full_name' => 'Joko', 'phone_number' => '081234567801'],
+            ['full_name' => 'Sriyatin', 'phone_number' => '081234567802'],
+            ['full_name' => 'Tringandiyanto', 'phone_number' => '081234567803'],
+            ['full_name' => 'Arif Dwi', 'phone_number' => '081234567804'],
+            ['full_name' => 'Fendi', 'phone_number' => '081234567805'],
+            ['full_name' => 'Anjar', 'phone_number' => '081234567806'],
+            ['full_name' => 'Gunardi', 'phone_number' => '081234567807'],
+            ['full_name' => 'Ditiya', 'phone_number' => '081234567808'],
+            ['full_name' => 'Bimo', 'phone_number' => '081234567809'],
+            ['full_name' => 'Ariyanto', 'phone_number' => '081234567810'],
+            ['full_name' => 'Marjuki', 'phone_number' => '081234567811'],
+            ['full_name' => 'Koko', 'phone_number' => '081234567812'],
+            ['full_name' => 'Edo', 'phone_number' => '081234567813'],
+            ['full_name' => 'Benyamin', 'phone_number' => '081234567814'],
+        ];
+        foreach ($driversData as $d) {
+            Driver::updateOrCreate(['full_name' => $d['full_name']], ['phone_number' => $d['phone_number'], 'is_active' => true]);
+        }
 
         // 6. Seed Akun Default (Admin Paguyuban & Wisatawan)
         \App\Models\User::updateOrCreate(

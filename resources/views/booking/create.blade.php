@@ -167,6 +167,14 @@
                             <input type="tel" name="customer_phone" required placeholder="Contoh: 081234567890" class="w-full px-3.5 py-2.5 rounded-xl border border-wukirsari-border text-xs focus:outline-none focus:border-wukirsari-primary">
                             <span class="block text-[10px] text-merapiText-muted mt-1">*Tiket QR Code dikirim ke nomor ini.</span>
                         </div>
+
+                        <!-- Catatan / Permintaan Khusus Wisatawan (Misal: Request Driver) -->
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-semibold text-merapiText-primary mb-1">
+                                Catatan / Pesan Tambahan <span class="text-merapiText-muted font-normal">(Opsional - misal: request driver tertentu, dsb)</span>
+                            </label>
+                            <textarea name="customer_notes" rows="2" placeholder="Tuliskan catatan khusus atau permintaan nama driver jika ada..." class="w-full px-3.5 py-2 rounded-xl border border-wukirsari-border text-xs focus:outline-none focus:border-wukirsari-primary resize-none"></textarea>
+                        </div>
                     </div>
                 </div>
 

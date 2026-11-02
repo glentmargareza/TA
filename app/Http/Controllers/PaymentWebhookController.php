@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Booking;
 use App\Models\Payment;
+use App\Models\ActivityLog;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -72,6 +73,9 @@ class PaymentWebhookController extends Controller
                         'paid_at' => now(),
                     ]);
 
+                    // Notifikasi: Pembayaran berhasil diverifikasi
+                    ActivityLog::logPaymentSuccess($booking, $numericGross, strtoupper($paymentType));
+
                     Log::info("Booking {$orderId} berhasil diverifikasi status: {$newStatus}");
                 }
             } elseif (in_array($transactionStatus, ['cancel', 'deny', 'expire'])) {
@@ -86,6 +90,9 @@ class PaymentWebhookController extends Controller
                     'payment_status' => ($transactionStatus === 'expire') ? 'EXPIRED' : 'FAILED',
                     'paid_at' => null,
                 ]);
+
+                // Notifikasi: Pembatalan booking
+                ActivityLog::logBookingCancelled($booking, 'Midtrans Gateway (' . strtoupper($transactionStatus) . ')');
 
                 Log::info("Booking {$orderId} dibatalkan atau kedaluwarsa.");
             }

@@ -13,7 +13,7 @@ return new class extends Migration
             $table->string('slot_label', 50);
             $table->time('start_time');
             $table->time('end_time');
-            $table->integer('max_jeeps')->default(15);
+            $table->integer('max_jeeps')->default(20);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });

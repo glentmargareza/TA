@@ -54,7 +54,7 @@
                 </div>
             @endif
 
-            @if($errors->any())
+            @if(isset($errors) && $errors->any())
                 <div class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs shadow-2xs space-y-1">
                     <div class="font-bold flex items-center gap-1.5">
                         <svg class="w-4 h-4 text-rose-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
@@ -192,10 +192,10 @@
                                                 onclick="handleEditPackageClick(this)">
                                                 Edit
                                             </button>
-                                            <form action="{{ route('admin.packages.destroy', $pkg->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus paket {{ addslashes($pkg->name) }}?')" class="inline-block">
+                                            <form id="delete-form-{{ $pkg->id }}" action="{{ route('admin.packages.destroy', $pkg->id) }}" method="POST" class="inline-block">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="px-2.5 py-1.5 rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold shadow-2xs transition-colors cursor-pointer">
+                                                <button type="button" data-id="{{ $pkg->id }}" data-name="{{ $pkg->name }}" onclick="confirmDeletePackage(this)" class="px-2.5 py-1.5 rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold shadow-2xs transition-colors cursor-pointer">
                                                     Hapus
                                                 </button>
                                             </form>
@@ -361,7 +361,62 @@
         </div>
     </div>
 
+    <!-- MODAL KONFIRMASI HAPUS PAKET (MODERN & ELEGAN) -->
+    <div id="modalConfirmDelete" onclick="if(event.target === this) closeDeletePackageModal()" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden transition-opacity duration-200">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 sm:p-7 shadow-2xl border border-slate-100 text-center transform transition-all scale-100 animate-in fade-in zoom-in-95">
+            <!-- Icon Alert Hapus -->
+            <div class="w-16 h-16 rounded-2xl bg-rose-50 text-rose-600 ring-8 ring-rose-50/50 flex items-center justify-center mx-auto mb-4 shadow-xs">
+                <svg class="w-8 h-8 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+            </div>
+
+            <!-- Judul & Keterangan -->
+            <h3 class="text-base font-bold text-slate-800 mb-1.5">Hapus Paket Wisata?</h3>
+            <p class="text-xs text-slate-500 mb-5 leading-relaxed">
+                Apakah Anda yakin ingin menghapus paket <br><span id="deletePackageName" class="font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md inline-block mt-1"></span>?<br>
+                <span class="text-[11px] text-slate-400">Tindakan ini tidak dapat dibatalkan.</span>
+            </p>
+
+            <!-- Tombol Aksi -->
+            <div class="grid grid-cols-2 gap-2.5">
+                <button type="button" onclick="closeDeletePackageModal()" class="w-full py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95">
+                    Batal
+                </button>
+                <button type="button" onclick="submitDeletePackageForm()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white text-xs font-bold shadow-md shadow-rose-600/30 hover:shadow-lg transition-all cursor-pointer active:scale-95">
+                    Ya, Hapus
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        let targetDeletePackageId = null;
+
+        function confirmDeletePackage(id, name) {
+            if (id instanceof HTMLElement) {
+                name = id.getAttribute('data-name');
+                id = id.getAttribute('data-id');
+            }
+            targetDeletePackageId = id;
+            document.getElementById('deletePackageName').textContent = name;
+            document.getElementById('modalConfirmDelete').classList.remove('hidden');
+        }
+
+        function closeDeletePackageModal() {
+            targetDeletePackageId = null;
+            document.getElementById('modalConfirmDelete').classList.add('hidden');
+        }
+
+        function submitDeletePackageForm() {
+            if (targetDeletePackageId) {
+                const form = document.getElementById('delete-form-' + targetDeletePackageId);
+                if (form) {
+                    form.submit();
+                }
+            }
+        }
+
         function openCreatePackageModal() {
             document.getElementById('modalCreatePackage').classList.remove('hidden');
         }
@@ -407,6 +462,7 @@
             if (e.key === 'Escape') {
                 closeCreatePackageModal();
                 closeEditPackageModal();
+                closeDeletePackageModal();
             }
         });
     </script>

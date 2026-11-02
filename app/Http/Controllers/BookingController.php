@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\Package;
 use App\Models\ScheduleSlot;
 use App\Models\PickupZone;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
@@ -38,6 +39,7 @@ class BookingController extends Controller
             'customer_name' => 'required|string|max:100',
             'customer_phone' => 'required|string|max:20',
             'customer_email' => 'nullable|email|max:100',
+            'customer_notes' => 'nullable|string|max:500',
             'payment_mode' => 'required|in:FULL,DP',
         ]);
 
@@ -111,6 +113,7 @@ class BookingController extends Controller
             'customer_name' => $validated['customer_name'],
             'customer_phone' => $validated['customer_phone'],
             'customer_email' => $validated['customer_email'] ?? null,
+            'customer_notes' => $validated['customer_notes'] ?? null,
             'package_id' => $package->id,
             'slot_id' => $validated['slot_id'],
             'trip_date' => $validated['trip_date'],
@@ -128,6 +131,21 @@ class BookingController extends Controller
             'booking_status' => $status,
             'snap_token' => $snapToken,
         ]);
+
+        // 1. Notifikasi: Ada booking baru
+        ActivityLog::logBookingNew($booking);
+
+        // 2. Notifikasi: Cek apakah kapasitas jadwal sudah penuh
+        $slot = ScheduleSlot::find($validated['slot_id']);
+        $maxJeeps = $slot?->max_jeeps ?? 20;
+        $totalBookedInSlot = Booking::where('trip_date', $validated['trip_date'])
+            ->where('slot_id', $validated['slot_id'])
+            ->whereIn('booking_status', ['FULL_PAID', 'DP_PAID', 'PENDING'])
+            ->sum('jeep_quantity');
+
+        if ($totalBookedInSlot >= $maxJeeps) {
+            ActivityLog::logScheduleFull($slot, $validated['trip_date'], $maxJeeps);
+        }
 
         return redirect()->route('booking.success', $booking->booking_code);
     }

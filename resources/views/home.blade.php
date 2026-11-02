@@ -31,18 +31,18 @@
                         <span class="text-white font-extrabold uppercase tracking-wider text-[9px] sm:text-[11px] px-2 py-0.5 rounded-full bg-white/20 border border-white/30 shrink-0">
                             BASECAMP RESMI
                         </span>
-                        <span class="text-white/95 font-medium truncate max-w-[190px] sm:max-w-none">Offroad Lereng Merapi</span>
+                        <span class="text-white/95 font-medium truncate max-w-[190px] sm:max-w-none">{{ $homeSettings['hero_badge'] ?? 'Offroad Lereng Merapi' }}</span>
                     </div>
                 </div>
 
                 <!-- Headline -->
                 <h1 class="text-2xl sm:text-4xl lg:text-6xl font-extrabold text-white font-display leading-[1.18] sm:leading-[1.12] tracking-tight">
-                    Jelajahi Keindahan Alam Merapi Bersama <span class="text-white font-black drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">Jeep Wukirsari</span>
+                    {{ $homeSettings['hero_headline'] ?? 'Jelajahi Keindahan Alam Merapi Bersama Jeep Wukirsari' }}
                 </h1>
 
                 <!-- Subtitle -->
                 <p class="text-white/90 text-xs sm:text-base lg:text-lg leading-relaxed max-w-xl font-normal line-clamp-3 sm:line-clamp-none">
-                    Rasakan petualangan seru menyusuri jalur lava, menikmati panorama Merapi, dan menciptakan cerita perjalanan yang tak terlupakan.
+                    {{ $homeSettings['hero_subtitle'] ?? 'Rasakan petualangan seru menyusuri jalur lava, menikmati panorama Merapi, dan menciptakan cerita perjalanan yang tak terlupakan.' }}
                 </p>
 
                 <!-- Status Login Akun di Beranda -->
@@ -318,7 +318,7 @@
 
                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3">
                     <a href="{{ route('reviews.index') }}" class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-xs font-bold transition-all shadow-sm shadow-wukirsari-primary/20">
-                        <span>Lihat Semua Ulasan ({{ $totalReviewsCount }} Review) →</span>
+                        <span>Lihat Semua Ulasan →</span>
                     </a>
 
                     @guest
