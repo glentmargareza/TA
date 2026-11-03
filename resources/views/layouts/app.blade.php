@@ -476,13 +476,10 @@
                 <!-- Kolom 4 -->
                 <div>
                     <h4 class="text-white font-semibold text-sm tracking-wider uppercase mb-4">Pangkalan Operasional</h4>
-                    <div class="p-3 bg-white/5 rounded-2xl border border-white/10 text-xs text-white/60 mb-4">
+                    <div class="p-3 bg-white/5 rounded-2xl border border-white/10 text-xs text-white/60">
                         <span class="block font-medium text-white mb-1">Siaga 24 Jam</span>
                         <span>Layanan booking online instan dengan konfirmasi e-tiket WhatsApp langsung.</span>
                     </div>
-                    <a href="{{ route('admin.dashboard') }}" class="inline-block px-4 py-2 rounded-xl bg-white/10 hover:bg-wukirsari-primary text-white text-xs font-semibold transition-all">
-                        Portal Admin Loket
-                    </a>
                 </div>
 
             </div>

@@ -71,15 +71,26 @@ class Package extends Model
 
     public function getEffectiveGalleryAttribute()
     {
+        $list = [];
         if (is_array($this->gallery_images) && count($this->gallery_images) > 0) {
-            return $this->gallery_images;
+            $list = $this->gallery_images;
+        } else {
+            $list = [
+                'img/7.jpeg',
+                'img/12.jpeg',
+                'img/13.jpeg',
+                'img/5.jpeg',
+            ];
         }
-        return [
-            $this->cover_image ?? 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1000&q=80',
-            'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1000&q=80',
-            'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1000&q=80',
-            'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1000&q=80',
-        ];
+
+        return array_map(function ($item) {
+            if (empty($item)) return '';
+            if (str_starts_with($item, 'http://') || str_starts_with($item, 'https://')) {
+                return $item;
+            }
+            $cleaned = preg_replace('#^/?(public/)?#', '', $item);
+            return asset($cleaned);
+        }, $list);
     }
 
     public function getGalleryArrayAttribute()

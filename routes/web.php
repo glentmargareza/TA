@@ -20,12 +20,13 @@ Route::get('/paket-wisata/{slug}', [HomeController::class, 'showPackage'])->name
 Route::get('/booking', [BookingController::class, 'create'])->name('booking.create');
 Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
 Route::get('/booking/{code}/payment', [BookingController::class, 'payment'])->name('booking.payment');
-Route::post('/booking/{code}/manual-transfer', [BookingController::class, 'uploadManualProof'])->name('booking.manual_transfer');
-Route::post('/booking/{code}/cash', [BookingController::class, 'confirmCashMethod'])->name('booking.cash');
+Route::post('/booking/{code}/confirm-transfer', [BookingController::class, 'confirmTransfer'])->name('booking.confirm_transfer');
+Route::post('/booking/{code}/confirm-cash', [BookingController::class, 'confirmCash'])->name('booking.confirm_cash');
 Route::post('/booking/{code}/charge', [PaymentController::class, 'charge'])->name('booking.charge');
 Route::get('/booking/{code}/status', [PaymentController::class, 'status'])->name('booking.status');
 Route::get('/booking/{code}/active-payment', [PaymentController::class, 'activePayment'])->name('booking.active_payment');
 Route::get('/booking/{code}/success', [BookingController::class, 'success'])->name('booking.success');
+Route::get('/lokasi-jemput', [BookingController::class, 'searchLocation'])->middleware('throttle:30,1')->name('booking.location');
 
 // 3. Pelacakan Tiket Mandiri
 Route::get('/cek-tiket', [TicketController::class, 'check'])->name('ticket.check');
@@ -33,12 +34,16 @@ Route::get('/cek-tiket', [TicketController::class, 'check'])->name('ticket.check
 // 4. Portal Admin & Loket Basecamp
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('/bookings', [AdminController::class, 'bookings'])->name('bookings');
+    Route::get('/armada', [AdminController::class, 'armada'])->name('armada');
+    Route::get('/notifikasi', [AdminController::class, 'notifications'])->name('notifications');
+
     Route::post('/bookings/{id}/settle', [AdminController::class, 'settleDp'])->name('settle');
     Route::post('/bookings/{id}/assign', [AdminController::class, 'assignDriver'])->name('assign');
-    Route::post('/bookings/{id}/verify-payment', [AdminController::class, 'verifyPayment'])->name('verify_payment');
-    Route::post('/bookings/{id}/reject-payment', [AdminController::class, 'rejectPayment'])->name('reject_payment');
-    Route::post('/bookings/{id}/confirm-cash', [AdminController::class, 'confirmCashPayment'])->name('confirm_cash');
-    Route::get('/bookings/{id}/proof/{paymentId}', [AdminController::class, 'viewProof'])->name('proof');
+    Route::post('/bookings/{id}/cancel', [AdminController::class, 'cancelBooking'])->name('cancel');
+    Route::post('/jeep/{id}/status', [AdminController::class, 'updateJeepStatus'])->name('jeeps.status');
+    Route::post('/jeep/activate-all', [AdminController::class, 'activateAllJeeps'])->name('jeeps.activateAll');
+    Route::post('/notifikasi/mark-all-read', [AdminController::class, 'markAllNotificationsRead'])->name('notifications.markAllRead');
 
     // Laporan Penjualan
     Route::get('/laporan', [AdminController::class, 'reports'])->name('reports');
@@ -60,6 +65,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     // Manajemen Ulasan
     Route::get('/ulasan', [AdminController::class, 'reviews'])->name('reviews');
+
+    // Pengaturan Sistem & Operasional Basecamp
+    Route::get('/pengaturan', [AdminController::class, 'settings'])->name('settings');
+    Route::put('/pengaturan/profile', [AdminController::class, 'updateAdminProfile'])->name('settings.profile');
+    Route::post('/pengaturan/basecamp', [AdminController::class, 'updateBasecampSettings'])->name('settings.basecamp');
 });
 
 // 5. Payment Gateway Webhook (Midtrans)
@@ -72,6 +82,7 @@ Route::get('/register', [AuthController::class, 'showRegister'])->name('register
 Route::post('/register', [AuthController::class, 'register'])->name('register.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/profile', [AuthController::class, 'profile'])->name('profile');
+Route::put('/profile', [AuthController::class, 'updateProfile'])->name('profile.update');
 
 // 7. Ulasan & Review Wisatawan (Wajib Login untuk menulis)
 Route::get('/ulasan', [\App\Http\Controllers\ReviewController::class, 'index'])->name('reviews.index');

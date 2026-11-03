@@ -6,6 +6,20 @@
 <div class="py-10 bg-wukirsari-cream min-h-[calc(100vh-80px)]">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
 
+        @if($errors->any())
+        <div class="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs flex items-start gap-2.5">
+            <svg class="w-4 h-4 text-rose-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            <div>
+                <span class="font-bold block">Gagal memperbarui profil:</span>
+                <ul class="list-disc list-inside mt-1 space-y-0.5">
+                    @foreach($errors->all() as $err)
+                    <li>{{ $err }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
+        @endif
+
         <!-- Header Profile Card -->
         <div class="bg-white rounded-3xl border border-wukirsari-border p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6">
             <div class="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
@@ -39,14 +53,18 @@
                 </div>
             </div>
 
-            <!-- Action Logout & Booking -->
-            <div class="flex items-center gap-3 w-full sm:w-auto justify-center sm:justify-end">
+            <!-- Action Logout & Booking & Edit Profil -->
+            <div class="flex flex-wrap items-center gap-2.5 w-full sm:w-auto justify-center sm:justify-end">
+                <button type="button" onclick="openEditProfileModal()" class="px-4 py-2.5 rounded-full border border-wukirsari-border text-merapiText-primary hover:border-wukirsari-primary hover:text-wukirsari-primary text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 bg-white cursor-pointer active:scale-95">
+                    <svg class="w-3.5 h-3.5 text-wukirsari-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                    <span>Ubah Profil</span>
+                </button>
                 <a href="{{ route('booking.create') }}" class="px-5 py-2.5 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5">
                     <span>+ Booking Baru</span>
                 </a>
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
-                    <button type="submit" class="px-4 py-2.5 rounded-full border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-semibold transition-all">
+                    <button type="submit" class="px-4 py-2.5 rounded-full border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-semibold transition-all cursor-pointer">
                         Keluar
                     </button>
                 </form>
@@ -227,4 +245,107 @@
 
     </div>
 </div>
+
+<!-- MODAL: Ubah Profil -->
+<div id="editProfileModal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 {{ $errors->any() ? '' : 'hidden' }}">
+    <div class="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-wukirsari-border animate-in fade-in zoom-in-95 duration-200">
+        <div class="p-6 border-b border-wukirsari-border flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-xs z-10">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-wukirsari-sage text-wukirsari-primary flex items-center justify-center">
+                    <svg class="w-5 h-5 text-wukirsari-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-merapiText-primary font-display">Ubah Profil Saya</h3>
+                    <p class="text-xs text-merapiText-secondary">Perbarui informasi data diri atau kata sandi akun</p>
+                </div>
+            </div>
+            <button type="button" onclick="closeEditProfileModal()" class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 flex items-center justify-center font-bold text-sm transition-colors cursor-pointer">
+                ✕
+            </button>
+        </div>
+
+        <form action="{{ route('profile.update') }}" method="POST" class="p-6 space-y-4">
+            @csrf
+            @method('PUT')
+
+            <div>
+                <label class="block text-xs font-semibold text-merapiText-primary mb-1.5">Nama Lengkap *</label>
+                <input type="text" name="name" value="{{ old('name', $user->name) }}" required class="w-full px-3.5 py-2.5 rounded-xl border border-wukirsari-border text-xs focus:outline-none focus:border-wukirsari-primary">
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-merapiText-primary mb-1.5">Alamat Email *</label>
+                    <input type="email" name="email" value="{{ old('email', $user->email) }}" required class="w-full px-3.5 py-2.5 rounded-xl border border-wukirsari-border text-xs focus:outline-none focus:border-wukirsari-primary">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-merapiText-primary mb-1.5">Nomor WhatsApp / HP *</label>
+                    <input type="text" name="phone" value="{{ old('phone', $user->phone) }}" required placeholder="Contoh: 081234567890" class="w-full px-3.5 py-2.5 rounded-xl border border-wukirsari-border text-xs focus:outline-none focus:border-wukirsari-primary">
+                </div>
+            </div>
+
+            <div class="pt-2 border-t border-wukirsari-border/70">
+                <span class="block text-xs font-bold text-merapiText-primary mb-1">Ganti Kata Sandi (Opsional)</span>
+                <p class="text-[11px] text-merapiText-muted mb-3">Kosongkan jika tidak ingin mengganti kata sandi.</p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-merapiText-secondary mb-1">Kata Sandi Baru</label>
+                        <div class="relative">
+                            <input type="password" name="password" id="profileNewPassword" placeholder="Minimal 6 karakter" class="w-full pl-3.5 pr-10 py-2.5 rounded-xl border border-wukirsari-border text-xs focus:outline-none focus:border-wukirsari-primary">
+                            <button type="button" onclick="togglePasswordVisibility('profileNewPassword', this)" class="absolute inset-y-0 right-0 pr-3 flex items-center text-merapiText-muted hover:text-wukirsari-primary transition-colors cursor-pointer" title="Lihat / Sembunyikan Kata Sandi" tabindex="-1">
+                                <svg class="eye-open w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                <svg class="eye-slash w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-merapiText-secondary mb-1">Konfirmasi Sandi Baru</label>
+                        <div class="relative">
+                            <input type="password" name="password_confirmation" id="profileConfirmPassword" placeholder="Ketik ulang sandi" class="w-full pl-3.5 pr-10 py-2.5 rounded-xl border border-wukirsari-border text-xs focus:outline-none focus:border-wukirsari-primary">
+                            <button type="button" onclick="togglePasswordVisibility('profileConfirmPassword', this)" class="absolute inset-y-0 right-0 pr-3 flex items-center text-merapiText-muted hover:text-wukirsari-primary transition-colors cursor-pointer" title="Lihat / Sembunyikan Kata Sandi" tabindex="-1">
+                                <svg class="eye-open w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                <svg class="eye-slash w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-2.5 pt-4 border-t border-wukirsari-border">
+                <button type="button" onclick="closeEditProfileModal()" class="px-5 py-2.5 rounded-full border border-wukirsari-border text-merapiText-secondary hover:bg-slate-50 text-xs font-semibold transition-all cursor-pointer">
+                    Batal
+                </button>
+                <button type="submit" class="px-6 py-2.5 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-xs font-bold transition-all shadow-sm cursor-pointer active:scale-95">
+                    Simpan Perubahan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openEditProfileModal() {
+        const modal = document.getElementById('editProfileModal');
+        if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeEditProfileModal() {
+        const modal = document.getElementById('editProfileModal');
+        if (modal) modal.classList.add('hidden');
+    }
+
+    function togglePasswordVisibility(inputId, btn) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        const isPass = input.type === 'password';
+        input.type = isPass ? 'text' : 'password';
+        const eyeOpen = btn.querySelector('.eye-open');
+        const eyeSlash = btn.querySelector('.eye-slash');
+        if (eyeOpen && eyeSlash) {
+            eyeOpen.classList.toggle('hidden', isPass);
+            eyeSlash.classList.toggle('hidden', !isPass);
+        }
+    }
+</script>
 @endsection

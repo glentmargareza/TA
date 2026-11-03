@@ -32,14 +32,6 @@
                         {{ $package->category_badge }}
                     </span>
                     @endif
-
-                    <div class="absolute bottom-4 left-4 flex items-center gap-2 text-white text-xs bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20">
-                        <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
-                        <span>Basecamp Wukirsari, Sleman, Yogyakarta</span>
-                    </div>
                 </div>
 
                 <!-- 4 Galeri Thumbnail -->
@@ -48,7 +40,7 @@
                 @endphp
                 <div class="grid grid-cols-4 gap-2 sm:gap-4 mt-3 sm:mt-4">
                     @foreach($gallery as $index => $imgUrl)
-                    <button type="button" onclick="selectGalleryImage('{{ $imgUrl }}', this)" class="gallery-thumb relative aspect-[16/10] rounded-xl overflow-hidden border-2 transition-all {{ $index === 0 ? 'border-wukirsari-primary ring-2 ring-wukirsari-primary/30' : 'border-transparent opacity-75 hover:opacity-100 hover:border-wukirsari-border' }}">
+                    <button type="button" data-src="{{ $imgUrl }}" onclick="selectGalleryImage(this)" class="gallery-thumb relative aspect-[16/10] rounded-xl overflow-hidden border-2 transition-all {{ $index === 0 ? 'border-wukirsari-primary ring-2 ring-wukirsari-primary/30' : 'border-transparent opacity-75 hover:opacity-100 hover:border-wukirsari-border' }}">
                         <img src="{{ $imgUrl }}" alt="Galeri {{ $package->name }} {{ $index + 1 }}" class="w-full h-full object-cover">
                     </button>
                     @endforeach
@@ -140,7 +132,7 @@
                             <span class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
                             </span>
-                            <span class="font-medium">Driver Profesional Paguyuban</span>
+                            <span class="font-medium">Driver Profesional</span>
                         </div>
 
                         <div class="flex items-center gap-2.5">
@@ -148,13 +140,6 @@
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
                             </span>
                             <span class="font-medium">Toilet Bersih</span>
-                        </div>
-
-                        <div class="flex items-center gap-2.5">
-                            <span class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
-                            </span>
-                            <span class="font-medium">Air Mineral Botol</span>
                         </div>
 
                         <div class="flex items-center gap-2.5">
@@ -175,7 +160,7 @@
                             <span class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
                             </span>
-                            <span class="font-medium">Tiket Masuk & Asuransi Jasa Raharja</span>
+                            <span class="font-medium">Tiket Masuk</span>
                         </div>
 
                         <div class="flex items-center gap-2.5">
@@ -328,7 +313,7 @@
 
                 <div class="flex flex-wrap items-center gap-3">
                     <a href="{{ route('reviews.index', ['package' => $package->slug]) }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-wukirsari-border hover:border-wukirsari-primary text-merapiText-primary hover:text-wukirsari-primary text-xs font-semibold shadow-xs transition-all">
-                        <span>Lihat Semua Ulasan ({{ $reviews->count() }})</span>
+                        <span>Lihat Semua Ulasan →</span>
                     </a>
                     @guest
                     <a href="{{ route('login') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-wukirsari-sage text-wukirsari-primary hover:bg-wukirsari-primary hover:text-white text-xs font-bold transition-all">
@@ -523,6 +508,11 @@
 <!-- JAVASCRIPT UNTUK INTERAKTIVITAS GALERI FOTO DAN TAB KONTEN -->
 <script>
     function selectGalleryImage(src, buttonEl) {
+        if (src instanceof HTMLElement) {
+            buttonEl = src;
+            src = buttonEl.getAttribute('data-src');
+        }
+
         const heroImg = document.getElementById('main-hero-image');
         if (heroImg) {
             heroImg.style.opacity = '0.4';

@@ -19,7 +19,24 @@ class HomeController extends Controller
         $totalReviewsCount = Review::where('is_approved', true)->count();
         $avgRating = Review::where('is_approved', true)->avg('rating') ?: 5.0;
 
-        return view('home', compact('packages', 'reviews', 'totalReviewsCount', 'avgRating'));
+        $settingsFile = storage_path('app/basecamp_settings.json');
+        $homeSettings = [
+            'name' => 'Jeep Wukirsari',
+            'cs_phone' => '+62 812-3456-7890',
+            'basecamp_address' => 'Jl. Bebeng - Cangkringan, Wukirsari, Sleman, D.I. Yogyakarta',
+            'hero_badge' => 'Offroad Lereng Merapi',
+            'hero_headline' => 'Jelajahi Keindahan Alam Merapi Bersama Jeep Wukirsari',
+            'hero_subtitle' => 'Rasakan petualangan seru menyusuri jalur lava, menikmati panorama Merapi, dan menciptakan cerita perjalanan yang tak terlupakan.',
+        ];
+
+        if (file_exists($settingsFile)) {
+            $saved = json_decode(file_get_contents($settingsFile), true);
+            if (is_array($saved)) {
+                $homeSettings = array_merge($homeSettings, $saved);
+            }
+        }
+
+        return view('home', compact('packages', 'reviews', 'totalReviewsCount', 'avgRating', 'homeSettings'));
     }
 
     public function packagesIndex(Request $request)

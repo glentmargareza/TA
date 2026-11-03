@@ -1,535 +1,517 @@
 @extends('layouts.app')
 
-@section('title', 'Formulir Pemesanan Jeep | Jeep Wukirsari')
+@section('title', 'Formulir Pemesanan Jeep | Jeep Wukirsari Adventure')
 
 @section('content')
+<div class="bg-wukirsari-cream min-h-screen py-8 sm:py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
+        
+        <!-- Breadcrumb / Tombol Kembali -->
+        <div class="flex items-center justify-between flex-wrap gap-4">
+            <a href="{{ route('home') }}#paket" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-wukirsari-border text-merapiText-secondary hover:text-wukirsari-primary hover:border-wukirsari-primary text-xs sm:text-sm font-semibold shadow-xs transition-all group">
+                <svg class="w-4 h-4 text-wukirsari-primary group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                <span>Kembali ke Pilihan Paket</span>
+            </a>
+        </div>
+
+        <!-- Judul Halaman -->
+        <div class="space-y-1.5">
+            <span class="text-xs font-bold uppercase tracking-wider text-wukirsari-primary font-display block">
+                FORMULIR RESERVASI ONLINE
+            </span>
+            <h1 class="text-2xl sm:text-4xl font-extrabold text-merapiText-primary font-display tracking-tight">
+                Pemesanan Jeep Wukirsari
+            </h1>
+            <p class="text-merapiText-secondary text-xs sm:text-sm max-w-2xl">
+                Pilih paket wisata lereng Merapi, tentukan jadwal keberangkatan, dan nikmati opsi pembayaran instan (Lunas 100% atau Uang Muka DP 30%).
+            </p>
+        </div>
+
+        <!-- Form Pengiriman Data ke BookingController@store -->
+        <form id="bookForm" action="{{ route('booking.store') }}" method="POST" class="hidden">
+            @csrf
+            <input type="hidden" name="package_id">
+            <input type="hidden" name="slot_id">
+            <input type="hidden" name="trip_date">
+            <input type="hidden" name="passenger_count">
+            <input type="hidden" name="jeep_quantity">
+            <input type="hidden" name="arrival_type" value="self_drive">
+            <input type="hidden" name="pickup_address" value="">
+            <input type="hidden" name="pickup_lat" value="">
+            <input type="hidden" name="pickup_lng" value="">
+            <input type="hidden" name="pickup_manual" value="0">
+            <input type="hidden" name="customer_name">
+            <input type="hidden" name="customer_phone">
+            <input type="hidden" name="payment_mode">
+            <input type="hidden" name="notes">
+        </form>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <!-- Kolom Kiri: Stepper & 4 Kartu Formulir (lg:col-span-8) -->
+            <div class="lg:col-span-8 space-y-6">
+                
+                <!-- Stepper Progress Bar -->
+                <div class="bg-white border border-wukirsari-border rounded-2xl p-2 shadow-xs flex items-center justify-between gap-1 sm:gap-2 overflow-x-auto scrollbar-none sticky top-20 z-30 backdrop-blur-md bg-white/95" id="stepper">
+                    <button type="button" class="st on flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-merapiText-secondary hover:text-merapiText-primary transition-all shrink-0 cursor-pointer" data-s="1">
+                        <i class="w-6 h-6 rounded-lg bg-wukirsari-sage text-wukirsari-primary flex items-center justify-center text-xs font-bold not-italic">1</i>
+                        <span>1. Paket</span>
+                    </button>
+                    <div class="w-4 h-0.5 bg-wukirsari-border shrink-0"></div>
+                    <button type="button" class="st flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-merapiText-secondary hover:text-merapiText-primary transition-all shrink-0 cursor-pointer" data-s="2">
+                        <i class="w-6 h-6 rounded-lg bg-wukirsari-sage text-wukirsari-primary flex items-center justify-center text-xs font-bold not-italic">2</i>
+                        <span>2. Jadwal</span>
+                    </button>
+                    <div class="w-4 h-0.5 bg-wukirsari-border shrink-0"></div>
+                    <button type="button" class="st flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-merapiText-secondary hover:text-merapiText-primary transition-all shrink-0 cursor-pointer" data-s="3">
+                        <i class="w-6 h-6 rounded-lg bg-wukirsari-sage text-wukirsari-primary flex items-center justify-center text-xs font-bold not-italic">3</i>
+                        <span>3. Kapasitas</span>
+                    </button>
+                    <div class="w-4 h-0.5 bg-wukirsari-border shrink-0"></div>
+                    <button type="button" class="st flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-merapiText-secondary hover:text-merapiText-primary transition-all shrink-0 cursor-pointer" data-s="4">
+                        <i class="w-6 h-6 rounded-lg bg-wukirsari-sage text-wukirsari-primary flex items-center justify-center text-xs font-bold not-italic">4</i>
+                        <span>4. Kontak</span>
+                    </button>
+                </div>
+
+                <!-- 1. PILIH PAKET -->
+                <section class="bg-white rounded-3xl border border-wukirsari-border shadow-xs p-6 sm:p-7 space-y-5" data-sec="1">
+                    <div class="flex items-center gap-3 pb-3 border-b border-wukirsari-border/70">
+                        <span class="w-8 h-8 rounded-xl bg-wukirsari-primary text-white text-sm font-bold flex items-center justify-center font-display shadow-xs shrink-0">1</span>
+                        <div>
+                            <h2 class="text-base sm:text-lg font-bold text-merapiText-primary font-display">Pilih Paket Wisata</h2>
+                            <p class="text-xs text-merapiText-secondary">Tarif dihitung per unit armada jeep (kapasitas 1–4 orang/jeep).</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" id="pkgs">
+                        <!-- Dimuat otomatis via JavaScript dari database -->
+                    </div>
+                </section>
+
+                <!-- 2. JADWAL & SESI TRIP -->
+                <section class="bg-white rounded-3xl border border-wukirsari-border shadow-xs p-6 sm:p-7 space-y-5" data-sec="2">
+                    <div class="flex items-center gap-3 pb-3 border-b border-wukirsari-border/70">
+                        <span class="w-8 h-8 rounded-xl bg-wukirsari-primary text-white text-sm font-bold flex items-center justify-center font-display shadow-xs shrink-0">2</span>
+                        <div>
+                            <h2 class="text-base sm:text-lg font-bold text-merapiText-primary font-display">Pilih Tanggal & Jam Trip</h2>
+                            <p class="text-xs text-merapiText-secondary">Tentukan tanggal wisata dan pilih sesi keberangkatan yang tersedia.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="space-y-1.5">
+                            <label for="date" class="block text-xs font-bold text-merapiText-primary">Tanggal Kunjungan *</label>
+                            <input id="date" type="date" class="w-full px-4 py-3 rounded-2xl border border-wukirsari-border bg-white text-merapiText-primary text-sm font-semibold focus:outline-none focus:border-wukirsari-primary focus:ring-2 focus:ring-wukirsari-primary/15 transition-all">
+                        </div>
+                        <div class="space-y-1.5">
+                            <label for="session" class="block text-xs font-bold text-merapiText-primary">Sesi Waktu Keberangkatan *</label>
+                            <select id="session" class="w-full px-4 py-3 rounded-2xl border border-wukirsari-border bg-white text-merapiText-primary text-sm font-semibold focus:outline-none focus:border-wukirsari-primary focus:ring-2 focus:ring-wukirsari-primary/15 transition-all"></select>
+                            <span class="block text-[11px] font-medium text-amber-600" id="sessHint"></span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. KAPASITAS & JUMLAH JEEP -->
+                <section class="bg-white rounded-3xl border border-wukirsari-border shadow-xs p-6 sm:p-7 space-y-5" data-sec="3">
+                    <div class="flex items-center gap-3 pb-3 border-b border-wukirsari-border/70">
+                        <span class="w-8 h-8 rounded-xl bg-wukirsari-primary text-white text-sm font-bold flex items-center justify-center font-display shadow-xs shrink-0">3</span>
+                        <div>
+                            <h2 class="text-base sm:text-lg font-bold text-merapiText-primary font-display">Kapasitas & Jumlah Jeep</h2>
+                            <p class="text-xs text-merapiText-secondary">Standar operasional keselamatan maksimal 4 orang penumpang per unit jeep.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Penumpang Counter -->
+                        <div class="p-4 rounded-2xl bg-wukirsari-cream/60 border border-wukirsari-border space-y-3">
+                            <label class="block text-xs font-bold text-merapiText-primary">Jumlah Penumpang (Orang)</label>
+                            <div class="flex items-center justify-between bg-white px-3 py-2 rounded-xl border border-wukirsari-border shadow-2xs">
+                                <button type="button" id="paxMinus" class="w-9 h-9 rounded-lg bg-wukirsari-cream hover:bg-wukirsari-sage text-merapiText-primary font-bold flex items-center justify-center text-base transition-colors cursor-pointer active:scale-95">−</button>
+                                <output id="pax" class="font-extrabold text-lg text-merapiText-primary font-display">4</output>
+                                <button type="button" id="paxPlus" class="w-9 h-9 rounded-lg bg-wukirsari-cream hover:bg-wukirsari-sage text-merapiText-primary font-bold flex items-center justify-center text-base transition-colors cursor-pointer active:scale-95">+</button>
+                            </div>
+                            <span class="block text-[11px] text-merapiText-secondary">*Maksimal 4 penumpang per armada jeep.</span>
+                        </div>
+
+                        <!-- Jeep Counter -->
+                        <div class="p-4 rounded-2xl bg-wukirsari-cream/60 border border-wukirsari-border space-y-3">
+                            <label class="block text-xs font-bold text-merapiText-primary">Jumlah Armada Jeep</label>
+                            <div class="flex items-center justify-between bg-white px-3 py-2 rounded-xl border border-wukirsari-border shadow-2xs">
+                                <button type="button" id="minus" class="w-9 h-9 rounded-lg bg-wukirsari-cream hover:bg-wukirsari-sage text-merapiText-primary font-bold flex items-center justify-center text-base transition-colors cursor-pointer active:scale-95">−</button>
+                                <output id="qty" class="font-extrabold text-lg text-wukirsari-primary font-display">1</output>
+                                <button type="button" id="plus" class="w-9 h-9 rounded-lg bg-wukirsari-cream hover:bg-wukirsari-sage text-merapiText-primary font-bold flex items-center justify-center text-base transition-colors cursor-pointer active:scale-95">+</button>
+                            </div>
+                            <span class="block text-[11px] font-bold text-wukirsari-primary" id="jeepHint"></span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4. DATA KONTAK PEMESAN -->
+                <section class="bg-white rounded-3xl border border-wukirsari-border shadow-xs p-6 sm:p-7 space-y-6" data-sec="4">
+                    <div class="flex items-center gap-3 pb-3 border-b border-wukirsari-border/70">
+                        <span class="w-8 h-8 rounded-xl bg-wukirsari-primary text-white text-sm font-bold flex items-center justify-center font-display shadow-xs shrink-0">4</span>
+                        <div>
+                            <h2 class="text-base sm:text-lg font-bold text-merapiText-primary font-display">Data Kontak Pemesan</h2>
+                            <p class="text-xs text-merapiText-secondary">Lengkapi kontak untuk penerbitan dan pengiriman konfirmasi e-tiket resmi.</p>
+                        </div>
+                    </div>
+
+                    <!-- Customer Contact Info -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="space-y-1.5">
+                            <label for="name" class="block text-xs font-bold text-merapiText-primary">Nama Lengkap Pemesan *</label>
+                            <input id="name" class="w-full px-4 py-3 rounded-2xl border border-wukirsari-border bg-white text-merapiText-primary text-sm focus:outline-none focus:border-wukirsari-primary focus:ring-2 focus:ring-wukirsari-primary/15 transition-all" placeholder="Contoh: Budi Santoso" autocomplete="name">
+                        </div>
+                        <div class="space-y-1.5">
+                            <label for="wa" class="block text-xs font-bold text-merapiText-primary">Nomor WhatsApp Aktif *</label>
+                            <input id="wa" class="w-full px-4 py-3 rounded-2xl border border-wukirsari-border bg-white text-merapiText-primary text-sm focus:outline-none focus:border-wukirsari-primary focus:ring-2 focus:ring-wukirsari-primary/15 transition-all" inputmode="tel" placeholder="Contoh: 081234567890" autocomplete="tel">
+                            <span class="block text-[11px] text-merapiText-muted">*E-Tiket resmi & rincian dikirim ke nomor ini.</span>
+                        </div>
+                    </div>
+
+                    <!-- Customer Notes -->
+                    <div class="space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <label for="notes" class="block text-xs font-bold text-merapiText-primary">Pesan / Catatan Khusus (Opsional)</label>
+                            <span class="text-[11px] text-merapiText-muted"><span id="notesCount">0</span>/500 karakter</span>
+                        </div>
+                        <textarea id="notes" rows="3" maxlength="500" class="w-full px-4 py-3 rounded-2xl border border-wukirsari-border bg-white text-merapiText-primary text-sm focus:outline-none focus:border-wukirsari-primary focus:ring-2 focus:ring-wukirsari-primary/15 transition-all" placeholder="Contoh: Request driver ramah untuk lansia atau anak-anak, minta helm bersih."></textarea>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Kolom Kanan: Sticky Sidebar Tagihan (lg:col-span-4) -->
+            <div class="lg:col-span-4 lg:sticky lg:top-24 space-y-6" id="pay">
+                <div class="bg-white rounded-3xl border border-wukirsari-border shadow-sm p-6 sm:p-7 space-y-5">
+                    <h3 class="text-base sm:text-lg font-bold text-merapiText-primary font-display pb-3 border-b border-wukirsari-border/70">
+                        Ringkasan Pemesanan
+                    </h3>
+
+                    <!-- Ticket Pill Preview -->
+                    <div class="bg-wukirsari-cream/80 border border-dashed border-wukirsari-border rounded-2xl p-4 space-y-1">
+                        <strong class="block text-sm font-bold text-merapiText-primary font-display" id="tPkg">Paket</strong>
+                        <span class="block text-xs text-merapiText-secondary" id="tDate">Belum pilih tanggal</span>
+                    </div>
+
+                    <!-- Breakdown Rows -->
+                    <div class="space-y-2.5 text-xs sm:text-sm">
+                        <div class="flex justify-between items-center text-merapiText-secondary">
+                            <span id="lJeep">Sewa Jeep</span>
+                            <strong class="text-merapiText-primary font-bold" id="vJeep">Rp 0</strong>
+                        </div>
+                        <div class="flex justify-between items-center text-merapiText-secondary">
+                            <span>BBM, Driver & Asuransi</span>
+                            <strong class="text-emerald-700 font-bold">Gratis (Termasuk)</strong>
+                        </div>
+                    </div>
+
+                    <!-- Total Amount -->
+                    <div class="pt-4 border-t border-wukirsari-border flex justify-between items-center">
+                        <span class="text-xs font-bold text-merapiText-secondary uppercase tracking-wider">Total Biaya</span>
+                        <strong class="text-2xl sm:text-3xl font-extrabold text-wukirsari-primary font-display" id="vTotal">Rp 0</strong>
+                    </div>
+
+                    <!-- Skema Pembayaran -->
+                    <div class="space-y-2 pt-2">
+                        <label class="block text-xs font-bold text-merapiText-primary">Pilihan Skema Pembayaran</label>
+                        <div class="grid grid-cols-2 gap-2.5 pay">
+                            <button type="button" class="po sel p-3 rounded-2xl border text-left transition-all cursor-pointer" data-p="full">
+                                <strong class="block text-xs font-bold text-merapiText-primary">Lunas (100%)</strong>
+                                <span class="block text-[10px] text-merapiText-secondary mt-0.5">Langsung beres</span>
+                            </button>
+                            <button type="button" class="po p-3 rounded-2xl border text-left transition-all cursor-pointer" data-p="dp">
+                                <strong class="block text-xs font-bold text-merapiText-primary">Uang Muka (DP 30%)</strong>
+                                <span class="block text-[10px] text-merapiText-secondary mt-0.5">Sisa di basecamp</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Box Tagihan Sekarang -->
+                    <div class="bg-wukirsari-dark text-white rounded-2xl p-4 flex items-center justify-between shadow-xs">
+                        <div>
+                            <span class="block text-[11px] text-wukirsari-sage font-medium" id="dueLbl">Wajib Dibayar Sekarang</span>
+                            <strong class="text-xl sm:text-2xl font-extrabold font-display" id="vDue">Rp 0</strong>
+                        </div>
+                        <span class="text-xs text-wukirsari-sage font-semibold" id="dueSub">Lunas</span>
+                    </div>
+
+                    <!-- Tombol Lanjutkan -->
+                    <button id="submit" type="button" class="w-full py-4 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white font-bold text-sm sm:text-base shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]">
+                        <span>Konfirmasi & Terbitkan E-Tiket</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                    </button>
+
+                    <!-- Trust Badges -->
+                    <div class="flex items-center justify-center gap-3 text-[11px] text-merapiText-muted font-medium pt-1">
+                        <span>🛡️ Pembayaran Resmi</span>
+                        <span>•</span>
+                        <span>🔄 Reschedule H-2</span>
+                        <span>•</span>
+                        <span>⚡ Konfirmasi Instan</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Mobile Bottom Floating Bar -->
+<div class="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-wukirsari-border px-5 py-3.5 flex items-center justify-between z-40 shadow-2xl">
+    <div>
+        <span class="block text-[10px] font-bold uppercase tracking-wider text-merapiText-muted">Total Tagihan</span>
+        <strong class="text-lg font-extrabold text-wukirsari-primary font-display" id="mTotal">Rp 0</strong>
+    </div>
+    <a href="#pay" class="px-5 py-2.5 rounded-full bg-wukirsari-primary text-white text-xs font-bold shadow-md">
+        Rincian Pembayaran
+    </a>
+</div>
+
+<!-- Toast Popup Notification -->
+<div id="toast" class="fixed left-1/2 bottom-20 -translate-x-1/2 bg-merapiText-primary text-white text-xs font-semibold px-5 py-3 rounded-2xl shadow-2xl z-50 transition-all duration-300 opacity-0 pointer-events-none translate-y-6"></div>
+
 <style>
-.bk{--g9:#14301b;--g8:#1d4026;--g7:#255231;--g6:#2f6a3f;--g1:#e3efe5;--g05:#f1f6f2;--cream:#f5f4ee;--ink:#15221a;--muted:#6b7a70;--line:#e4e8e2;--accent:#e8a33d;--danger:#c0392b;--shadow:0 10px 30px -12px rgba(20,48,27,.18);background:var(--cream);color:var(--ink);padding:36px 0 70px;line-height:1.5}
-.bk *{box-sizing:border-box}
-.bk-in{max-width:1200px;margin:0 auto;padding:0 24px}
-.bk-head small{font-size:12px;font-weight:800;letter-spacing:1.5px;color:var(--g8)}
-.bk-head h1{font-size:clamp(28px,4vw,38px);font-weight:800;letter-spacing:-.5px;margin:6px 0}
-.bk-head p{color:var(--muted)}
-.bk-err{margin-top:18px;background:#fdecea;border:1px solid #f5c2bd;color:#8e2a20;border-radius:14px;padding:12px 16px;font-size:13.5px}
-.bk-err ul{margin:0;padding-left:18px}
-.bk-grid{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:28px;align-items:start;margin-top:26px}
-.bk-stepper{grid-column:1/-1;display:flex;gap:10px;background:#fff;border-radius:999px;padding:8px;box-shadow:var(--shadow);overflow-x:auto}
-.bk-st{flex:1;display:flex;align-items:center;gap:10px;padding:10px 16px;border-radius:999px;font-size:13px;font-weight:700;color:var(--muted);white-space:nowrap;transition:.25s;cursor:pointer;border:0;background:none}
-.bk-st i{font-style:normal;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--g1);color:var(--g7);font-size:12px}
-.bk-st.on{background:var(--g8);color:#fff}
-.bk-st.on i{background:var(--accent);color:var(--g9)}
-.bk-st.done i{background:var(--g6);color:#fff}
-.bk .card{background:#fff;border-radius:20px;padding:28px;box-shadow:var(--shadow);margin-bottom:22px}
-.bk .card h2{display:flex;align-items:center;gap:12px;font-size:19px;font-weight:800;margin:0 0 6px}
-.bk .num{width:30px;height:30px;border-radius:50%;background:var(--g8);color:#fff;display:grid;place-items:center;font-size:14px}
-.bk .sub{color:var(--muted);font-size:14px;margin:0 0 20px 42px}
-.bk .pk{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
-.bk .pkg{position:relative;display:flex;flex-direction:column;gap:6px;text-align:left;padding:18px;border:1.5px solid var(--line);border-radius:16px;background:#fff;transition:.2s;cursor:pointer}
-.bk .pkg:hover{border-color:var(--g6);transform:translateY(-3px);box-shadow:0 12px 24px -14px rgba(20,48,27,.4)}
-.bk .pkg.sel{border-color:var(--g8);background:var(--g05);box-shadow:0 0 0 3px rgba(29,64,38,.12)}
-.bk .pkg input{display:none}
-.bk .pkg h3{font-size:15px;font-weight:800;margin:0;padding-right:26px}
-.bk .pkg .pr{font-size:19px;font-weight:800;color:var(--g7)}
-.bk .pkg .meta{font-size:12.5px;color:var(--muted)}
-.bk .pkg .check{position:absolute;top:14px;right:14px;width:22px;height:22px;border-radius:50%;background:var(--g8);color:#fff;font-size:12px;display:none;place-items:center}
-.bk .pkg.sel .check{display:grid}
-.bk .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.bk .f{display:flex;flex-direction:column;gap:7px;margin-bottom:16px}
-.bk .f label{font-size:13px;font-weight:700;color:#2e3d33;margin:0}
-.bk .in{width:100%;padding:13px 15px;border:1.5px solid var(--line);border-radius:12px;background:#fff;outline:none;transition:.2s;font-size:14.5px;font-family:inherit;color:var(--ink)}
-.bk .in:focus{border-color:var(--g6);box-shadow:0 0 0 4px rgba(47,106,63,.12)}
-.bk .in.err{border-color:var(--danger)}
-.bk select.in{appearance:none;-webkit-appearance:none;padding-right:42px;cursor:pointer;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%231d4026' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 16px center}
-.bk .hint{font-size:12.5px;color:var(--muted)}
-.bk .qty{display:inline-flex;align-items:center;border:1.5px solid var(--line);border-radius:12px;overflow:hidden;align-self:flex-start}
-.bk .qty button{width:44px;height:44px;font-size:20px;font-weight:700;color:var(--g7);background:none;border:0;cursor:pointer}
-.bk .qty button:hover{background:var(--g05)}
-.bk .qty output{min-width:52px;text-align:center;font-weight:800}
-.bk .arrive{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
-.bk .ar{padding:14px;border:1.5px solid var(--line);border-radius:14px;font-weight:700;font-size:13.5px;background:#fff;transition:.2s;cursor:pointer;color:var(--ink)}
-.bk .ar:hover{border-color:var(--g6)}
-.bk .ar.sel{border-color:var(--g8);background:var(--g05);color:var(--g8);box-shadow:0 0 0 3px rgba(29,64,38,.1)}
-.bk .search{display:flex;gap:10px}
-.bk .search .in{flex:1}
-.bk .btn-s{padding:0 18px;border-radius:12px;background:var(--g8);color:#fff;font-weight:700;font-size:14px;white-space:nowrap;border:0;cursor:pointer;min-height:46px}
-.bk .btn-s:hover{background:var(--g7)}
-.bk .dist{display:flex;align-items:center;justify-content:space-between;gap:14px;border-radius:14px;padding:14px 16px;background:var(--g05);border:1.5px solid #cfe0d2;margin-bottom:16px}
-.bk .dist.over{background:#fff7e8;border-color:#f3dcae}
-.bk .dist .k{font-size:22px;font-weight:800;color:var(--g8)}
-.bk .dist.over .k{color:#9a6a0c}
-.bk .dist small{display:block;color:var(--muted);font-size:12.5px}
-.bk .dist .tag{font-size:12px;font-weight:800;padding:6px 12px;border-radius:999px;background:var(--g8);color:#fff;white-space:nowrap}
-.bk .dist.over .tag{background:var(--accent);color:var(--g9)}
-.bk .sum{position:sticky;top:100px}
-.bk .sum .card{margin:0;padding:26px}
-.bk .sum h3{font-size:18px;font-weight:800;padding-bottom:14px;border-bottom:1px solid var(--line);margin:0 0 14px}
-.bk .ticket{background:var(--g05);border:1.5px dashed #b8cfbc;border-radius:14px;padding:14px;margin-bottom:14px;font-size:13px}
-.bk .ticket b{display:block;font-size:15px;color:var(--g8)}
-.bk .ticket span{color:var(--muted)}
-.bk .row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;font-size:14px;color:#52625a}
-.bk .row b{color:var(--ink);font-weight:700;text-align:right}
-.bk .row b.free{color:#0f8a52}
-.bk .row.extra{background:#fff7e8;border:1px solid #f3dcae;border-radius:10px;padding:9px 12px;margin:4px 0;color:#7a5410}
-.bk .row.extra b{color:#9a6a0c}
-.bk .row.extra small{display:block;font-size:11.5px;opacity:.85}
-.bk .total{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);margin-top:8px;padding-top:16px}
-.bk .total span{font-weight:800}
-.bk .total strong{font-size:27px;font-weight:800;color:var(--g8);letter-spacing:-.5px}
-.bk .pay{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0 12px}
-.bk .po{text-align:left;padding:12px;border:1.5px solid var(--line);border-radius:14px;transition:.2s;background:#fff;cursor:pointer;color:var(--ink)}
-.bk .po b{display:block;font-size:13px}
-.bk .po small{font-size:11.5px;color:var(--muted)}
-.bk .po.sel{border-color:var(--g8);background:var(--g05);box-shadow:0 0 0 3px rgba(29,64,38,.1)}
-.bk .due{background:var(--g9);color:#fff;border-radius:14px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
-.bk .due small{display:block;color:#a9c4af;font-size:12px}
-.bk .due strong{font-size:20px}
-.bk .due span{font-size:12px;color:#a9c4af;text-align:right}
-.bk .cta{width:100%;background:linear-gradient(135deg,var(--g7),var(--g9));color:#fff;padding:16px;border-radius:14px;font-weight:800;font-size:15.5px;display:flex;justify-content:center;align-items:center;gap:10px;transition:.2s;box-shadow:0 12px 22px -12px rgba(20,48,27,.7);border:0;cursor:pointer}
-.bk .cta:hover{transform:translateY(-2px)}
-.bk .cta:disabled{opacity:.7;cursor:wait;transform:none}
-.bk .secure{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-top:14px;font-size:12px;color:var(--muted);font-weight:600}
-.bk-toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,120px);background:var(--g9);color:#fff;padding:13px 20px;border-radius:12px;font-size:14px;font-weight:600;transition:.35s;z-index:1000;max-width:90%}
-.bk-toast.show{transform:translate(-50%,0)}
-.bk-mbar{display:none}
-@media(max-width:980px){
-  .bk-grid{grid-template-columns:1fr}
-  .bk .sum{position:static}
-  .bk{padding-bottom:100px}
-  .bk-mbar{display:flex;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);padding:12px 18px;justify-content:space-between;align-items:center;z-index:60;box-shadow:0 -8px 24px -12px rgba(0,0,0,.2)}
-  .bk-mbar small{display:block;color:var(--muted);font-size:11.5px}
-  .bk-mbar strong{font-size:18px;color:var(--g8)}
-  .bk-mbar a{background:var(--g8);color:#fff;padding:12px 20px;border-radius:12px;font-weight:700;font-size:14px;text-decoration:none}
+/* Active State Helpers for Stepper & Selectors */
+.pkg.sel {
+    border-color: #1E3F20 !important;
+    background-color: #E8EFE9 !important;
+    box-shadow: 0 0 0 2px rgba(30, 63, 32, 0.2) !important;
 }
-@media(max-width:560px){
-  .bk .grid2,.bk .arrive{grid-template-columns:1fr}
-  .bk .card{padding:20px}
-  .bk .sub{margin-left:0}
-  .bk .search{flex-direction:column}
+.po.sel {
+    border-color: #1E3F20 !important;
+    background-color: #E8EFE9 !important;
+    box-shadow: 0 0 0 2px rgba(30, 63, 32, 0.2) !important;
+}
+.st.on {
+    background-color: #1E3F20 !important;
+    color: #ffffff !important;
+}
+.st.on i {
+    background-color: #ffffff !important;
+    color: #1E3F20 !important;
+}
+.st.done {
+    color: #1E3F20 !important;
+}
+.st.done i {
+    background-color: #1E3F20 !important;
+    color: #ffffff !important;
+}
+.err {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2) !important;
+}
+#toast.show {
+    opacity: 1 !important;
+    transform: translate(-50%, 0) !important;
 }
 </style>
 
-<div class="bk" id="bk"
-     data-base-lat="{{ \App\Http\Controllers\BookingController::BASECAMP_LAT }}"
-     data-base-lng="{{ \App\Http\Controllers\BookingController::BASECAMP_LNG }}"
-     data-free-km="{{ \App\Http\Controllers\BookingController::PICKUP_FREE_KM }}"
-     data-per-km="{{ \App\Http\Controllers\BookingController::PICKUP_EXTRA_PER_KM }}"
-     data-base-zone="{{ $baseZone->id ?? '' }}"
-     data-shuttle-zone="{{ $shuttleZone->id ?? '' }}">
-<div class="bk-in">
-
-  <div class="bk-head">
-    <small>FORMULIR RESERVASI</small>
-    <h1>Pemesanan Jeep Wukirsari</h1>
-    <p>Pilih paket, jadwal keberangkatan, dan opsi pembayaran aman (Full atau Uang Muka DP 30%).</p>
-  </div>
-
-  @if ($errors->any())
-  <div class="bk-err">
-    <ul>
-      @foreach ($errors->all() as $err)
-      <li>{{ $err }}</li>
-      @endforeach
-    </ul>
-  </div>
-  @endif
-
-  <form action="{{ route('booking.store') }}" method="POST" id="bookingForm" class="bk-grid">
-    @csrf
-    <input type="hidden" name="passenger_count" id="passenger_count" value="4">
-    <input type="hidden" name="jeep_quantity" id="jeep_quantity" value="1">
-    <input type="hidden" name="arrival_type" id="arrival_type" value="self_drive">
-    <input type="hidden" name="pickup_zone_id" id="pickup_zone_id" value="{{ $baseZone->id ?? '' }}">
-    <input type="hidden" name="pickup_distance_km" id="pickup_distance_km" value="">
-    <input type="hidden" name="pickup_lat" id="pickup_lat" value="">
-    <input type="hidden" name="pickup_lng" id="pickup_lng" value="">
-    <input type="hidden" name="payment_mode" id="payment_mode" value="FULL">
-
-    <div class="bk-stepper" id="bkStepper">
-      <button type="button" class="bk-st on" data-s="1"><i>1</i>Paket</button>
-      <button type="button" class="bk-st" data-s="2"><i>2</i>Jadwal</button>
-      <button type="button" class="bk-st" data-s="3"><i>3</i>Kapasitas</button>
-      <button type="button" class="bk-st" data-s="4"><i>4</i>Kontak</button>
-    </div>
-
-    <div>
-      <!-- 1. PAKET -->
-      <section class="card" data-sec="1">
-        <h2><span class="num">1</span>Pilih Paket Wisata</h2>
-        <p class="sub">Harga per unit jeep.</p>
-        <div class="pk">
-          @foreach($packages as $pkg)
-          @php $isSun = str_contains(strtolower(($pkg->slug ?? '') . ' ' . $pkg->name), 'sunrise'); @endphp
-          <label class="pkg {{ $pkg->id == $selectedPackage->id ? 'sel' : '' }}">
-            <input type="radio" name="package_id" value="{{ $pkg->id }}"
-                   data-price="{{ (int) $pkg->price_per_jeep }}"
-                   data-name="{{ $pkg->name }}"
-                   data-sunrise="{{ $isSun ? 1 : 0 }}"
-                   {{ $pkg->id == $selectedPackage->id ? 'checked' : '' }}>
-            <h3>{{ $pkg->name }}</h3>
-            <div class="pr">Rp {{ number_format($pkg->price_per_jeep, 0, ',', '.') }}</div>
-            <div class="meta">{{ $pkg->duration_minutes }} menit</div>
-            <span class="check">✓</span>
-          </label>
-          @endforeach
-        </div>
-      </section>
-
-      <!-- 2. JADWAL -->
-      <section class="card" data-sec="2">
-        <h2><span class="num">2</span>Pilih Tanggal &amp; Jam Trip</h2>
-        <p class="sub">Pilih hari dan sesi keberangkatan.</p>
-        <div class="grid2">
-          <div class="f">
-            <label for="trip_date">Tanggal Kunjungan</label>
-            <input type="date" name="trip_date" id="trip_date" class="in" min="{{ date('Y-m-d') }}" value="{{ old('trip_date', date('Y-m-d', strtotime('+1 day'))) }}" required>
-          </div>
-          <div class="f">
-            <label for="slot_id">Sesi Waktu Keberangkatan</label>
-            <select name="slot_id" id="slot_id" class="in" required>
-              @foreach($slots as $slot)
-              <option value="{{ $slot->id }}" data-sunrise="{{ str_contains(strtolower($slot->slot_label), 'sunrise') ? 1 : 0 }}" {{ old('slot_id') == $slot->id ? 'selected' : '' }}>{{ $slot->slot_label }}</option>
-              @endforeach
-            </select>
-            <span class="hint" id="slotHint"></span>
-          </div>
-        </div>
-      </section>
-
-      <!-- 3. KAPASITAS -->
-      <section class="card" data-sec="3">
-        <h2><span class="num">3</span>Kapasitas &amp; Jumlah Jeep</h2>
-        <p class="sub">Satu jeep dapat memuat maksimal 4 penumpang.</p>
-        <div class="grid2">
-          <div class="f">
-            <label>Jumlah Penumpang (Orang)</label>
-            <div class="qty"><button type="button" id="paxMinus" aria-label="Kurangi penumpang">−</button><output id="paxOut">4</output><button type="button" id="paxPlus" aria-label="Tambah penumpang">+</button></div>
-            <span class="hint">*Maksimal 4 penumpang per armada jeep.</span>
-          </div>
-          <div class="f">
-            <label>Jumlah Armada Jeep</label>
-            <div class="qty"><button type="button" id="jeepMinus" aria-label="Kurangi jeep">−</button><output id="jeepOut">1</output><button type="button" id="jeepPlus" aria-label="Tambah jeep">+</button></div>
-            <span class="hint" id="jeepHint" style="color:var(--g7);font-weight:600"></span>
-          </div>
-        </div>
-      </section>
-
-      <!-- 4. KEDATANGAN & KONTAK -->
-      <section class="card" data-sec="4">
-        <h2><span class="num">4</span>Opsi Kedatangan &amp; Kontak</h2>
-        <p class="sub">Pilih cara Anda tiba, lalu isi kontak untuk pengiriman tiket.</p>
-        <div class="arrive">
-          <button type="button" class="ar sel" data-m="self">Datang Sendiri ke Basecamp</button>
-          <button type="button" class="ar" data-m="shuttle">Layanan Antar-Jemput (Shuttle)</button>
-        </div>
-
-        <div id="pickupBox" hidden>
-          <div class="f">
-            <label for="pickup_address">Nama Hotel / Alamat Penjemputan *</label>
-            <input type="text" name="pickup_address" id="pickup_address" class="in" maxlength="300" value="{{ old('pickup_address') }}" placeholder="Contoh: Hotel Tentrem, Jl. P. Mangkubumi, Yogyakarta">
-            <span class="hint">Informasi untuk driver saat menjemput.</span>
-          </div>
-          <div class="f" style="margin-bottom:12px">
-            <label>Titik Lokasi Penjemputan *</label>
-            <button type="button" class="btn-s" id="btnGps" style="padding:14px">Bagikan Lokasi Saya Sekarang</button>
-            <span class="hint">Tekan saat Anda berada di lokasi jemput. Jarak dari basecamp dihitung otomatis.</span>
-          </div>
-          <div class="f">
-            <label for="mapLink">Atau tempel link Google Maps / koordinat</label>
-            <div class="search">
-              <input id="mapLink" class="in" placeholder="https://www.google.com/maps/... atau -7.7956, 110.3695">
-              <button type="button" class="btn-s" id="btnLink">Hitung</button>
-            </div>
-            <span class="hint">Di Google Maps: tahan lama pada lokasi hotel, lalu salin angka koordinat yang muncul di bagian atas.</span>
-          </div>
-          <div class="dist" id="dist">
-            <div><div class="k" id="distKm">—</div><small id="distTxt">Bagikan lokasi untuk menghitung jarak otomatis.</small></div>
-            <span class="tag" id="distTag">Belum dihitung</span>
-          </div>
-        </div>
-
-        <div class="grid2">
-          <div class="f">
-            <label for="customer_name">Nama Lengkap Pemesan *</label>
-            <input type="text" name="customer_name" id="customer_name" class="in" required maxlength="100" value="{{ old('customer_name') }}" placeholder="Contoh: Budi Santoso" autocomplete="name">
-          </div>
-          <div class="f">
-            <label for="customer_phone">Nomor WhatsApp Aktif *</label>
-            <input type="tel" name="customer_phone" id="customer_phone" class="in" required maxlength="20" value="{{ old('customer_phone') }}" placeholder="Contoh: 081234567890" autocomplete="tel" inputmode="tel">
-            <span class="hint">*Tiket QR Code dikirim ke nomor ini.</span>
-          </div>
-        </div>
-      </section>
-    </div>
-
-    <!-- RINGKASAN -->
-    <aside class="sum" id="bkSummary">
-      <div class="card">
-        <h3>Ringkasan Tagihan</h3>
-        <div class="ticket"><b id="tPkg">—</b><span id="tDate">—</span></div>
-        <div class="row"><span id="lJeep">Sewa Jeep</span><b id="vJeep">Rp 0</b></div>
-        <div class="row"><span>Layanan Penjemputan</span><b id="vPick">Tidak dipilih</b></div>
-        <div class="row extra" id="rowExtra" style="display:none"><span id="lExtra">Biaya Tambahan Jemput</span><b id="vExtra">Rp 0</b></div>
-        <div class="row"><span>Asuransi &amp; BBM</span><b class="free">Gratis (Termasuk)</b></div>
-        <div class="total"><span>Total Biaya</span><strong id="vTotal">Rp 0</strong></div>
-
-        <div style="margin-top:20px;font-size:13px;font-weight:800">Pilih Skema Pembayaran</div>
-        <div class="pay">
-          <button type="button" class="po sel" data-p="FULL"><b>Bayar Lunas (100%)</b><small>Langsung beres</small></button>
-          <button type="button" class="po" data-p="DP"><b>Uang Muka (DP 30%)</b><small>Pelunasan di basecamp</small></button>
-        </div>
-        <div class="due"><div><small>Wajib Dibayar Sekarang</small><strong id="vDue">Rp 0</strong></div><span id="dueSub"></span></div>
-        <button class="cta" id="btnSubmit" type="submit"><span>Konfirmasi &amp; Terbitkan E-Tiket →</span></button>
-        <div class="secure"><span>Data aman</span><span>Reschedule gratis H-2</span><span>Tiket resmi</span></div>
-      </div>
-    </aside>
-  </form>
-</div>
-
-<div class="bk-mbar"><div><small>Total biaya</small><strong id="mTotal">Rp 0</strong></div><a href="#bkSummary">Lihat Ringkasan</a></div>
-<div class="bk-toast" id="bkToast"></div>
-</div>
+<script type="application/json" id="booking-data">@json($bookingData)</script>
 
 <script>
-(function () {
-  var root = document.getElementById('bk');
-  var CFG = {
-    lat: parseFloat(root.dataset.baseLat),
-    lng: parseFloat(root.dataset.baseLng),
-    free: parseFloat(root.dataset.freeKm),
-    perKm: parseInt(root.dataset.perKm, 10)
-  };
-  var ZONE = { base: root.dataset.baseZone, shuttle: root.dataset.shuttleZone };
-  var $ = function (s) { return root.querySelector(s); };
-  var $$ = function (s) { return Array.prototype.slice.call(root.querySelectorAll(s)); };
-  var rp = function (n) { return 'Rp ' + Number(n).toLocaleString('id-ID'); };
-  var PER_JEEP = 4;
-  var st = { pax: 4, jeep: 1, shuttle: false, pay: 'FULL', km: null, approx: false, calc: false };
-  var calcId = 0, toastT;
+/* ====== PENGATURAN (diambil dari server) ====== */
+const bookingDataEl = document.getElementById('booking-data');
+const D              = bookingDataEl ? JSON.parse(bookingDataEl.textContent || '{}') : (window.BOOKING_DATA || {});
+window.BOOKING_DATA  = D;
+const PER_JEEP       = 4;
+const PACKAGES       = D.packages || [];
+const SESSIONS       = D.slots || [];
 
-  function toast(msg) {
-    var t = $('#bkToast'); t.textContent = msg; t.classList.add('show');
-    clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('show'); }, 3600);
-  }
-  function setStep(n) {
-    $$('.bk-st').forEach(function (s) {
-      var k = +s.dataset.s;
-      s.classList.toggle('on', k === n);
-      s.classList.toggle('done', k < n);
-      s.querySelector('i').textContent = k < n ? '✓' : k;
-    });
-  }
-  function pkg() { return $$('input[name=package_id]').filter(function (r) { return r.checked; })[0]; }
-  function isoToday() { var d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); }
+const $ = s => document.querySelector(s);
+const rp = n => 'Rp ' + Number(n).toLocaleString('id-ID');
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const state = {
+  pkg: D.selectedId ?? (PACKAGES[0] ? PACKAGES[0].id : null),
+  qty: 1, pax: 4, session: null, pay: 'full'
+};
+const curPkg = () => PACKAGES.find(x => String(x.id) === String(state.pkg)) || PACKAGES[0];
 
-  /* ===== PAKET & SESI ===== */
-  var slotSel = $('#slot_id'), dateEl = $('#trip_date');
-  $$('#slot_id option').forEach(function (o) {
-    var m = o.textContent.match(/(\d{1,2})[:.](\d{2})/);
-    o.dataset.min = m ? (parseInt(m[1], 10) * 60 + parseInt(m[2], 10)) : '';
+/* ====== 1. PAKET ====== */
+const pkgsEl = $('#pkgs');
+if (pkgsEl && PACKAGES.length) {
+  pkgsEl.innerHTML = PACKAGES.map(p => `
+    <button type="button" class="pkg ${String(p.id)===String(state.pkg)?'sel':''} p-4 rounded-2xl border border-wukirsari-border bg-white text-left transition-all flex flex-col justify-between gap-3 cursor-pointer hover:border-wukirsari-primary/50 relative group" data-id="${p.id}">
+      <div>
+        <h3 class="font-bold text-sm text-merapiText-primary font-display group-hover:text-wukirsari-primary transition-colors">${esc(p.name)}</h3>
+        <div class="text-xs font-extrabold text-wukirsari-primary font-display mt-0.5">${rp(p.price)} <span class="text-[10px] font-normal text-merapiText-muted">/ jeep</span></div>
+      </div>
+      ${p.dur ? `<div class="text-[11px] text-merapiText-secondary flex items-center gap-1"><svg class="w-3.5 h-3.5 text-merapiText-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>${esc(p.dur)}</span></div>` : ''}
+      <span class="absolute top-3 right-3 w-5 h-5 rounded-full bg-wukirsari-primary text-white text-[10px] font-bold flex items-center justify-center opacity-0 group-[.sel]:opacity-100 transition-opacity">✓</span>
+    </button>`).join('');
+
+  pkgsEl.addEventListener('click', e => {
+    const b = e.target.closest('.pkg'); if(!b) return;
+    state.pkg = b.dataset.id;
+    pkgsEl.querySelectorAll('.pkg').forEach(x => x.classList.toggle('sel', x === b));
+    update(); setStep(2);
   });
-  function updateSlots() {
-    var p = pkg(), isSun = p && p.dataset.sunrise === '1';
-    var opts = Array.prototype.slice.call(slotSel.options);
-    var hasSun = opts.some(function (o) { return o.dataset.sunrise === '1'; });
-    var today = dateEl.value === isoToday();
-    var now = new Date(), nowMin = now.getHours() * 60 + now.getMinutes();
-    var firstOk = null;
-    opts.forEach(function (o) {
-      var sun = o.dataset.sunrise === '1';
-      var allowed = !hasSun ? true : (isSun ? sun : !sun);
-      var passed = today && o.dataset.min !== '' && Number(o.dataset.min) <= nowMin;
-      o.disabled = !allowed || passed;
-      o.hidden = !allowed;
-      if (!o.disabled && !firstOk) firstOk = o;
-    });
-    var cur = slotSel.options[slotSel.selectedIndex];
-    if (!cur || cur.disabled) slotSel.value = firstOk ? firstOk.value : '';
-    $('#slotHint').textContent = !firstOk ? 'Semua sesi hari ini sudah lewat, pilih tanggal lain.'
-      : (isSun && hasSun ? 'Sunrise Trip hanya tersedia di sesi Sunrise Tour.' : '');
+}
+
+/* ====== 2. TANGGAL & SESI ====== */
+const dateEl = $('#date');
+const iso = d => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+dateEl.min = iso(new Date());
+const def = new Date(); def.setDate(def.getDate() + 1);
+dateEl.value = iso(def);
+dateEl.addEventListener('change', () => { renderSessions(); update(); setStep(2); });
+
+function renderSessions(){
+  const sel = $('#session');
+  const isToday = dateEl.value === iso(new Date());
+  const now = new Date(); const nowMin = now.getHours() * 60 + now.getMinutes();
+  const prev = state.session;
+  sel.innerHTML = SESSIONS.map(s => {
+    let passed = false;
+    if(isToday && s.time){ const [h,m] = s.time.split(':').map(Number); passed = (h * 60 + m) <= nowMin; }
+    return `<option value="${s.id}" ${passed?'disabled':''}>${esc(s.label)}</option>`;
+  }).join('');
+  const firstOk = [...sel.options].find(o => !o.disabled);
+  const keep = [...sel.options].find(o => o.value === String(prev) && !o.disabled);
+  sel.value = keep ? keep.value : (firstOk ? firstOk.value : '');
+  state.session = sel.value || null;
+  $('#sessHint').textContent = firstOk ? '' : 'Semua sesi jadwal hari ini sudah lewat, silakan pilih tanggal esok atau lainnya.';
+}
+$('#session').addEventListener('change', e => { state.session = e.target.value; update(); setStep(3); });
+
+/* ====== 3. KAPASITAS & ARMADA ====== */
+$('#paxPlus').onclick = () => {
+  if(state.pax < 40){
+    state.pax++;
+    state.qty = Math.max(state.qty, Math.ceil(state.pax / PER_JEEP));
+    update(); setStep(3);
   }
-  $$('input[name=package_id]').forEach(function (r) {
-    r.addEventListener('change', function () {
-      $$('.pkg').forEach(function (l) { l.classList.toggle('sel', l.contains(r) && r.checked); });
-      updateSlots(); update(); setStep(2);
-    });
+};
+$('#paxMinus').onclick = () => {
+  if(state.pax > 1){ state.pax--; update(); setStep(3); }
+};
+$('#plus').onclick = () => {
+  if(state.qty < 10){ state.qty++; update(); setStep(3); }
+};
+$('#minus').onclick = () => {
+  const minJeep = Math.ceil(state.pax / PER_JEEP);
+  if(state.qty > minJeep){ state.qty--; update(); }
+  else toast('Minimal butuh ' + minJeep + ' jeep untuk ' + state.pax + ' orang penumpang (maksimal 4 orang per jeep).');
+};
+
+/* ====== SKEMA PEMBAYARAN ====== */
+document.querySelectorAll('.po').forEach(b => b.onclick = () => {
+  state.pay = b.dataset.p;
+  document.querySelectorAll('.po').forEach(x => x.classList.toggle('sel', x === b));
+  update();
+});
+
+/* ====== UPDATE RINGKASAN TAGIHAN ====== */
+function update(){
+  const p = curPkg();
+  if(!p) return;
+  const total = p.price * state.qty;
+  const due = state.pay === 'dp' ? Math.round(total * 0.3) : total;
+
+  $('#qty').textContent = state.qty;
+  $('#pax').textContent = state.pax;
+  $('#jeepHint').textContent = state.qty + ' Jeep × ' + rp(p.price);
+  $('#tPkg').textContent = p.name + ' (' + state.qty + ' Jeep · ' + state.pax + ' Orang)';
+
+  const d = dateEl.value ? new Date(dateEl.value + 'T00:00:00').toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : 'Belum pilih tanggal';
+  const sObj = SESSIONS.find(s => String(s.id) === String(state.session));
+  $('#tDate').textContent = d + (sObj ? ' · ' + sObj.label : '');
+
+  $('#lJeep').textContent = 'Sewa Jeep' + (state.qty > 1 ? ' (' + state.qty + '×)' : '');
+  $('#vJeep').textContent = rp(total);
+
+  $('#vTotal').textContent = rp(total);
+  $('#mTotal').textContent = rp(total);
+  $('#vDue').textContent = rp(due);
+  $('#dueLbl').textContent = state.pay === 'dp' ? 'Wajib Dibayar Sekarang (DP 30%)' : 'Wajib Dibayar Sekarang (Lunas)';
+  $('#dueSub').textContent = state.pay === 'dp' ? 'Sisa ' + rp(total - due) : 'Lunas (100%)';
+}
+
+/* ====== STEPPER INTERACTION ====== */
+function setStep(n){
+  document.querySelectorAll('.st').forEach(s => {
+    const k = +s.dataset.s;
+    s.classList.toggle('on', k === n);
+    s.classList.toggle('done', k < n);
+    s.querySelector('i').textContent = k < n ? '✓' : k;
   });
-  dateEl.addEventListener('change', function () { updateSlots(); update(); setStep(2); });
-  slotSel.addEventListener('change', function () { update(); setStep(3); });
+}
 
-  /* ===== KAPASITAS ===== */
-  function minJeep() { return Math.ceil(st.pax / PER_JEEP); }
-  $('#paxPlus').onclick = function () { if (st.pax < 40) { st.pax++; if (st.jeep < minJeep()) st.jeep = minJeep(); update(); setStep(3); } };
-  $('#paxMinus').onclick = function () { if (st.pax > 1) { st.pax--; update(); setStep(3); } };
-  $('#jeepPlus').onclick = function () { if (st.jeep < 10) { st.jeep++; update(); setStep(3); } };
-  $('#jeepMinus').onclick = function () {
-    if (st.jeep > minJeep()) { st.jeep--; update(); }
-    else toast('Minimal ' + minJeep() + ' jeep untuk ' + st.pax + ' penumpang (maks. 4 orang per jeep).');
-  };
-
-  /* ===== KEDATANGAN ===== */
-  $$('.ar').forEach(function (b) {
-    b.onclick = function () {
-      st.shuttle = b.dataset.m === 'shuttle';
-      $$('.ar').forEach(function (x) { x.classList.toggle('sel', x === b); });
-      $('#pickupBox').hidden = !st.shuttle;
-      $('#arrival_type').value = st.shuttle ? 'pickup' : 'self_drive';
-      $('#pickup_zone_id').value = st.shuttle ? (ZONE.shuttle || ZONE.base) : ZONE.base;
-      update(); setStep(4);
-    };
-  });
-
-  /* ===== LOKASI & JARAK OTOMATIS ===== */
-  function haversine(a, b, c, d) {
-    var R = 6371, r = function (x) { return x * Math.PI / 180; };
-    var dLat = r(c - a), dLng = r(d - b);
-    var h = Math.pow(Math.sin(dLat / 2), 2) + Math.cos(r(a)) * Math.cos(r(c)) * Math.pow(Math.sin(dLng / 2), 2);
-    return 2 * R * Math.asin(Math.sqrt(h));
+document.querySelectorAll('.st').forEach(s => s.onclick = () => {
+  const n = +s.dataset.s;
+  const sec = document.querySelector(`[data-sec="${n}"]`);
+  if (sec) {
+    sec.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setStep(n);
   }
-  function computeDistance(lat, lng) {
-    var id = ++calcId;
-    st.km = null; st.calc = true;
-    $('#pickup_lat').value = lat; $('#pickup_lng').value = lng; $('#pickup_distance_km').value = '';
-    update();
-    var ctl = new AbortController(), to = setTimeout(function () { ctl.abort(); }, 8000);
-    var url = 'https://router.project-osrm.org/route/v1/driving/' + CFG.lng + ',' + CFG.lat + ';' + lng + ',' + lat + '?overview=false';
-    fetch(url, { signal: ctl.signal })
-      .then(function (r) { return r.json(); })
-      .then(function (j) { if (j.code !== 'Ok') throw new Error('route'); return { km: j.routes[0].distance / 1000, approx: false }; })
-      .catch(function () { return { km: haversine(CFG.lat, CFG.lng, lat, lng) * 1.3, approx: true }; })
-      .then(function (res) {
-        clearTimeout(to);
-        if (id !== calcId) return;
-        st.km = Math.round(res.km * 10) / 10; st.approx = res.approx; st.calc = false;
-        $('#pickup_distance_km').value = st.km;
-        update();
-      });
+});
+
+/* ====== TOAST ====== */
+let tt;
+function toast(msg){
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(tt);
+  tt = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+/* ====== SUBMIT FORM ====== */
+$('#submit').onclick = () => {
+  const name = $('#name'), wa = $('#wa');
+  [name, wa].forEach(x => x.classList.remove('err'));
+
+  if(!dateEl.value){
+    toast('Pilih tanggal kunjungan trip terlebih dahulu.');
+    return dateEl.focus();
   }
-  function parseLocation(t) {
-    try { t = decodeURIComponent(t.trim()); } catch (e) { t = t.trim(); }
-    var m = t.match(/\x40(-?\d+\.\d+),\s*(-?\d+\.\d+)/)
-         || t.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/)
-         || t.match(/[?&](?:q|query|ll|destination)=(-?\d+\.\d+)[,\s+]+(-?\d+\.\d+)/)
-         || t.match(/^(-?\d{1,2}\.\d+)[,\s]+(-?\d{2,3}\.\d+)$/);
-    if (!m) return null;
-    var lat = parseFloat(m[1]), lng = parseFloat(m[2]);
-    if (lat < -11.5 || lat > 6.5 || lng < 94 || lng > 141.5) return null;
-    return { lat: lat, lng: lng };
+  if(!state.session){
+    toast('Pilih sesi waktu keberangkatan yang tersedia.');
+    return $('#session').focus();
   }
-  $('#btnLink').onclick = function () {
-    var v = $('#mapLink').value.trim();
-    if (!v) { toast('Tempel link Google Maps atau koordinat dulu.'); return; }
-    var pt = parseLocation(v);
-    if (!pt) {
-      toast(/goo\.gl|maps\.app/i.test(v)
-        ? 'Link pendek tidak bisa dibaca. Salin koordinat (angka -7.xxx, 110.xxx) dari Google Maps.'
-        : 'Format belum dikenali. Gunakan link lengkap Google Maps atau koordinat, mis. -7.7956, 110.3695');
-      return;
-    }
-    computeDistance(pt.lat, pt.lng);
-  };
-  $('#mapLink').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); $('#btnLink').click(); } });
-  $('#btnGps').onclick = function () {
-    if (!navigator.geolocation) { toast('Browser tidak mendukung lokasi. Gunakan link/koordinat Google Maps.'); return; }
-    toast('Mengambil lokasi Anda…');
-    navigator.geolocation.getCurrentPosition(
-      function (p) { computeDistance(p.coords.latitude, p.coords.longitude); },
-      function (err) {
-        toast(err.code === 1 ? 'Izin lokasi diblokir. Klik ikon gembok di address bar > izinkan Lokasi, atau tempel link/koordinat Google Maps.'
-          : err.code === 2 ? 'Lokasi perangkat tidak terdeteksi. Tempel link/koordinat Google Maps.'
-          : 'Waktu pencarian lokasi habis. Coba lagi atau tempel link/koordinat Google Maps.');
-      },
-      { enableHighAccuracy: true, timeout: 10000 });
-  };
-
-  /* ===== PEMBAYARAN ===== */
-  $$('.po').forEach(function (b) {
-    b.onclick = function () {
-      st.pay = b.dataset.p; $('#payment_mode').value = st.pay;
-      $$('.po').forEach(function (x) { x.classList.toggle('sel', x === b); });
-      update();
-    };
-  });
-
-  /* ===== RINGKASAN ===== */
-  function pickupFee() {
-    if (!st.shuttle || st.km === null) return 0;
-    return Math.ceil(Math.max(0, st.km - CFG.free)) * CFG.perKm;
+  if(name.value.trim().length < 3){
+    name.classList.add('err');
+    toast('Isi nama lengkap pemesan.');
+    return name.focus();
   }
-  function update() {
-    var p = pkg(); if (!p) return;
-    var price = Number(p.dataset.price), fee = pickupFee();
-    var subtotal = price * st.jeep, total = subtotal + fee;
-    var due = st.pay === 'DP' ? Math.floor((total * 30 + 99) / 100) : total;
-
-    $('#passenger_count').value = st.pax; $('#jeep_quantity').value = st.jeep;
-    $('#paxOut').textContent = st.pax; $('#jeepOut').textContent = st.jeep;
-    $('#jeepHint').textContent = st.jeep + ' Jeep × ' + rp(price);
-
-    var opt = slotSel.options[slotSel.selectedIndex];
-    var d = dateEl.value ? new Date(dateEl.value + 'T00:00:00').toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : 'Belum pilih tanggal';
-    $('#tPkg').textContent = p.dataset.name + ' · ' + st.jeep + ' jeep · ' + st.pax + ' orang';
-    $('#tDate').textContent = d + (opt && opt.value ? ' · ' + opt.textContent.trim() : '');
-    $('#lJeep').textContent = 'Sewa Jeep' + (st.jeep > 1 ? ' (' + st.jeep + '×)' : '');
-    $('#vJeep').textContent = rp(subtotal);
-
-    var vp = $('#vPick'), rowExtra = $('#rowExtra');
-    vp.className = ''; rowExtra.style.display = 'none';
-    if (!st.shuttle) vp.textContent = 'Tidak dipilih';
-    else if (st.calc) vp.textContent = 'Menghitung…';
-    else if (st.km === null) vp.textContent = 'Tentukan lokasi';
-    else if (fee === 0) { vp.textContent = 'Gratis (' + st.km + ' km)'; vp.className = 'free'; }
-    else {
-      var over = Math.ceil(st.km - CFG.free);
-      vp.textContent = 'Jarak ' + st.km + ' km';
-      rowExtra.style.display = 'flex';
-      $('#lExtra').innerHTML = 'Biaya Tambahan Jemput<small>Gratis ' + CFG.free + ' km, lebih ' + over + ' km × ' + rp(CFG.perKm) + '</small>';
-      $('#vExtra').textContent = '+ ' + rp(fee);
-    }
-
-    var dist = $('#dist');
-    dist.classList.toggle('over', st.km !== null && st.km > CFG.free);
-    if (st.calc) { $('#distKm').textContent = '…'; $('#distTxt').textContent = 'Menghitung jarak rute dari basecamp…'; $('#distTag').textContent = 'Menghitung'; }
-    else if (st.km === null) { $('#distKm').textContent = '—'; $('#distTxt').textContent = 'Bagikan lokasi untuk menghitung jarak otomatis.'; $('#distTag').textContent = 'Belum dihitung'; }
-    else if (st.km <= CFG.free) {
-      $('#distKm').textContent = st.km + ' km';
-      $('#distTxt').textContent = 'Jarak ' + (st.approx ? 'perkiraan' : 'rute jalan') + ' dari basecamp. Masih dalam jangkauan jemput gratis.';
-      $('#distTag').textContent = 'GRATIS';
-    } else {
-      $('#distKm').textContent = st.km + ' km';
-      $('#distTxt').textContent = 'Lebih ' + Math.ceil(st.km - CFG.free) + ' km dari batas gratis × ' + rp(CFG.perKm) + ' = ' + rp(fee) + (st.approx ? ' (jarak perkiraan)' : '') + '. Biaya final dihitung ulang oleh sistem.';
-      $('#distTag').textContent = '+ ' + rp(fee);
-    }
-
-    $('#vTotal').textContent = rp(total); $('#mTotal').textContent = rp(total);
-    $('#vDue').textContent = rp(due);
-    $('#dueSub').textContent = st.pay === 'DP' ? 'Sisa ' + rp(total - due) + ' di loket' : 'Lunas';
+  if(!/^(\+?62|0)8\d{7,12}$/.test(wa.value.replace(/[\s-]/g, ''))){
+    wa.classList.add('err');
+    toast('Nomor WhatsApp belum valid (gunakan format 08xx / 628xx).');
+    return wa.focus();
   }
 
-  /* ===== STEPPER ===== */
-  $$('.bk-st').forEach(function (s) {
-    s.onclick = function () {
-      var n = +s.dataset.s;
-      $('[data-sec="' + n + '"]').scrollIntoView({ behavior: 'smooth', block: 'center' }); setStep(n);
-    };
-  });
+  const f = $('#bookForm');
+  const set = (n, v) => { f.elements[n].value = v; };
 
-  /* ===== KIRIM FORM ===== */
-  $('#bookingForm').addEventListener('submit', function (e) {
-    var name = $('#customer_name'), phone = $('#customer_phone'), addr = $('#pickup_address');
-    [name, phone, addr].forEach(function (x) { x.classList.remove('err'); });
-    function stop(el, msg) { e.preventDefault(); if (el) { el.classList.add('err'); el.focus(); } toast(msg); }
-    if (!slotSel.value) return stop(slotSel, 'Pilih sesi waktu keberangkatan.');
-    if (st.shuttle) {
-      if (addr.value.trim().length < 3) return stop(addr, 'Isi nama hotel / alamat penjemputan.');
-      if (st.calc) return stop(null, 'Jarak penjemputan masih dihitung, tunggu sebentar.');
-      if (st.km === null) return stop($('#btnGps'), 'Bagikan lokasi atau tempel link Google Maps agar jarak bisa dihitung.');
-    }
-    if (name.value.trim().length < 3) return stop(name, 'Isi nama lengkap Anda.');
-    if (!/^(\+?62|0)8\d{7,12}$/.test(phone.value.replace(/[\s-]/g, ''))) return stop(phone, 'Nomor WhatsApp belum valid.');
-    var b = $('#btnSubmit'); b.disabled = true; b.firstElementChild.textContent = 'Memproses…';
-  });
+  set('package_id', curPkg().id);
+  set('slot_id', state.session);
+  set('trip_date', dateEl.value);
+  set('passenger_count', state.pax);
+  set('jeep_quantity', state.qty);
+  set('arrival_type', 'self_drive');
+  set('pickup_address', '');
+  set('pickup_lat', '');
+  set('pickup_lng', '');
+  set('pickup_manual', 0);
+  set('customer_name', name.value.trim());
+  set('customer_phone', wa.value.trim());
+  set('payment_mode', state.pay === 'dp' ? 'DP' : 'FULL');
+  set('notes', $('#notes').value.trim());
 
-  updateSlots(); update();
-})();
+  const btn = $('#submit');
+  btn.disabled = true;
+  btn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline-block" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg> Memproses E-Tiket…`;
+  f.submit();
+};
+
+$('#notes').addEventListener('input', e => {
+  $('#notesCount').textContent = e.target.value.length;
+});
+
+renderSessions();
+update();
 </script>
 @endsection
