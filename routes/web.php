@@ -20,6 +20,8 @@ Route::get('/paket-wisata/{slug}', [HomeController::class, 'showPackage'])->name
 Route::get('/booking', [BookingController::class, 'create'])->name('booking.create');
 Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
 Route::get('/booking/{code}/payment', [BookingController::class, 'payment'])->name('booking.payment');
+Route::post('/booking/{code}/confirm-transfer', [BookingController::class, 'confirmTransfer'])->name('booking.confirm_transfer');
+Route::post('/booking/{code}/confirm-cash', [BookingController::class, 'confirmCash'])->name('booking.confirm_cash');
 Route::post('/booking/{code}/charge', [PaymentController::class, 'charge'])->name('booking.charge');
 Route::get('/booking/{code}/status', [PaymentController::class, 'status'])->name('booking.status');
 Route::get('/booking/{code}/active-payment', [PaymentController::class, 'activePayment'])->name('booking.active_payment');

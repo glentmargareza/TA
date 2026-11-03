@@ -7,8 +7,10 @@ use App\Models\Package;
 use App\Models\ScheduleSlot;
 use App\Models\PickupZone;
 use App\Models\ActivityLog;
+use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
@@ -245,6 +247,118 @@ class BookingController extends Controller
         }
 
         return view('booking.payment', compact('booking'));
+    }
+
+    /**
+     * Konfirmasi pengiriman bukti transfer Bank BPD DIY (Transfer Manual)
+     */
+    public function confirmTransfer(Request $request, string $code)
+    {
+        $validated = $request->validate([
+            'sender_name' => 'required|string|max:100',
+            'sender_bank' => 'required|string|max:50',
+            'payment_proof' => 'required|file|image|mimes:jpeg,png,jpg,webp|max:5120',
+        ]);
+
+        $booking = Booking::with('package')->where('booking_code', $code)->firstOrFail();
+
+        // 1. Simpan berkas bukti transfer ke public/uploads/proofs
+        $file = $request->file('payment_proof');
+        $fileName = 'proof_' . $booking->booking_code . '_' . time() . '.' . $file->getClientOriginalExtension();
+        $destinationPath = public_path('uploads/proofs');
+        if (!file_exists($destinationPath)) {
+            mkdir($destinationPath, 0755, true);
+        }
+        $file->move($destinationPath, $fileName);
+        $proofUrl = 'uploads/proofs/' . $fileName;
+
+        // 2. Buat record transaksi pembayaran sah (SETTLED)
+        $payableAmount = (float) $booking->paid_amount;
+        $stage = $booking->payment_mode === 'DP' ? 'DOWN_PAYMENT' : 'FULL_PAYMENT';
+
+        Payment::create([
+            'booking_id' => $booking->id,
+            'order_id' => 'BPD-' . $booking->booking_code . '-' . strtoupper(Str::random(4)),
+            'transaction_ref' => 'BPD-MANUAL-' . date('YmdHis'),
+            'payment_stage' => $stage,
+            'payment_type' => 'bank_transfer',
+            'payment_method' => 'Bank BPD DIY (Transfer Manual)',
+            'gross_amount' => $payableAmount,
+            'payment_status' => 'SETTLED',
+            'paid_at' => now(),
+            'payload_response' => [
+                'sender_name' => $validated['sender_name'],
+                'sender_bank' => $validated['sender_bank'],
+                'proof_url' => $proofUrl,
+                'target_account' => '069211001060',
+                'target_bank' => 'Bank BPD DIY',
+                'target_name' => 'Ariyanto',
+                'submitted_at' => now()->toDateTimeString(),
+            ],
+        ]);
+
+        // 3. Perbarui status booking
+        $booking->booking_status = $booking->payment_mode === 'DP' ? 'DP_PAID' : 'FULL_PAID';
+        $booking->save();
+
+        // 4. Catat notifikasi aktivitas admin
+        ActivityLog::logPaymentSuccess(
+            $booking,
+            $payableAmount,
+            "Transfer Manual Bank BPD DIY (Pengirim: {$validated['sender_name']} - {$validated['sender_bank']})"
+        );
+
+        return redirect()->route('booking.success', $booking->booking_code)
+            ->with('success', 'Bukti transfer Bank BPD DIY berhasil dikirim! E-Tiket reservasi Anda telah aktif.');
+    }
+
+    /**
+     * Konfirmasi opsi bayar tunai langsung di Loket Basecamp
+     */
+    public function confirmCash(Request $request, string $code)
+    {
+        $booking = Booking::with('package')->where('booking_code', $code)->firstOrFail();
+
+        $payableAmount = (float) $booking->paid_amount;
+        $stage = $booking->payment_mode === 'DP' ? 'DOWN_PAYMENT' : 'FULL_PAYMENT';
+
+        Payment::create([
+            'booking_id' => $booking->id,
+            'order_id' => 'CASH-' . $booking->booking_code . '-' . strtoupper(Str::random(4)),
+            'transaction_ref' => 'LOKET-CASH-' . date('YmdHis'),
+            'payment_stage' => $stage,
+            'payment_type' => 'cash',
+            'payment_method' => 'Bayar Tunai di Loket Kasir',
+            'gross_amount' => $payableAmount,
+            'payment_status' => 'SETTLED',
+            'paid_at' => now(),
+            'payload_response' => [
+                'cashier_note' => 'Pembayaran tunai di loket basecamp paguyuban',
+                'confirmed_at' => now()->toDateTimeString(),
+            ],
+        ]);
+
+        $booking->booking_status = $booking->payment_mode === 'DP' ? 'DP_PAID' : 'FULL_PAID';
+        $booking->save();
+
+        ActivityLog::create([
+            'user_id' => Auth::id() ?? $booking->user_id,
+            'type' => 'BOOKING_CASH',
+            'title' => 'Reservasi Bayar di Loket Kasir 💵',
+            'message' => "Wisatawan {$booking->customer_name} memilih pembayaran tunai di loket basecamp untuk booking #{$booking->booking_code}.",
+            'icon_type' => 'payment',
+            'link' => route('admin.bookings', ['search' => $booking->booking_code]),
+            'is_read' => false,
+            'metadata' => [
+                'booking_id' => $booking->id,
+                'booking_code' => $booking->booking_code,
+                'customer_name' => $booking->customer_name,
+                'amount' => $payableAmount,
+            ],
+        ]);
+
+        return redirect()->route('booking.success', $booking->booking_code)
+            ->with('success', 'Pesanan berhasil dikonfirmasi untuk pembayaran tunai di loket kasir basecamp!');
     }
 
     public function success(string $code)
