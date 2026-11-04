@@ -579,9 +579,9 @@ async function pkCompute(lat, lng, label){
  
 function pkParse(t){
   try{ t = decodeURIComponent(t.trim()); }catch(e){ t = t.trim(); }
-  const m = t.match(/\x40(-?\d+\.\d+),\s*(-?\d+\.\d+)/)
-         || t.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/)
+  const m = t.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/)                              // pin tempat (utama)
          || t.match(/[?&](?:q|query|ll|destination)=(-?\d+\.\d+)[,\s+]+(-?\d+\.\d+)/)
+         || t.match(/\x40(-?\d+\.\d+),\s*(-?\d+\.\d+)/)                            // @ = tengah layar (cadangan)
          || t.match(/^(-?\d{1,2}\.\d+)[,\s]+(-?\d{2,3}\.\d+)$/);
   if(!m) return null;
   const lat = parseFloat(m[1]), lng = parseFloat(m[2]);

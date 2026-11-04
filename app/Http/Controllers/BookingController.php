@@ -15,8 +15,8 @@ class BookingController extends Controller
 {
     // ====== PENGATURAN PENJEMPUTAN ======
     // Titik lokasi basecamp presisi: Bedoyo, Wukirsari, Cangkringan, Sleman, DIY
-    private const DEFAULT_LAT  = -7.6631;  
-    private const DEFAULT_LNG  = 110.4578; 
+    private const DEFAULT_LAT  = -7.6437244;
+    private const DEFAULT_LNG  = 110.4338597;
     private const FREE_KM      = 3;        // Jarak jemput gratis (km)
     private const FEE_PER_JEEP = 50000;    // Biaya tambahan per jeep jika jarak > FREE_KM
 
@@ -55,6 +55,7 @@ class BookingController extends Controller
             'feePerJeep'  => self::FEE_PER_JEEP,
             'gmapsKey'    => $this->browserKey(),
             'distanceUrl' => route('booking.distance'),
+            'resolveUrl' => route('booking.resolve'),
             'selectedId'  => $selectedPackage?->id,
             'packages'    => $packages->map(fn ($p) => [
                 'id'    => $p->id,
@@ -343,5 +344,17 @@ class BookingController extends Controller
         $dLng = deg2rad($lng2 - $lng1);
         $a = sin($dLat / 2) ** 2 + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLng / 2) ** 2;
         return 2 * $r * asin(sqrt($a));
+    }
+
+    public function resolveLink(Request $r)
+    {
+        $url  = (string) $r->query('url');
+        $host = parse_url($url, PHP_URL_HOST);
+        if (!in_array($host, ['maps.app.goo.gl', 'goo.gl'], true)) {
+            return response()->json(['ok' => false], 422);   // cegah SSRF
+        }
+        $res = Http::withOptions(['allow_redirects' => false])->timeout(8)->get($url);
+        $loc = $res->header('Location');
+        return response()->json(['ok' => (bool) $loc, 'url' => $loc]);
     }
 }

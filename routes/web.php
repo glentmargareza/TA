@@ -19,6 +19,7 @@ Route::get('/paket-wisata/{slug}', [HomeController::class, 'showPackage'])->name
 // 2. Alur Pemesanan (Booking)
 Route::get('/booking', [BookingController::class, 'create'])->name('booking.create');
 Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
+Route::get('/booking/resolve-link', [BookingController::class, 'resolveLink'])->name('booking.resolve');
 Route::get('/booking/{code}/payment', [BookingController::class, 'payment'])->name('booking.payment');
 Route::post('/booking/{code}/confirm-transfer', [BookingController::class, 'confirmTransfer'])->name('booking.confirm_transfer');
 Route::post('/booking/{code}/confirm-cash', [BookingController::class, 'confirmCash'])->name('booking.confirm_cash');
