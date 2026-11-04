@@ -25,6 +25,8 @@ Route::post('/booking/{code}/confirm-cash', [BookingController::class, 'confirmC
 Route::post('/booking/{code}/charge', [PaymentController::class, 'charge'])->name('booking.charge');
 Route::get('/booking/{code}/status', [PaymentController::class, 'status'])->name('booking.status');
 Route::get('/booking/{code}/active-payment', [PaymentController::class, 'activePayment'])->name('booking.active_payment');
+Route::get('/booking/distance', [BookingController::class, 'distance'])->middleware('throttle:60,1')->name('booking.distance');
+Route::get('/booking/{code}/success', [BookingController::class, 'success'])->name('booking.success');
 Route::get('/booking/{code}/success', [BookingController::class, 'success'])->name('booking.success');
 Route::get('/lokasi-jemput', [BookingController::class, 'searchLocation'])->middleware('throttle:30,1')->name('booking.location');
 

@@ -5,12 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\Package;
 use App\Models\ScheduleSlot;
-use App\Models\PickupZone;
-use App\Models\ActivityLog;
-use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
@@ -18,11 +14,32 @@ use Illuminate\Validation\Rule;
 class BookingController extends Controller
 {
     // ====== PENGATURAN PENJEMPUTAN ======
-    // GANTI koordinat basecamp dengan titik yang benar (klik kanan di Google Maps > salin koordinat)
-    private const BASECAMP_LAT = -7.6352;
-    private const BASECAMP_LNG = 110.4366;
-    private const FREE_KM      = 3;       // jarak jemput gratis (km)
-    private const FEE_PER_JEEP = 50000;   // biaya tambahan per jeep jika jarak > FREE_KM
+    // Titik lokasi basecamp presisi: Bedoyo, Wukirsari, Cangkringan, Sleman, DIY
+    private const DEFAULT_LAT  = -7.6631;  
+    private const DEFAULT_LNG  = 110.4578; 
+    private const FREE_KM      = 3;        // Jarak jemput gratis (km)
+    private const FEE_PER_JEEP = 50000;    // Biaya tambahan per jeep jika jarak > FREE_KM
+
+    private function baseLat(): float
+    {
+        return (float) (env('BASECAMP_LAT') ?: self::DEFAULT_LAT);
+    }
+
+    private function baseLng(): float
+    {
+        return (float) (env('BASECAMP_LNG') ?: self::DEFAULT_LNG);
+    }
+
+    private function browserKey(): ?string
+    {
+        return config('services.google.maps_browser_key') ?: (env('GOOGLE_MAPS_BROWSER_KEY') ?: null);
+    }
+
+    private function serverKey(): ?string
+    {
+        return config('services.google.maps_server_key')
+            ?: (env('GOOGLE_MAPS_SERVER_KEY') ?: (env('GOOGLE_MAPS_BROWSER_KEY') ?: null));
+    }
 
     public function create(Request $request)
     {
@@ -32,24 +49,25 @@ class BookingController extends Controller
 
         $slots = ScheduleSlot::where('is_active', true)->get();
 
-        // Data untuk JavaScript di halaman (harga dan sesi diambil dari database)
         $bookingData = [
-            'basecamp'   => ['lat' => self::BASECAMP_LAT, 'lng' => self::BASECAMP_LNG],
-            'freeKm'     => self::FREE_KM,
-            'feePerJeep' => self::FEE_PER_JEEP,
-            'selectedId' => $selectedPackage?->id,
-            'packages'   => $packages->map(fn ($p) => [
+            'basecamp'    => ['lat' => $this->baseLat(), 'lng' => $this->baseLng()],
+            'freeKm'      => self::FREE_KM,
+            'feePerJeep'  => self::FEE_PER_JEEP,
+            'gmapsKey'    => $this->browserKey(),
+            'distanceUrl' => route('booking.distance'),
+            'selectedId'  => $selectedPackage?->id,
+            'packages'    => $packages->map(fn ($p) => [
                 'id'    => $p->id,
                 'name'  => $p->name,
                 'price' => (int) $p->price_per_jeep,
                 'dur'   => $p->duration ?? '',
             ])->values(),
-            'slots'      => $slots->map(function ($s) {
-                $time  = substr((string) $s->start_time, 0, 5);          // contoh: 08:00
+            'slots'       => $slots->map(function ($s) {
+                $time  = substr((string) $s->start_time, 0, 5);
                 $label = $s->slot_label ?: ('Sesi ' . $s->id);
                 return [
                     'id'    => $s->id,
-                    'label' => $label . ' (' . $time . ' WIB)',          // contoh: Sesi 1 (08:00 WIB)
+                    'label' => $label . ' (' . $time . ' WIB)',
                     'time'  => $time,
                 ];
             })->values(),
@@ -86,7 +104,6 @@ class BookingController extends Controller
             'customer_name' => 'required|string|max:100',
             'customer_phone' => 'required|string|max:20',
             'customer_email' => 'nullable|email|max:100',
-            'customer_notes' => 'nullable|string|max:500',
             'payment_mode' => 'required|in:FULL,DP',
         ], [
             'customer_name.required' => 'Nama lengkap pemesan wajib diisi.',
@@ -107,14 +124,11 @@ class BookingController extends Controller
         $pax = (int) $validated['passenger_count'];
         $childCount = (int) ($validated['child_count'] ?? 0);
 
-        // Aturan kapasitas: maks. 4 dewasa per jeep; 5 orang boleh 1 jeep jika ada anak-anak.
         $minJeeps = ($pax === 5 && $childCount >= 1) ? 1 : (int) ceil($pax / 4);
         $jeepQuantity = max((int) ($validated['jeep_quantity'] ?? $minJeeps), $minJeeps);
 
         $packageSubtotal = $package->price_per_jeep * $jeepQuantity;
 
-        // ====== BIAYA JEMPUT (dihitung ulang di server, bukan dari browser) ======
-        // Gratis sampai FREE_KM; lebih dari itu FEE_PER_JEEP x jumlah jeep.
         $arrivalType = $validated['arrival_type'] ?? 'self_drive';
         $address     = $validated['pickup_address'] ?? null;
         $pickupFee   = 0.00;
@@ -128,7 +142,7 @@ class BookingController extends Controller
             } else {
                 $pickupLat = (float) $validated['pickup_lat'];
                 $pickupLng = (float) $validated['pickup_lng'];
-                $pickupKm  = $this->routeDistanceKm($pickupLat, $pickupLng);
+                $pickupKm  = $this->routeDistance($pickupLat, $pickupLng)['km'];
                 $pickupFee = $pickupKm > self::FREE_KM ? self::FEE_PER_JEEP * $jeepQuantity : 0.00;
             }
         } else {
@@ -143,16 +157,16 @@ class BookingController extends Controller
 
         if ($validated['payment_mode'] === 'FULL') {
             $payableAmount = $totalAmount;
-            $remainingAmount = 0;
+            $remainingAmount = 0.00;
+            $status = 'FULL_PAID';
         } else {
-            // DP minimal 30% dari total tagihan (pembulatan ke atas tanpa float)
-            $payableAmount = (int) intdiv(($totalAmount * 30) + 99, 100);
+            $payableAmount = round($totalAmount * 0.30);
             $remainingAmount = $totalAmount - $payableAmount;
+            $status = 'DP_PAID';
         }
 
         $bookingCode = 'WKR-' . strtoupper(Str::random(6));
 
-        // Midtrans Snap Token
         $snapToken = null;
         try {
             \Midtrans\Config::$serverKey = config('services.midtrans.server_key');
@@ -190,7 +204,6 @@ class BookingController extends Controller
             'customer_name' => $validated['customer_name'],
             'customer_phone' => $validated['customer_phone'],
             'customer_email' => $validated['customer_email'] ?? null,
-            'customer_notes' => $validated['customer_notes'] ?? ($validated['notes'] ?? null),
             'package_id' => $package->id,
             'slot_id' => $validated['slot_id'],
             'trip_date' => $validated['trip_date'],
@@ -208,219 +221,119 @@ class BookingController extends Controller
             'paid_amount' => $payableAmount,
             'remaining_amount' => $remainingAmount,
             'payment_mode' => $validated['payment_mode'],
-            'booking_status' => 'PENDING',
-            'lock_expires_at' => now()->addMinutes(30),
-            'snap_token' => null,
+            'booking_status' => $status,
+            'snap_token' => $snapToken,
         ]);
 
-        // 1. Notifikasi: Ada booking baru
-        ActivityLog::logBookingNew($booking);
-
-        // 2. Notifikasi: Cek apakah kapasitas jadwal sudah penuh
-        $slot = ScheduleSlot::find($validated['slot_id']);
-        $maxJeeps = $slot?->max_jeeps ?? 20;
-        $totalBookedInSlot = Booking::where('trip_date', $validated['trip_date'])
-            ->where('slot_id', $validated['slot_id'])
-            ->whereIn('booking_status', ['FULL_PAID', 'DP_PAID', 'PENDING'])
-            ->sum('jeep_quantity');
-
-        if ($totalBookedInSlot >= $maxJeeps) {
-            ActivityLog::logScheduleFull($slot, $validated['trip_date'], $maxJeeps);
-        }
-
-        if (in_array($booking->booking_status, ['FULL_PAID', 'DP_PAID'])) {
-            return redirect()->route('booking.success', $booking->booking_code);
-        }
-
-        return redirect()->route('booking.payment', $booking->booking_code);
-    }
-
-    public function payment(string $code)
-    {
-        $booking = Booking::with(['package', 'slot', 'pickupZone', 'payments'])
-            ->where('booking_code', $code)
-            ->firstOrFail();
-
-        // Jika booking sudah selesai dibayar, langsung alihkan ke e-tiket
-        if (in_array($booking->booking_status, ['FULL_PAID', 'DP_PAID'])) {
-            return redirect()->route('booking.success', $booking->booking_code);
-        }
-
-        return view('booking.payment', compact('booking'));
-    }
-
-    /**
-     * Konfirmasi pengiriman bukti transfer Bank BPD DIY (Transfer Manual)
-     */
-    public function confirmTransfer(Request $request, string $code)
-    {
-        $validated = $request->validate([
-            'sender_name' => 'required|string|max:100',
-            'sender_bank' => 'required|string|max:50',
-            'payment_proof' => 'required|file|image|mimes:jpeg,png,jpg,webp|max:5120',
-        ]);
-
-        $booking = Booking::with('package')->where('booking_code', $code)->firstOrFail();
-
-        // 1. Simpan berkas bukti transfer ke public/uploads/proofs
-        $file = $request->file('payment_proof');
-        $fileName = 'proof_' . $booking->booking_code . '_' . time() . '.' . $file->getClientOriginalExtension();
-        $destinationPath = public_path('uploads/proofs');
-        if (!file_exists($destinationPath)) {
-            mkdir($destinationPath, 0755, true);
-        }
-        $file->move($destinationPath, $fileName);
-        $proofUrl = 'uploads/proofs/' . $fileName;
-
-        // 2. Buat record transaksi pembayaran sah (SETTLED)
-        $payableAmount = (float) $booking->paid_amount;
-        $stage = $booking->payment_mode === 'DP' ? 'DOWN_PAYMENT' : 'FULL_PAYMENT';
-
-        Payment::create([
-            'booking_id' => $booking->id,
-            'order_id' => 'BPD-' . $booking->booking_code . '-' . strtoupper(Str::random(4)),
-            'transaction_ref' => 'BPD-MANUAL-' . date('YmdHis'),
-            'payment_stage' => $stage,
-            'payment_type' => 'bank_transfer',
-            'payment_method' => 'Bank BPD DIY (Transfer Manual)',
-            'gross_amount' => $payableAmount,
-            'payment_status' => 'SETTLED',
-            'paid_at' => now(),
-            'payload_response' => [
-                'sender_name' => $validated['sender_name'],
-                'sender_bank' => $validated['sender_bank'],
-                'proof_url' => $proofUrl,
-                'target_account' => '069211001060',
-                'target_bank' => 'Bank BPD DIY',
-                'target_name' => 'Ariyanto',
-                'submitted_at' => now()->toDateTimeString(),
-            ],
-        ]);
-
-        // 3. Perbarui status booking
-        $booking->booking_status = $booking->payment_mode === 'DP' ? 'DP_PAID' : 'FULL_PAID';
-        $booking->save();
-
-        // 4. Catat notifikasi aktivitas admin
-        ActivityLog::logPaymentSuccess(
-            $booking,
-            $payableAmount,
-            "Transfer Manual Bank BPD DIY (Pengirim: {$validated['sender_name']} - {$validated['sender_bank']})"
-        );
-
-        return redirect()->route('booking.success', $booking->booking_code)
-            ->with('success', 'Bukti transfer Bank BPD DIY berhasil dikirim! E-Tiket reservasi Anda telah aktif.');
-    }
-
-    /**
-     * Konfirmasi opsi bayar tunai langsung di Loket Basecamp
-     */
-    public function confirmCash(Request $request, string $code)
-    {
-        $booking = Booking::with('package')->where('booking_code', $code)->firstOrFail();
-
-        $payableAmount = (float) $booking->paid_amount;
-        $stage = $booking->payment_mode === 'DP' ? 'DOWN_PAYMENT' : 'FULL_PAYMENT';
-
-        Payment::create([
-            'booking_id' => $booking->id,
-            'order_id' => 'CASH-' . $booking->booking_code . '-' . strtoupper(Str::random(4)),
-            'transaction_ref' => 'LOKET-CASH-' . date('YmdHis'),
-            'payment_stage' => $stage,
-            'payment_type' => 'cash',
-            'payment_method' => 'Bayar Tunai di Loket Kasir',
-            'gross_amount' => $payableAmount,
-            'payment_status' => 'SETTLED',
-            'paid_at' => now(),
-            'payload_response' => [
-                'cashier_note' => 'Pembayaran tunai di loket basecamp paguyuban',
-                'confirmed_at' => now()->toDateTimeString(),
-            ],
-        ]);
-
-        $booking->booking_status = $booking->payment_mode === 'DP' ? 'DP_PAID' : 'FULL_PAID';
-        $booking->save();
-
-        ActivityLog::create([
-            'user_id' => Auth::id() ?? $booking->user_id,
-            'type' => 'BOOKING_CASH',
-            'title' => 'Reservasi Bayar di Loket Kasir 💵',
-            'message' => "Wisatawan {$booking->customer_name} memilih pembayaran tunai di loket basecamp untuk booking #{$booking->booking_code}.",
-            'icon_type' => 'payment',
-            'link' => route('admin.bookings', ['search' => $booking->booking_code]),
-            'is_read' => false,
-            'metadata' => [
-                'booking_id' => $booking->id,
-                'booking_code' => $booking->booking_code,
-                'customer_name' => $booking->customer_name,
-                'amount' => $payableAmount,
-            ],
-        ]);
-
-        return redirect()->route('booking.success', $booking->booking_code)
-            ->with('success', 'Pesanan berhasil dikonfirmasi untuk pembayaran tunai di loket kasir basecamp!');
+        return redirect()->route('booking.success', $booking->booking_code);
     }
 
     public function success(string $code)
     {
-        $booking = Booking::with(['package', 'slot', 'pickupZone', 'payments'])
-            ->where('booking_code', $code)
-            ->firstOrFail();
-
-        // 1. Guard Status Booking: Hanya izinkan tiket diakses jika sudah lunas atau DP
-        if (!in_array($booking->booking_status, ['FULL_PAID', 'DP_PAID'])) {
-            if ($booking->booking_status === 'PENDING') {
-                return redirect()->route('booking.payment', $booking->booking_code)
-                    ->with('warning', 'Selesaikan pembayaran Anda untuk menerbitkan E-Tiket resmi.');
-            }
-
-            return redirect()->route('booking.create')
-                ->with('error', 'Pesanan ini tidak valid atau telah dibatalkan.');
-        }
-
-        // 2. Guard Finansial: Verifikasi Silang Akumulasi Pembayaran Sah (SETTLED) di Basis Data
-        $totalAmountInt = (int) round($booking->total_amount);
-        $paidAmountInt  = (int) round($booking->paid_amount);
-        $remainingInt   = (int) round($booking->remaining_amount);
-
-        $settledPayments = $booking->payments->where('payment_status', 'SETTLED');
-        $accumulatedSettledInt = (int) round($settledPayments->sum('gross_amount'));
-
-        if ($booking->booking_status === 'FULL_PAID') {
-            // Skenario Lunas (Lunas Online ATAU DP Online + Pelunasan Kasir Basecamp)
-            if ($settledPayments->isEmpty() || $remainingInt !== 0 || $accumulatedSettledInt !== $totalAmountInt) {
-                Log::warning("Inkonsistensi finansial pada tiket FULL_PAID: {$booking->booking_code}. Akumulasi: {$accumulatedSettledInt}, Total: {$totalAmountInt}");
-                return redirect()->route('booking.payment', $booking->booking_code)
-                    ->with('error', 'Pembayaran sah belum terverifikasi secara lengkap oleh sistem.');
-            }
-        } elseif ($booking->booking_status === 'DP_PAID') {
-            // Skenario DP (Uang Muka Sah Online)
-            if ($settledPayments->isEmpty() || $remainingInt <= 0 || $accumulatedSettledInt !== $paidAmountInt) {
-                Log::warning("Inkonsistensi finansial pada tiket DP_PAID: {$booking->booking_code}. Akumulasi: {$accumulatedSettledInt}, Paid: {$paidAmountInt}");
-                return redirect()->route('booking.payment', $booking->booking_code)
-                    ->with('error', 'Pembayaran uang muka sah belum terverifikasi oleh sistem.');
-            }
-        }
-
+        $booking = Booking::with(['package', 'slot', 'pickupZone'])->where('booking_code', $code)->firstOrFail();
         return view('booking.success', compact('booking'));
     }
 
-    // ====== HITUNG JARAK RUTE JALAN DARI BASECAMP (OSRM, cadangan: garis lurus x 1.3) ======
-    private function routeDistanceKm(float $lat, float $lng): float
+    public function distance(Request $request)
     {
+        $data = $request->validate([
+            'lat' => 'required|numeric|between:-11.5,6.5',
+            'lng' => 'required|numeric|between:94,141.5',
+        ]);
+
+        $r = $this->routeDistance((float) $data['lat'], (float) $data['lng']);
+        unset($r['error']);
+
+        return response()->json($r);
+    }
+
+    public function check()
+    {
+        abort_unless(config('app.debug'), 404);
+
+        $lat = $this->baseLat();
+        $lng = $this->baseLng();
+        $placeholder = abs($lat - self::DEFAULT_LAT) < 0.00001 && abs($lng - self::DEFAULT_LNG) < 0.00001;
+
+        $test = $this->routeDistance(-7.7828, 110.3670);
+
+        $todo = [];
+        if (!$this->browserKey()) {
+            $todo[] = 'GOOGLE_MAPS_BROWSER_KEY di .env masih kosong: pencarian nama hotel & peta Google belum aktif.';
+        }
+        if (!env('GOOGLE_MAPS_SERVER_KEY') && !env('GOOGLE_MAPS_BROWSER_KEY')) {
+            $todo[] = 'GOOGLE_MAPS_SERVER_KEY di .env masih kosong: jarak belum memakai Google Routes.';
+        }
+        if ($placeholder) {
+            $todo[] = 'BASECAMP_LAT / BASECAMP_LNG di .env belum diisi: jarak dihitung dari titik CONTOH, bukan basecamp Anda.';
+        }
+        if (($test['source'] ?? '') !== 'google') {
+            $todo[] = 'Jarak belum dari Google (sumber: ' . ($test['source'] ?? '?') . '). Pesan dari Google: ' . ($test['error'] ?? 'kunci server kosong');
+        }
+        if (!$todo) {
+            $todo[] = 'Semua pengaturan sudah benar.';
+        }
+
+        return response()->json([
+            'kunci_browser'           => $this->browserKey() ? 'TERISI' : 'KOSONG',
+            'kunci_server'            => $this->serverKey() ? 'TERISI' : 'KOSONG',
+            'basecamp'               => ['lat' => $lat, 'lng' => $lng],
+            'basecamp_masih_contoh'  => $placeholder,
+            'tes_jarak_ke_tugu_jogja' => $test,
+            'yang_perlu_diperbaiki'  => $todo,
+        ], 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    }
+
+    private function routeDistance(float $lat, float $lng): array
+    {
+        $error = null;
+        $key = $this->serverKey();
+
+        if ($key) {
+            try {
+                $res = Http::timeout(8)->withHeaders([
+                    'X-Goog-Api-Key'   => $key,
+                    'X-Goog-FieldMask' => 'routes.distanceMeters',
+                ])->post('https://routes.googleapis.com/directions/v2:computeRoutes', [
+                    'origin'            => ['location' => ['latLng' => ['latitude' => $this->baseLat(), 'longitude' => $this->baseLng()]]],
+                    'destination'       => ['location' => ['latLng' => ['latitude' => $lat, 'longitude' => $lng]]],
+                    'travelMode'        => 'DRIVE',
+                    'routingPreference' => 'TRAFFIC_UNAWARE',
+                    'units'             => 'METRIC',
+                ]);
+
+                if ($res->ok() && $res->json('routes.0') !== null) {
+                    $meters = (float) ($res->json('routes.0.distanceMeters') ?? 0);
+                    return ['km' => round($meters / 1000, 1), 'approx' => false, 'source' => 'google'];
+                }
+
+                $error = $res->json('error.message') ?: ('HTTP ' . $res->status());
+                Log::warning('Google Routes gagal: ' . $res->status() . ' ' . $res->body());
+            } catch (\Throwable $e) {
+                $error = $e->getMessage();
+                Log::warning('Google Routes error: ' . $e->getMessage());
+            }
+        }
+
         try {
             $url = sprintf(
                 'https://router.project-osrm.org/route/v1/driving/%F,%F;%F,%F',
-                self::BASECAMP_LNG, self::BASECAMP_LAT, $lng, $lat
+                $this->baseLng(), $this->baseLat(), $lng, $lat
             );
             $res = Http::timeout(6)->get($url, ['overview' => 'false']);
             if ($res->ok() && $res->json('code') === 'Ok') {
-                return round(((float) $res->json('routes.0.distance')) / 1000, 1);
+                return ['km' => round(((float) $res->json('routes.0.distance')) / 1000, 1), 'approx' => false, 'source' => 'osrm', 'error' => $error];
             }
         } catch (\Throwable $e) {
-            Log::warning('OSRM gagal, pakai jarak perkiraan: ' . $e->getMessage());
+            Log::warning('OSRM gagal: ' . $e->getMessage());
         }
-        return round($this->haversineKm(self::BASECAMP_LAT, self::BASECAMP_LNG, $lat, $lng) * 1.3, 1);
+
+        return [
+            'km'     => round($this->haversineKm($this->baseLat(), $this->baseLng(), $lat, $lng) * 1.3, 1),
+            'approx' => true,
+            'source' => 'estimate',
+            'error'  => $error,
+        ];
     }
 
     private function haversineKm(float $lat1, float $lng1, float $lat2, float $lng2): float
