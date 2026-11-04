@@ -117,10 +117,12 @@ class PaymentWebhookController extends Controller
                     }
 
                     // Perbarui status booking (menggunakan kolom booking_status)
+                    // lock_expires_at di-null-kan agar slot jeep dibebaskan dari hold sementara
                     $lockedBooking->update([
-                        'booking_status' => $newBookingStatus,
-                        'paid_amount' => $newPaidAmount,
-                        'remaining_amount' => $newRemainingAmount,
+                        'booking_status'  => $newBookingStatus,
+                        'paid_amount'     => $newPaidAmount,
+                        'remaining_amount'=> $newRemainingAmount,
+                        'lock_expires_at' => null,
                     ]);
 
                     // Perbarui atau catat payment record

@@ -170,14 +170,14 @@
             <!-- ========================================== -->
             <div class="lg:col-span-7 space-y-6">
                 
-                <!-- PILIHAN 3 METODE PEMBAYARAN UTAMA -->
+                <!-- PILIHAN 4 METODE PEMBAYARAN UTAMA -->
                 <div class="space-y-3">
-                    
-                    <!-- TAB 1 & TAB 2 (GRID 2 KOLOM) -->
+
+                    <!-- BARIS 1: BPD DIY + BRI VA -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                        
+
                         <!-- TAB 1: BANK BPD DIY (UTAMA) -->
-                        <div id="tabBtnBpd" onclick="switchTab('bpd')" 
+                        <div id="tabBtnBpd" onclick="switchTab('bpd')"
                              class="p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer text-left bg-white border-slate-900 ring-2 ring-slate-900/10 shadow-sm flex items-start gap-3.5">
                             <div class="w-11 h-11 rounded-xl bg-slate-900 text-white font-extrabold flex items-center justify-center text-xs tracking-wider shrink-0 shadow-xs">
                                 BPD
@@ -195,8 +195,32 @@
                             </div>
                         </div>
 
-                        <!-- TAB 2: DANA MIDTRANS (NONAKTIF SEMENTARA) -->
-                        <div id="tabBtnDana" onclick="switchTab('dana')" 
+                        <!-- TAB 2: BRI VIRTUAL ACCOUNT (MIDTRANS) -->
+                        <div id="tabBtnBri" onclick="switchTab('bri')"
+                             class="p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer text-left bg-white border-wukirsari-border hover:border-blue-400 flex items-start gap-3.5">
+                            <div class="w-11 h-11 rounded-xl bg-[#00529C] text-white font-extrabold flex items-center justify-center text-xs tracking-wider shrink-0 shadow-xs">
+                                BRI
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span class="font-bold text-sm text-merapiText-primary">BRI Virtual Account</span>
+                                    <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
+                                        Midtrans
+                                    </span>
+                                </div>
+                                <p class="text-xs text-merapiText-secondary mt-1 line-clamp-1">
+                                    Verifikasi otomatis instan
+                                </p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- BARIS 2: DANA + CASH -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+
+                        <!-- TAB 3: DANA MIDTRANS (NONAKTIF SEMENTARA) -->
+                        <div id="tabBtnDana" onclick="switchTab('dana')"
                              class="p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer text-left bg-white border-wukirsari-border hover:border-slate-300 opacity-90 flex items-start gap-3.5">
                             <div class="w-11 h-11 rounded-xl bg-sky-500 text-white font-extrabold flex items-center justify-center text-xs tracking-wider shrink-0 shadow-xs">
                                 DANA
@@ -214,30 +238,25 @@
                             </div>
                         </div>
 
-                    </div>
-
-                    <!-- TAB 3: BAYAR TUNAI DI LOKET KASIR (FULL WIDTH) -->
-                    <div id="tabBtnCash" onclick="switchTab('cash')" 
-                         class="p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer text-left bg-white border-wukirsari-border hover:border-slate-300 flex items-center justify-between gap-3.5">
-                        <div class="flex items-center gap-3.5 min-w-0">
+                        <!-- TAB 4: BAYAR TUNAI DI LOKET KASIR -->
+                        <div id="tabBtnCash" onclick="switchTab('cash')"
+                             class="p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer text-left bg-white border-wukirsari-border hover:border-slate-300 flex items-start gap-3.5">
                             <div class="w-11 h-11 rounded-xl bg-emerald-700 text-white font-extrabold flex items-center justify-center text-xs tracking-wider shrink-0 shadow-xs">
                                 CASH
                             </div>
-                            <div class="min-w-0">
+                            <div class="min-w-0 flex-1">
                                 <div class="flex items-center gap-2 flex-wrap">
-                                    <span class="font-bold text-sm text-merapiText-primary">Bayar Tunai di Loket Kasir</span>
+                                    <span class="font-bold text-sm text-merapiText-primary">Bayar Tunai di Loket</span>
                                     <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
                                         Lokasi Basecamp
                                     </span>
                                 </div>
-                                <p class="text-xs text-merapiText-secondary mt-0.5 line-clamp-1">
-                                    Bayar langsung secara tunai saat tiba di basecamp sebelum jadwal keberangkatan
+                                <p class="text-xs text-merapiText-secondary mt-1 line-clamp-1">
+                                    Tunai saat tiba di basecamp
                                 </p>
                             </div>
                         </div>
-                        <svg class="w-5 h-5 text-merapiText-muted shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                        </svg>
+
                     </div>
 
                 </div>
@@ -385,7 +404,214 @@
                 </div>
 
                 <!-- ========================================== -->
-                <!-- PANEL METODE 2: DANA MIDTRANS (NONAKTIF)   -->
+                <!-- PANEL METODE 2: BRI VIRTUAL ACCOUNT        -->
+                <!-- ========================================== -->
+                <div id="panelBri" class="hidden bg-white rounded-3xl border border-wukirsari-border p-6 sm:p-7 shadow-xs space-y-6">
+
+                    <!-- Header -->
+                    <div class="flex items-center justify-between border-b border-wukirsari-border pb-3">
+                        <h3 class="text-base font-bold text-merapiText-primary font-display flex items-center gap-2">
+                            <svg class="w-5 h-5 text-[#00529C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                            </svg>
+                            <span>BRI Virtual Account</span>
+                        </h3>
+                        <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800">
+                            Midtrans
+                        </span>
+                    </div>
+
+                    <!-- STATE 1: Belum generate VA -->
+                    <div id="boxGenerateBri">
+                        <!-- Ringkasan nominal -->
+                        <div class="p-4 rounded-2xl bg-wukirsari-sage/40 border border-wukirsari-border space-y-1.5 mb-5">
+                            <div class="flex items-center justify-between text-xs text-merapiText-secondary">
+                                <span>Skema Pembayaran</span>
+                                <span class="font-semibold text-wukirsari-primary">
+                                    {{ $booking->payment_mode === 'FULL' ? 'Pembayaran Lunas (100%)' : 'Uang Muka (DP 30%)' }}
+                                </span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs text-merapiText-secondary">Nominal yang Dibayarkan</span>
+                                <span class="text-lg font-extrabold text-wukirsari-primary font-display">
+                                    Rp {{ number_format($booking->paid_amount, 0, ',', '.') }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="text-xs text-merapiText-secondary leading-relaxed mb-5 space-y-1">
+                            <p>Sistem akan membuat <strong class="text-merapiText-primary">Nomor Virtual Account BRI</strong> khusus pesanan ini melalui Midtrans. Pembayaran dapat dilakukan via BRImo, ATM BRI, Internet Banking, maupun transfer antar bank.</p>
+                            <p class="text-[11px] text-merapiText-muted">VA berlaku selama 30 menit. Status tiket diperbarui otomatis setelah pembayaran diterima.</p>
+                        </div>
+
+                        <button type="button" id="btnGenerateBriVa"
+                                onclick="generateBriVa()"
+                                class="w-full py-4 px-6 rounded-full bg-[#00529C] hover:bg-[#003f7a] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20 transition-all active:scale-98">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                            <span id="btnGenerateBriText">Terbitkan Nomor BRI Virtual Account</span>
+                        </button>
+                    </div>
+
+                    <!-- STATE 2: VA sudah diterbitkan -->
+                    <div id="boxActiveBriVa" class="hidden space-y-5">
+
+                        <!-- Nomor VA -->
+                        <div class="border-b border-wukirsari-border pb-5">
+                            <span class="text-xs text-merapiText-muted block mb-1">Nomor BRI Virtual Account:</span>
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <span id="briVaDisplay" class="text-2xl sm:text-3xl font-mono font-extrabold text-merapiText-primary tracking-wider">
+                                    —
+                                </span>
+                                <button type="button" id="btnCopyBriVa"
+                                        onclick="copyToClipboard(document.getElementById('briVaDisplay').innerText.trim(), 'btnCopyBriVaText')"
+                                        class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-300 hover:border-slate-400 bg-white hover:bg-slate-50 text-xs sm:text-sm font-semibold text-merapiText-primary shadow-xs transition-all active:scale-95">
+                                    <svg class="w-4 h-4 text-merapiText-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                    </svg>
+                                    <span id="btnCopyBriVaText">Salin BRIVA</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Nominal & Countdown -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="p-3.5 rounded-2xl bg-slate-50 border border-wukirsari-border">
+                                <span class="text-[10px] text-merapiText-muted block">Nominal Tepat:</span>
+                                <div class="flex items-center gap-2 mt-0.5">
+                                    <span id="briGrossDisplay" class="text-sm font-extrabold text-wukirsari-primary font-display">—</span>
+                                    <button type="button" onclick="copyToClipboard(window._briGrossRaw || '', 'btnCopyBriAmtText')"
+                                            class="text-[10px] font-semibold text-wukirsari-primary bg-wukirsari-sage/60 hover:bg-wukirsari-sage px-2 py-0.5 rounded-lg transition-all">
+                                        <span id="btnCopyBriAmtText">Salin</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="p-3.5 rounded-2xl bg-amber-50 border border-amber-200">
+                                <span class="text-[10px] text-amber-700 block">Berlaku hingga:</span>
+                                <span id="briCountdownTimer" class="text-sm font-extrabold text-amber-900 font-mono mt-0.5 block">—</span>
+                            </div>
+                        </div>
+
+                        <!-- Polling indicator -->
+                        <div class="flex items-center gap-2.5 p-3 rounded-xl bg-emerald-50 border border-emerald-200">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+                            <p class="text-[11px] text-emerald-800 font-medium">Sistem Siaga — E-Tiket otomatis aktif segera setelah pembayaran diterima.</p>
+                        </div>
+
+                        <!-- Instruksi Pembayaran (Accordion) -->
+                        <div>
+                            <p class="font-bold text-sm text-merapiText-primary mb-3">Cara Pembayaran BRIVA:</p>
+                            <div class="space-y-2" id="briInstructions">
+
+                                <!-- BRImo -->
+                                <div class="border border-wukirsari-border rounded-2xl overflow-hidden">
+                                    <button type="button" onclick="toggleBriAccordion('brimo')"
+                                            class="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-merapiText-primary hover:bg-slate-50 transition-colors text-left">
+                                        <span class="flex items-center gap-2">
+                                            <svg class="w-4 h-4 text-[#00529C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                                            </svg>
+                                            BRImo (Mobile Banking BRI)
+                                        </span>
+                                        <svg id="chevron-brimo" class="w-4 h-4 text-merapiText-muted transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                        </svg>
+                                    </button>
+                                    <div id="acc-brimo" class="hidden px-4 pb-4 text-xs text-merapiText-secondary space-y-1 leading-relaxed">
+                                        <ol class="list-decimal pl-4 space-y-1">
+                                            <li>Buka aplikasi <strong>BRImo</strong> di smartphone Anda.</li>
+                                            <li>Pilih menu <strong>Transfer</strong> &rarr; <strong>Virtual Account BRI</strong>.</li>
+                                            <li>Masukkan nomor BRIVA yang tertera di atas.</li>
+                                            <li>Konfirmasi detail transaksi dan masukkan nominal tepat.</li>
+                                            <li>Masukkan PIN BRImo untuk menyelesaikan transaksi.</li>
+                                        </ol>
+                                    </div>
+                                </div>
+
+                                <!-- ATM BRI -->
+                                <div class="border border-wukirsari-border rounded-2xl overflow-hidden">
+                                    <button type="button" onclick="toggleBriAccordion('atm')"
+                                            class="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-merapiText-primary hover:bg-slate-50 transition-colors text-left">
+                                        <span class="flex items-center gap-2">
+                                            <svg class="w-4 h-4 text-[#00529C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                                            </svg>
+                                            ATM BRI
+                                        </span>
+                                        <svg id="chevron-atm" class="w-4 h-4 text-merapiText-muted transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                        </svg>
+                                    </button>
+                                    <div id="acc-atm" class="hidden px-4 pb-4 text-xs text-merapiText-secondary space-y-1 leading-relaxed">
+                                        <ol class="list-decimal pl-4 space-y-1">
+                                            <li>Masukkan kartu ATM BRI dan PIN Anda.</li>
+                                            <li>Pilih menu <strong>Transaksi Lain</strong> &rarr; <strong>Pembayaran</strong>.</li>
+                                            <li>Pilih <strong>BRIVA</strong>.</li>
+                                            <li>Masukkan nomor BRIVA di atas, lalu konfirmasi nominal.</li>
+                                            <li>Transaksi selesai — simpan struk sebagai bukti.</li>
+                                        </ol>
+                                    </div>
+                                </div>
+
+                                <!-- Internet Banking -->
+                                <div class="border border-wukirsari-border rounded-2xl overflow-hidden">
+                                    <button type="button" onclick="toggleBriAccordion('ibank')"
+                                            class="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-merapiText-primary hover:bg-slate-50 transition-colors text-left">
+                                        <span class="flex items-center gap-2">
+                                            <svg class="w-4 h-4 text-[#00529C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                            </svg>
+                                            Internet Banking BRI
+                                        </span>
+                                        <svg id="chevron-ibank" class="w-4 h-4 text-merapiText-muted transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                        </svg>
+                                    </button>
+                                    <div id="acc-ibank" class="hidden px-4 pb-4 text-xs text-merapiText-secondary space-y-1 leading-relaxed">
+                                        <ol class="list-decimal pl-4 space-y-1">
+                                            <li>Login ke <strong>ib.bri.co.id</strong>.</li>
+                                            <li>Pilih <strong>Pembayaran</strong> &rarr; <strong>BRIVA</strong>.</li>
+                                            <li>Masukkan nomor BRIVA dan konfirmasi.</li>
+                                            <li>Masukkan password Internet Banking dan mToken untuk otorisasi.</li>
+                                        </ol>
+                                    </div>
+                                </div>
+
+                                <!-- Transfer Bank Lain -->
+                                <div class="border border-wukirsari-border rounded-2xl overflow-hidden">
+                                    <button type="button" onclick="toggleBriAccordion('other')"
+                                            class="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-merapiText-primary hover:bg-slate-50 transition-colors text-left">
+                                        <span class="flex items-center gap-2">
+                                            <svg class="w-4 h-4 text-merapiText-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                                            </svg>
+                                            Transfer dari Bank / E-Wallet Lain
+                                        </span>
+                                        <svg id="chevron-other" class="w-4 h-4 text-merapiText-muted transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                        </svg>
+                                    </button>
+                                    <div id="acc-other" class="hidden px-4 pb-4 text-xs text-merapiText-secondary space-y-1 leading-relaxed">
+                                        <ol class="list-decimal pl-4 space-y-1">
+                                            <li>Buka aplikasi m-Banking atau Internet Banking bank Anda.</li>
+                                            <li>Pilih menu <strong>Transfer Antar Bank</strong>.</li>
+                                            <li>Pilih <strong>Bank BRI</strong> (kode: <strong>002</strong>) sebagai bank tujuan.</li>
+                                            <li>Masukkan nomor BRIVA sebagai rekening tujuan.</li>
+                                            <li>Masukkan nominal tepat, lalu konfirmasi dan selesaikan transfer.</li>
+                                        </ol>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- ========================================== -->
+                <!-- PANEL METODE 3: DANA MIDTRANS (NONAKTIF)   -->
                 <!-- ========================================== -->
                 <div id="panelDana" class="hidden bg-white rounded-3xl border border-wukirsari-border p-6 sm:p-7 shadow-xs space-y-5">
                     <div class="flex items-center justify-between border-b border-wukirsari-border pb-3">
@@ -521,27 +747,20 @@
                 <!-- KARTU 2: RINGKASAN TAGIHAN -->
                 <div class="bg-white rounded-3xl border border-wukirsari-border p-6 shadow-xs space-y-5">
                     <div class="flex items-center justify-between border-b border-wukirsari-border pb-3">
-                        <h2 class="text-base font-bold text-merapiText-primary font-display flex items-center gap-2">
-                            <svg class="w-5 h-5 text-wukirsari-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <h2 class="text-base font-bold text-merapiText-primary font-display flex items-center gap-2 shrink-0 mr-3">
+                            <svg class="w-5 h-5 text-wukirsari-primary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                             </svg>
-                            <span>Ringkasan Tagihan</span>
+                            <span class="whitespace-nowrap">Ringkasan Tagihan</span>
                         </h2>
-                        <span class="text-xs px-2.5 py-0.5 rounded-full font-semibold {{ $booking->booking_status === 'PENDING' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800' }}">
-                            {{ $booking->booking_status === 'PENDING' ? 'Menunggu Pembayaran' : $booking->booking_status }}
-                        </span>
-                        @elseif($booking->booking_status === 'FULL_PAID')
-                        <span class="text-xs px-3 py-1 rounded-full font-bold bg-emerald-100 text-emerald-800">
-                            Lunas (100%)
-                        </span>
+                        @if($booking->booking_status === 'FULL_PAID')
+                            <span class="text-xs px-2.5 py-0.5 rounded-full font-semibold bg-emerald-100 text-emerald-800 whitespace-nowrap">Lunas (100%)</span>
                         @elseif($booking->booking_status === 'DP_PAID')
-                        <span class="text-xs px-3 py-1 rounded-full font-bold bg-wukirsari-sage text-wukirsari-primary">
-                            DP Terverifikasi
-                        </span>
+                            <span class="text-xs px-2.5 py-0.5 rounded-full font-semibold bg-wukirsari-sage text-wukirsari-primary whitespace-nowrap">DP Terverifikasi</span>
+                        @elseif($booking->booking_status === 'WAITING_CONFIRMATION')
+                            <span class="text-xs px-2.5 py-0.5 rounded-full font-semibold bg-blue-100 text-blue-800 whitespace-nowrap">Menunggu Verifikasi</span>
                         @else
-                        <span class="text-xs px-3 py-1 rounded-full font-bold bg-amber-50 text-amber-800 border border-amber-200">
-                            Menunggu Pembayaran
-                        </span>
+                            <span class="text-xs px-2.5 py-0.5 rounded-full font-semibold bg-amber-100 text-amber-800 whitespace-nowrap">Menunggu Pembayaran</span>
                         @endif
                     </div>
 
@@ -646,6 +865,23 @@
 </div>
 
 <script>
+    // ─────────────────────────────────────────────────────────────
+    // CONSTANTS injected from Blade
+    // ─────────────────────────────────────────────────────────────
+    var BOOKING_CODE      = '{{ $booking->booking_code }}';
+    var CHARGE_URL        = '{{ route("booking.charge", $booking->booking_code) }}';
+    var STATUS_URL        = '{{ route("booking.status", $booking->booking_code) }}';
+    var ACTIVE_PAYMENT_URL= '{{ route("booking.active_payment", $booking->booking_code) }}';
+    var SUCCESS_URL       = '{{ route("booking.success", $booking->booking_code) }}';
+    var CSRF_TOKEN        = '{{ csrf_token() }}';
+
+    var _briPollInterval  = null;
+    var _briCountdownInterval = null;
+    window._briGrossRaw   = '';
+
+    // ─────────────────────────────────────────────────────────────
+    // CLIPBOARD UTILITY
+    // ─────────────────────────────────────────────────────────────
     function copyToClipboard(text, elementId) {
         if (navigator.clipboard && window.isSecureContext) {
             navigator.clipboard.writeText(text).then(function () {
@@ -677,64 +913,254 @@
         if (!el) return;
         var originalText = el.innerText;
         el.innerText = 'Tersalin!';
-        setTimeout(function () {
-            el.innerText = originalText;
-        }, 2000);
+        setTimeout(function () { el.innerText = originalText; }, 2000);
     }
 
+    // ─────────────────────────────────────────────────────────────
+    // TAB SWITCHER  (bpd | bri | dana | cash)
+    // ─────────────────────────────────────────────────────────────
     function switchTab(method) {
-        var tabBtnBpd = document.getElementById('tabBtnBpd');
-        var tabBtnDana = document.getElementById('tabBtnDana');
-        var tabBtnCash = document.getElementById('tabBtnCash');
+        var tabs = {
+            bpd:  { btn: document.getElementById('tabBtnBpd'),  panel: document.getElementById('panelBpd') },
+            bri:  { btn: document.getElementById('tabBtnBri'),  panel: document.getElementById('panelBri') },
+            dana: { btn: document.getElementById('tabBtnDana'), panel: document.getElementById('panelDana') },
+            cash: { btn: document.getElementById('tabBtnCash'), panel: document.getElementById('panelCash') },
+        };
 
-        var panelBpd = document.getElementById('panelBpd');
-        var panelDana = document.getElementById('panelDana');
-        var panelCash = document.getElementById('panelCash');
-
-        // Reset semua tombol tab ke style inaktif
-        [tabBtnBpd, tabBtnDana, tabBtnCash].forEach(function (btn) {
-            btn.classList.remove('border-slate-900', 'ring-2', 'ring-slate-900/10', 'shadow-sm');
-            btn.classList.add('border-wukirsari-border');
+        // Reset all tab buttons
+        Object.values(tabs).forEach(function (t) {
+            if (!t.btn) return;
+            t.btn.classList.remove('border-slate-900', 'border-[#00529C]', 'ring-2', 'ring-slate-900/10', 'ring-blue-200', 'shadow-sm');
+            t.btn.classList.add('border-wukirsari-border');
+            if (t.panel) t.panel.classList.add('hidden');
         });
 
-        // Sembunyikan semua panel
-        panelBpd.classList.add('hidden');
-        panelDana.classList.add('hidden');
-        panelCash.classList.add('hidden');
-
-        // Aktifkan tab dan panel yang dipilih
-        if (method === 'bpd') {
-            tabBtnBpd.classList.remove('border-wukirsari-border');
-            tabBtnBpd.classList.add('border-slate-900', 'ring-2', 'ring-slate-900/10', 'shadow-sm');
-            panelBpd.classList.remove('hidden');
-        } else if (method === 'dana') {
-            tabBtnDana.classList.remove('border-wukirsari-border');
-            tabBtnDana.classList.add('border-slate-900', 'ring-2', 'ring-slate-900/10', 'shadow-sm');
-            panelDana.classList.remove('hidden');
-        } else if (method === 'cash') {
-            tabBtnCash.classList.remove('border-wukirsari-border');
-            tabBtnCash.classList.add('border-slate-900', 'ring-2', 'ring-slate-900/10', 'shadow-sm');
-            panelCash.classList.remove('hidden');
+        // Activate selected
+        if (tabs[method]) {
+            var btn   = tabs[method].btn;
+            var panel = tabs[method].panel;
+            if (btn) {
+                btn.classList.remove('border-wukirsari-border');
+                if (method === 'bri') {
+                    btn.classList.add('border-[#00529C]', 'ring-2', 'ring-blue-200', 'shadow-sm');
+                } else {
+                    btn.classList.add('border-slate-900', 'ring-2', 'ring-slate-900/10', 'shadow-sm');
+                }
+            }
+            if (panel) panel.classList.remove('hidden');
         }
+
+        // Update right-column steps list
+        updateStepsList(method);
     }
 
-    // Penanganan preview file bukti transfer
+    function updateStepsList(method) {
+        var list = document.getElementById('paymentStepsList');
+        if (!list) return;
+
+        var steps = {
+            bpd: [
+                'Buka aplikasi m-Banking atau kunjungi mesin ATM bank Anda.',
+                'Pilih menu Transfer Antar Bank (Kode BPD DIY: <strong>112</strong>) atau Sesama BPD DIY.',
+                'Masukkan no. rekening tujuan <strong>{{ config("services.bpd_diy.account_number", "069211001060") }}</strong> a.n. <strong>{{ config("services.bpd_diy.account_name", "Ariyanto") }}</strong>.',
+                'Masukkan nominal transfer tepat sebesar <strong>Rp {{ number_format($booking->paid_amount, 0, ",", ".") }}</strong>.',
+                'Simpan foto struk atau screenshot mutasi rekening, lalu unggah pada formulir konfirmasi bukti transfer.',
+            ],
+            bri: [
+                'Klik tombol <strong>Terbitkan Nomor BRI Virtual Account</strong> di bawah.',
+                'Catat atau salin <strong>Nomor BRIVA</strong> yang muncul.',
+                'Buka BRImo / ATM BRI / Internet Banking, pilih menu <strong>BRIVA</strong>.',
+                'Masukkan nomor BRIVA dan bayar tepat nominal yang tertera.',
+                'E-Tiket akan aktif otomatis setelah pembayaran dikonfirmasi sistem.',
+            ],
+            dana: [
+                'Metode ini sedang nonaktif sementara.',
+                'Gunakan Bank BPD DIY atau Bayar Tunai di Loket Kasir.',
+            ],
+            cash: [
+                'Datang ke Basecamp paling lambat <strong>30 menit sebelum jadwal</strong>.',
+                'Tunjukkan kode booking <strong>{{ $booking->booking_code }}</strong> ke petugas kasir.',
+                'Lakukan pembayaran tunai sesuai nominal tagihan.',
+                'Petugas kasir akan memvalidasi dan mengarahkan ke Jeep yang ditugaskan.',
+            ],
+        };
+
+        var items = steps[method] || steps['bpd'];
+        list.innerHTML = items.map(function (step, i) {
+            return '<li class="flex items-start gap-2.5">'
+                + '<span class="w-5 h-5 rounded-full bg-wukirsari-sage text-wukirsari-primary flex items-center justify-center font-bold text-[11px] shrink-0 mt-0.5">' + (i + 1) + '</span>'
+                + '<span>' + step + '</span>'
+                + '</li>';
+        }).join('');
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // BRIVA ACCORDION
+    // ─────────────────────────────────────────────────────────────
+    function toggleBriAccordion(key) {
+        var panel   = document.getElementById('acc-' + key);
+        var chevron = document.getElementById('chevron-' + key);
+        if (!panel) return;
+        var isOpen = !panel.classList.contains('hidden');
+        panel.classList.toggle('hidden', isOpen);
+        if (chevron) chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // BRIVA COUNTDOWN
+    // ─────────────────────────────────────────────────────────────
+    function startBriCountdown(expiresAtStr) {
+        if (_briCountdownInterval) clearInterval(_briCountdownInterval);
+        var expiresAt = new Date(expiresAtStr);
+        var timerEl   = document.getElementById('briCountdownTimer');
+
+        function tick() {
+            var now  = new Date();
+            var diff = Math.max(0, Math.floor((expiresAt - now) / 1000));
+            if (!timerEl) return;
+            if (diff === 0) {
+                timerEl.textContent = 'Kedaluwarsa';
+                clearInterval(_briCountdownInterval);
+                return;
+            }
+            var m = Math.floor(diff / 60);
+            var s = diff % 60;
+            timerEl.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+        }
+        tick();
+        _briCountdownInterval = setInterval(tick, 1000);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // BRIVA POLLING
+    // ─────────────────────────────────────────────────────────────
+    function startBriPolling() {
+        if (_briPollInterval) clearInterval(_briPollInterval);
+        _briPollInterval = setInterval(function () {
+            fetch(STATUS_URL, { headers: { 'Accept': 'application/json' } })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (data.is_paid || data.booking_status === 'FULL_PAID' || data.booking_status === 'DP_PAID') {
+                        clearInterval(_briPollInterval);
+                        clearInterval(_briCountdownInterval);
+                        window.location.href = data.redirect_url || SUCCESS_URL;
+                    }
+                    if (data.is_cancelled) {
+                        clearInterval(_briPollInterval);
+                        // Optionally reload to show expired state
+                    }
+                })
+                .catch(function () { /* network errors — keep polling */ });
+        }, 3000);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // RENDER ACTIVE BRIVA DETAILS
+    // ─────────────────────────────────────────────────────────────
+    function renderBriDetails(data) {
+        var vaNumber    = data.va_number || '';
+        var grossAmount = data.gross_amount || 0;
+        var expiresAt   = data.expires_at  || '';
+
+        // Store raw amount for copy
+        window._briGrossRaw = String(grossAmount);
+
+        // Populate VA number
+        var vaEl = document.getElementById('briVaDisplay');
+        if (vaEl) vaEl.textContent = vaNumber || 'Sedang diproses...';
+
+        // Populate nominal
+        var grossEl = document.getElementById('briGrossDisplay');
+        if (grossEl) {
+            grossEl.textContent = 'Rp ' + Number(grossAmount).toLocaleString('id-ID');
+        }
+
+        // Switch to active box
+        var boxGen    = document.getElementById('boxGenerateBri');
+        var boxActive = document.getElementById('boxActiveBriVa');
+        if (boxGen)    boxGen.classList.add('hidden');
+        if (boxActive) boxActive.classList.remove('hidden');
+
+        // Start countdown & polling
+        if (expiresAt) startBriCountdown(expiresAt);
+        startBriPolling();
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // GENERATE BRIVA (POST /booking/{code}/charge)
+    // ─────────────────────────────────────────────────────────────
+    function generateBriVa() {
+        var btn  = document.getElementById('btnGenerateBriVa');
+        var text = document.getElementById('btnGenerateBriText');
+        if (btn) btn.disabled = true;
+        if (text) text.textContent = 'Memproses...';
+
+        fetch(CHARGE_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': CSRF_TOKEN,
+            },
+            body: JSON.stringify({ payment_method: 'bri_va' }),
+        })
+        .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, status: r.status, data: d }; }); })
+        .then(function (res) {
+            if (res.ok && res.data.status === 'success') {
+                renderBriDetails(res.data.data);
+            } else if (res.data.status === 'already_paid') {
+                window.location.href = res.data.redirect_url || SUCCESS_URL;
+            } else {
+                var msg = (res.data.message) || 'Gagal membuat BRIVA. Coba lagi.';
+                alert(msg);
+                if (btn) btn.disabled = false;
+                if (text) text.textContent = 'Terbitkan Nomor BRI Virtual Account';
+            }
+        })
+        .catch(function (err) {
+            console.error('generateBriVa error:', err);
+            alert('Terjadi kesalahan jaringan. Pastikan koneksi internet Anda stabil dan coba lagi.');
+            if (btn) btn.disabled = false;
+            if (text) text.textContent = 'Terbitkan Nomor BRI Virtual Account';
+        });
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // LOAD ACTIVE BRIVA ON PAGE LOAD (resume if already generated)
+    // ─────────────────────────────────────────────────────────────
+    function loadActiveBriOnLoad() {
+        fetch(ACTIVE_PAYMENT_URL, { headers: { 'Accept': 'application/json' } })
+            .then(function (r) { return r.json(); })
+            .then(function (res) {
+                if (res.status === 'success' && res.data && res.data.payment_method === 'bri_va') {
+                    // Auto-switch to BRI tab and render details
+                    switchTab('bri');
+                    renderBriDetails(res.data);
+                }
+            })
+            .catch(function () { /* silently ignore on load */ });
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // FILE UPLOAD PREVIEW
+    // ─────────────────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', function () {
-        var fileInput = document.getElementById('fileProof');
+        // Load any active BRIVA session
+        loadActiveBriOnLoad();
+
+        var fileInput      = document.getElementById('fileProof');
         var previewDefault = document.getElementById('previewDefault');
-        var previewSelected = document.getElementById('previewSelected');
-        var imgThumbnail = document.getElementById('imgThumbnail');
-        var fileNameDisplay = document.getElementById('fileNameDisplay');
-        var fileSizeDisplay = document.getElementById('fileSizeDisplay');
+        var previewSelected= document.getElementById('previewSelected');
+        var imgThumbnail   = document.getElementById('imgThumbnail');
+        var fileNameDisplay= document.getElementById('fileNameDisplay');
+        var fileSizeDisplay= document.getElementById('fileSizeDisplay');
 
         if (fileInput) {
             fileInput.addEventListener('change', function () {
                 if (this.files && this.files[0]) {
                     var file = this.files[0];
-                    
                     fileNameDisplay.textContent = file.name;
                     fileSizeDisplay.textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB';
-
                     var reader = new FileReader();
                     reader.onload = function (e) {
                         imgThumbnail.src = e.target.result;
