@@ -363,99 +363,127 @@ class BookingController extends Controller
      * Jika link berisi nama tempat tanpa koordinat, cari via Places Text Search di backend.
      */
     public function resolveMapLink(Request $request)
-    {
-        $url = trim((string) $request->query('url', ''));
-        if (empty($url)) {
-            return response()->json(['ok' => false, 'message' => 'URL wajib diisi'], 422);
+{
+    $url = trim((string) $request->query('url', ''));
+    if (empty($url)) {
+        return response()->json(['ok' => false, 'message' => 'URL wajib diisi'], 422);
+    }
+
+    $host = strtolower((string) parse_url($url, PHP_URL_HOST));
+    $allowedHosts = [
+        'maps.app.goo.gl',
+        'goo.gl',
+        'maps.google.com',
+        'www.google.com',
+        'google.com',
+        'maps.google.co.id',
+        'www.google.co.id',
+        'google.co.id',
+    ];
+
+    $hostMatch = false;
+    foreach ($allowedHosts as $allowed) {
+        if ($host === $allowed || str_ends_with($host, '.' . $allowed)) {
+            $hostMatch = true;
+            break;
+        }
+    }
+
+    if (!$hostMatch) {
+        return response()->json(['ok' => false, 'message' => 'Domain link tidak didukung'], 422);
+    }
+
+    try {
+        $finalUrl = $url;
+        $res = Http::withOptions([
+            'allow_redirects' => [
+                'max'             => 5,
+                'track_redirects' => true,
+            ],
+            'timeout' => 8,
+        ])->withHeaders([
+            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        ])->get($url);
+
+        $effectiveUrl = (string) ($res->effectiveUri() ?? '');
+        if (!empty($effectiveUrl)) {
+            $finalUrl = $effectiveUrl;
         }
 
-        $host = strtolower((string) parse_url($url, PHP_URL_HOST));
-        $allowedHosts = [
-            'maps.app.goo.gl',
-            'goo.gl',
-            'maps.google.com',
-            'www.google.com',
-            'google.com',
-            'maps.google.co.id',
-            'www.google.co.id',
-            'google.co.id',
-        ];
+        // 1. Ekstrak koordinat langsung dari URL akhir
+        $coords = $this->extractCoordinatesFromText($finalUrl);
 
-        $hostMatch = false;
-        foreach ($allowedHosts as $allowed) {
-            if ($host === $allowed || str_ends_with($host, '.' . $allowed)) {
-                $hostMatch = true;
-                break;
-            }
+        // Jika belum ada di URL, cek juga apakah ada di body redirect Google
+        if (!$coords && $res->body()) {
+            $coords = $this->extractCoordinatesFromText($res->body());
         }
 
-        if (!$hostMatch) {
-            return response()->json(['ok' => false, 'message' => 'Domain link tidak didukung'], 422);
-        }
-
-        try {
-            $finalUrl = $url;
-            $res = Http::withOptions([
-                'allow_redirects' => [
-                    'max'             => 5,
-                    'track_redirects' => true,
-                ],
-                'timeout' => 8,
-            ])->withHeaders([
-                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            ])->get($url);
-
-            $effectiveUrl = (string) ($res->effectiveUri() ?? '');
-            if (!empty($effectiveUrl)) {
-                $finalUrl = $effectiveUrl;
-            }
-
-            // 1. Ekstrak koordinat langsung dari URL akhir
-            $coords = $this->extractCoordinatesFromText($finalUrl);
-
-            // Jika belum ada di URL, cek juga apakah ada di body redirect Google
-            if (!$coords && $res->body()) {
-                $coords = $this->extractCoordinatesFromText($res->body());
-            }
-
-            if ($coords) {
-                $rev = $this->lookupReverseName($coords['lat'], $coords['lng']);
-                return response()->json([
-                    'ok'      => true,
-                    'lat'     => $coords['lat'],
-                    'lng'     => $coords['lng'],
-                    'name'    => $rev['name'] ?? null,
-                    'address' => $rev['address'] ?? null,
-                    'url'     => $finalUrl,
-                ]);
-            }
-
-            // 2. Jika link berisi NAMA TEMPAT tanpa koordinat (mis. /place/Mas+Dedi+Servis+HP)
-            $placeName = $this->extractPlaceNameFromUrl($finalUrl);
-            if ($placeName) {
-                $searchResult = $this->searchPlaceText($placeName);
-                if ($searchResult) {
-                    return response()->json([
-                        'ok'      => true,
-                        'lat'     => $searchResult['lat'],
-                        'lng'     => $searchResult['lng'],
-                        'name'    => $searchResult['name'] ?? $placeName,
-                        'address' => $searchResult['address'] ?? null,
-                        'url'     => $finalUrl,
-                    ]);
+        if ($coords) {
+            // a. Nama penginapan dari link Google Maps itu sendiri (paling akurat)
+            $hotel = $this->extractPlaceNameFromUrl($finalUrl);
+            if ($hotel) {
+                $hotel = trim(explode(',', $hotel)[0]);          // ambil nama sebelum alamat
+                if ($hotel === '' || preg_match('/^(jl\.?|jalan|gg\.?|gang)\s/i', $hotel)) {
+                    $hotel = null;                                 // itu nama jalan, bukan hotel
                 }
             }
 
+            $address = null;
+
+            // b. Kalau link tidak memuat nama: cari penginapan terdekat lewat Google
+            if (!$hotel) {
+                $near = $this->nearbyPlaces($coords['lat'], $coords['lng']);
+                if (!empty($near)) {
+                    $hotel   = $near[0]['name'];
+                    $address = $near[0]['address'];
+                }
+            }
+
+            // c. Alamat area (jalan/kecamatan) hanya keterangan; nama dari OSM hanya jika penginapan
+            if (!$address || !$hotel) {
+                $rev = $this->lookupReverseName($coords['lat'], $coords['lng']);
+                if (!$hotel) {
+                    $hotel = $rev['name'] ?? null;
+                }
+                $address = $address ?: ($rev['address'] ?? null);
+            }
+
             return response()->json([
-                'ok'      => false,
-                'message' => 'Koordinat titik tidak ditemukan dalam link tersebut.',
+                'ok'      => true,
+                'lat'     => $coords['lat'],
+                'lng'     => $coords['lng'],
+                'name'    => $hotel,
+                'address' => $address,
                 'url'     => $finalUrl,
-            ], 422);
-        } catch (\Throwable $e) {
-            Log::warning('Resolve map link error: ' . $e->getMessage());
-            return response()->json(['ok' => false, 'error' => $e->getMessage()], 500);
+            ]);
         }
+
+        // 2. Jika link berisi NAMA TEMPAT tanpa koordinat (mis. /place/Mas+Dedi+Servis+HP)
+        $placeName = $this->extractPlaceNameFromUrl($finalUrl);
+        if ($placeName) {
+            $searchResult = $this->searchPlaceText($placeName);
+            if ($searchResult) {
+                return response()->json([
+                    'ok'      => true,
+                    'lat'     => $searchResult['lat'],
+                    'lng'     => $searchResult['lng'],
+                    'name'    => $searchResult['name'] ?? $placeName,
+                    'address' => $searchResult['address'] ?? null,
+                    'url'     => $finalUrl,
+                ]);
+            }
+        }
+
+        return response()->json([
+            'ok'      => false,
+            'message' => 'Koordinat titik tidak ditemukan dalam link tersebut.',
+            'url'     => $finalUrl,
+        ], 422);
+    } catch (\Throwable $e) {
+        Log::warning('Resolve map link error: ' . $e->getMessage());
+        return response()->json(['ok' => false, 'error' => $e->getMessage()], 500);
     }
+}
 
     /**
      * Alias route lama agar kompatibel
@@ -761,7 +789,12 @@ class BookingController extends Controller
     }
 
     /**
+ * Reverse geocoding (lat, lng -> nama hotel / alamat)
+ * Prioritas: Google Places Nearby (hotel terdekat) -> Photon/Nominatim
+ */
+    /**
      * Reverse geocoding (lat, lng -> nama hotel / alamat)
+     * Prioritas: Google Places Nearby (hotel terdekat) -> Photon/Nominatim
      */
     public function reverseLocation(Request $request)
     {
@@ -769,93 +802,98 @@ class BookingController extends Controller
         $lng = (float) $request->query('lng');
 
         if (!$lat || !$lng || $lat < -11.5 || $lat > 6.5 || $lng < 94 || $lng > 141.5) {
-            return response()->json(['ok' => false, 'name' => null, 'address' => null], 422);
+            return response()->json(['ok' => false, 'name' => null, 'address' => null, 'places' => []], 422);
         }
 
-        $cacheKey = 'geo_rev_' . round($lat, 4) . '_' . round($lng, 4);
+        $cacheKey = 'geo_rev_v3_' . round($lat, 4) . '_' . round($lng, 4);
 
-        $data = Cache::remember($cacheKey, now()->addDays(1), function () use ($lat, $lng) {
+        if ($cached = Cache::get($cacheKey)) {
+            return response()->json($cached);
+        }
+
+        $places = $this->nearbyPlaces($lat, $lng);
+
+        if (!empty($places)) {
+            $data = [
+                'ok'      => true,
+                'name'    => $places[0]['name'],
+                'address' => $places[0]['address'],
+                'places'  => $places,
+                'source'  => 'google',
+            ];
+        } else {
             $rev = $this->lookupReverseName($lat, $lng);
-            return [
-                'ok'          => !empty($rev['name'] || $rev['address']),
+            $data = [
+                'ok'          => !empty($rev['name']) || !empty($rev['address']),
                 'name'        => $rev['name'] ?? null,
                 'address'     => $rev['address'] ?? null,
+                'places'      => [],
                 'source'      => $rev['source'] ?? 'none',
                 'attribution' => '© OpenStreetMap contributors',
             ];
-        });
+        }
+
+        if ($data['ok']) {
+            Cache::put($cacheKey, $data, now()->addDay());
+        }
 
         return response()->json($data);
     }
 
     /**
-     * B.3 Helper: Cari nama tempat via Google Places Text Search (New) / Photon fallback
+     * Helper: cari tempat terdekat (hotel dulu) via Google Places Nearby Search (New)
      */
-    private function searchPlaceText(string $textQuery): ?array
+    private function nearbyPlaces(float $lat, float $lng): array
     {
         $key = $this->apiKey();
-        if ($key) {
+        if (!$key) return [];
+
+        $search = function (array $extra, float $radius) use ($key, $lat, $lng) {
             try {
-                $res = Http::withHeaders([
+                $res = Http::timeout(6)->withHeaders([
                     'X-Goog-Api-Key'   => $key,
                     'X-Goog-FieldMask' => 'places.id,places.displayName,places.formattedAddress,places.location',
-                    'Content-Type'     => 'application/json',
-                ])->timeout(5)->post('https://places.googleapis.com/v1/places:searchText', [
-                    'textQuery'    => $textQuery,
-                    'languageCode' => 'id',
-                    'regionCode'   => 'ID',
-                    'locationBias' => [
-                        'circle' => [
-                            'center' => ['latitude' => -7.7956, 'longitude' => 110.3695],
-                            'radius' => 40000.0,
-                        ],
-                    ],
-                ]);
+                ])->post('https://places.googleapis.com/v1/places:searchNearby', array_merge([
+                    'maxResultCount'      => 5,
+                    'rankPreference'      => 'DISTANCE',
+                    'languageCode'        => 'id',
+                    'locationRestriction' => ['circle' => [
+                        'center' => ['latitude' => $lat, 'longitude' => $lng],
+                        'radius' => $radius,
+                    ]],
+                ], $extra));
 
                 if ($res->ok()) {
-                    $place = $res->json('places.0');
-                    if ($place && isset($place['location'])) {
-                        return [
-                            'lat'     => (float) $place['location']['latitude'],
-                            'lng'     => (float) $place['location']['longitude'],
-                            'name'    => $place['displayName']['text'] ?? $textQuery,
-                            'address' => $place['formattedAddress'] ?? '',
-                            'source'  => 'google_text_search',
-                        ];
-                    }
+                    return $res->json('places') ?? [];
                 }
+                Log::info('Google Nearby Search error: ' . $res->status() . ' ' . $res->body());
             } catch (\Throwable $e) {
-                Log::info('Google Places text search exception: ' . $e->getMessage());
+                Log::info('Google Nearby Search exception: ' . $e->getMessage());
             }
+            return [];
+        };
+
+        // Bertahap: penginapan 100 m -> tempat apa pun 100 m -> penginapan 300 m
+        $found = $search(['includedTypes' => ['lodging']], 100.0);
+        if (empty($found)) $found = $search(['includedTypes' => ['lodging']], 300.0);
+
+        $places = [];
+        foreach ($found as $p) {
+            $name = $p['displayName']['text'] ?? null;
+            $plat = $p['location']['latitude'] ?? null;
+            $plng = $p['location']['longitude'] ?? null;
+            if (!$name || $plat === null || $plng === null) continue;
+
+            $places[] = [
+                'name'    => $name,
+                'address' => $p['formattedAddress'] ?? '',
+                'lat'     => (float) $plat,
+                'lng'     => (float) $plng,
+            ];
         }
 
-        // Fallback Photon
-        try {
-            $res = Http::withHeaders(['User-Agent' => 'JeepWukirsari/1.0'])->timeout(3.5)
-                ->get('https://photon.komoot.io/api/', [
-                    'q'     => $textQuery,
-                    'lat'   => -7.7956,
-                    'lon'   => 110.3695,
-                    'limit' => 1,
-                ]);
-            if ($res->ok()) {
-                $f = $res->json('features.0');
-                if ($f && isset($f['geometry']['coordinates'])) {
-                    $props = $f['properties'] ?? [];
-                    return [
-                        'lat'     => (float) $f['geometry']['coordinates'][1],
-                        'lng'     => (float) $f['geometry']['coordinates'][0],
-                        'name'    => $props['name'] ?? $textQuery,
-                        'address' => $props['street'] ?? '',
-                        'source'  => 'photon',
-                    ];
-                }
-            }
-        } catch (\Throwable $e) {}
-
-        return null;
+        return $places;
     }
-
     /**
      * Helper: Ekstrak nama tempat dari URL Google Maps (e.g. /place/Mas+Dedi+Servis+HP)
      */
@@ -910,73 +948,90 @@ class BookingController extends Controller
     /**
      * Helper: Reverse geocode nama tempat
      */
-    private function lookupReverseName(float $lat, float $lng): array
+       private function lookupReverseName(float $lat, float $lng): array
     {
+        $lodging = ['hotel', 'guest_house', 'hostel', 'motel', 'apartment', 'chalet', 'resort', 'villa', 'homestay'];
+        $headers = ['User-Agent' => 'JeepWukirsari/1.0 (info@jeepwukirsari.id)', 'Accept' => 'application/json'];
+
         // 1. Photon Reverse
         try {
-            $res = Http::withHeaders([
-                'User-Agent' => 'JeepWukirsari/1.0 (info@jeepwukirsari.id)',
-                'Accept'     => 'application/json',
-            ])->timeout(3)->get('https://photon.komoot.io/reverse', [
-                'lat' => $lat,
-                'lon' => $lng,
-            ]);
+            $res = Http::withHeaders($headers)->timeout(3)->get('https://photon.komoot.io/reverse', ['lat' => $lat, 'lon' => $lng]);
+            if ($res->ok() && !empty($res->json('features'))) {
+                $props = $res->json('features.0.properties') ?? [];
+                $isLodging = ($props['osm_key'] ?? '') === 'tourism' && in_array($props['osm_value'] ?? '', $lodging, true);
+                $area = implode(', ', array_filter([
+                    $props['street'] ?? null,
+                    $props['district'] ?? null,
+                    $props['city'] ?? ($props['county'] ?? null),
+                ]));
 
-            if ($res->ok()) {
-                $features = $res->json('features') ?? [];
-                if (!empty($features)) {
-                    $props = $features[0]['properties'] ?? [];
-                    $name = $props['name'] ?? null;
-                    $parts = array_filter([
-                        $name,
-                        $props['street'] ?? null,
-                        $props['district'] ?? null,
-                        $props['city'] ?? ($props['county'] ?? null),
-                    ]);
-                    $formatted = implode(', ', array_unique($parts));
-                    if (!empty($formatted)) {
-                        return [
-                            'name'    => $name ?: $formatted,
-                            'address' => $formatted,
-                            'source'  => 'photon',
-                        ];
-                    }
+                if ($isLodging && !empty($props['name'])) {
+                    return ['name' => $props['name'], 'address' => trim($props['name'] . ($area ? ', ' . $area : '')), 'source' => 'photon'];
+                }
+                if ($area !== '') {
+                    return ['name' => null, 'address' => $area, 'source' => 'photon'];
                 }
             }
         } catch (\Throwable $e) {}
 
         // 2. Fallback Nominatim Reverse
         try {
-            $resNom = Http::withHeaders([
-                'User-Agent' => 'JeepWukirsari/1.0 (info@jeepwukirsari.id)',
-                'Accept'     => 'application/json',
-            ])->timeout(3.5)->get('https://nominatim.openstreetmap.org/reverse', [
-                'lat'            => $lat,
-                'lon'            => $lng,
-                'format'         => 'jsonv2',
-                'addressdetails' => 1,
+            $res = Http::withHeaders($headers)->timeout(3.5)->get('https://nominatim.openstreetmap.org/reverse', [
+                'lat' => $lat, 'lon' => $lng, 'format' => 'jsonv2', 'addressdetails' => 1,
             ]);
-
-            if ($resNom->ok()) {
-                $data = $resNom->json();
-                $name = $data['name'] ?? null;
-                $addr = $data['address'] ?? [];
-                $parts = array_filter([
-                    $name,
+            if ($res->ok()) {
+                $d = $res->json();
+                $addr = $d['address'] ?? [];
+                $isLodging = ($d['category'] ?? '') === 'tourism' && in_array($d['type'] ?? '', $lodging, true);
+                $area = implode(', ', array_filter([
                     $addr['road'] ?? null,
                     $addr['suburb'] ?? ($addr['village'] ?? null),
                     $addr['county'] ?? ($addr['city'] ?? null),
-                ]);
-                $formatted = !empty($parts) ? implode(', ', array_unique($parts)) : ($data['display_name'] ?? null);
+                ]));
 
-                return [
-                    'name'    => $name ?: $formatted,
-                    'address' => $formatted,
-                    'source'  => 'nominatim',
-                ];
+                if ($isLodging && !empty($d['name'])) {
+                    return ['name' => $d['name'], 'address' => trim($d['name'] . ($area ? ', ' . $area : '')), 'source' => 'nominatim'];
+                }
+                if ($area !== '') {
+                    return ['name' => null, 'address' => $area, 'source' => 'nominatim'];
+                }
             }
         } catch (\Throwable $e) {}
 
         return ['name' => null, 'address' => null, 'source' => 'none'];
     }
+
+    public function nearbyLodging(Request $request)
+{
+    $lat = (float) $request->query('lat');
+    $lng = (float) $request->query('lng');
+    if (!$lat || !$lng) return response()->json(['places' => []]);
+
+    $cacheKey = 'nearby_lodging_osm_' . round($lat, 2) . '_' . round($lng, 2);
+    if ($cached = Cache::get($cacheKey)) {
+        return response()->json(['places' => $cached]);
+    }
+
+    $places = [];
+    try {
+        $q = '[out:json][timeout:10];nwr(around:3000,' . $lat . ',' . $lng . ')'
+           . '[tourism~"hotel|guest_house|hostel|motel|apartment|chalet"][name];out center 40;';
+        $res = Http::timeout(12)->asForm()->post('https://overpass-api.de/api/interpreter', ['data' => $q]);
+
+        foreach (($res->json('elements') ?? []) as $e) {
+            $plat = $e['lat'] ?? ($e['center']['lat'] ?? null);
+            $plng = $e['lon'] ?? ($e['center']['lon'] ?? null);
+            $name = $e['tags']['name'] ?? null;
+            if (!$name || $plat === null || $plng === null) continue;
+            $places[] = ['name' => $name, 'address' => '', 'lat' => (float) $plat, 'lng' => (float) $plng];
+        }
+    } catch (\Throwable $e) {
+        Log::info('Overpass lodging error: ' . $e->getMessage());
+    }
+
+    if ($places) Cache::put($cacheKey, $places, now()->addHours(12));
+
+    return response()->json(['places' => $places]);
+}
+    
 }

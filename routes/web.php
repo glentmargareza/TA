@@ -33,6 +33,7 @@ Route::get('/booking/distance', [BookingController::class, 'distance'])->middlew
 Route::get('/booking/{code}/success', [BookingController::class, 'success'])->name('booking.success');
 Route::get('/lokasi-jemput', [BookingController::class, 'placesSearch'])->middleware('throttle:60,1')->name('booking.location');
 Route::get('/lokasi-jemput/reverse', [BookingController::class, 'reverseLocation'])->middleware('throttle:60,1')->name('booking.reverse');
+Route::get('/lokasi-jemput/nearby', [BookingController::class, 'nearbyLodging'])->name('booking.nearby');
 
 // 3. Pelacakan Tiket Mandiri
 Route::get('/cek-tiket', [TicketController::class, 'check'])->name('ticket.check');
