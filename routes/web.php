@@ -19,7 +19,10 @@ Route::get('/paket-wisata/{slug}', [HomeController::class, 'showPackage'])->name
 // 2. Alur Pemesanan (Booking)
 Route::get('/booking', [BookingController::class, 'create'])->name('booking.create');
 Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
-Route::get('/booking/resolve-link', [BookingController::class, 'resolveLink'])->name('booking.resolve');
+Route::get('/booking/resolve-link', [BookingController::class, 'resolveMapLink'])->name('booking.resolve');
+Route::get('/api/resolve-map-link', [BookingController::class, 'resolveMapLink'])->middleware('throttle:60,1')->name('places.resolve_link');
+Route::get('/api/places/search', [BookingController::class, 'placesSearch'])->middleware('throttle:60,1')->name('places.search');
+Route::get('/api/places/detail', [BookingController::class, 'placesDetail'])->middleware('throttle:60,1')->name('places.detail');
 Route::get('/booking/{code}/payment', [BookingController::class, 'payment'])->name('booking.payment');
 Route::post('/booking/{code}/confirm-transfer', [BookingController::class, 'confirmTransfer'])->name('booking.confirm_transfer');
 Route::post('/booking/{code}/confirm-cash', [BookingController::class, 'confirmCash'])->name('booking.confirm_cash');
@@ -28,8 +31,8 @@ Route::get('/booking/{code}/status', [PaymentController::class, 'status'])->name
 Route::get('/booking/{code}/active-payment', [PaymentController::class, 'activePayment'])->name('booking.active_payment');
 Route::get('/booking/distance', [BookingController::class, 'distance'])->middleware('throttle:60,1')->name('booking.distance');
 Route::get('/booking/{code}/success', [BookingController::class, 'success'])->name('booking.success');
-Route::get('/booking/{code}/success', [BookingController::class, 'success'])->name('booking.success');
-Route::get('/lokasi-jemput', [BookingController::class, 'searchLocation'])->middleware('throttle:30,1')->name('booking.location');
+Route::get('/lokasi-jemput', [BookingController::class, 'placesSearch'])->middleware('throttle:60,1')->name('booking.location');
+Route::get('/lokasi-jemput/reverse', [BookingController::class, 'reverseLocation'])->middleware('throttle:60,1')->name('booking.reverse');
 
 // 3. Pelacakan Tiket Mandiri
 Route::get('/cek-tiket', [TicketController::class, 'check'])->name('ticket.check');

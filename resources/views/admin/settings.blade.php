@@ -394,7 +394,36 @@
                                 </span>
                             </div>
 
-                            <!-- 4. Framework & Environtment -->
+                            <!-- 4. Google Places & Maps API -->
+                            @php
+                                $hasGoogleKey = !empty(config('services.google.maps_api_key') ?: (env('GOOGLE_MAPS_API_KEY') ?: (env('GOOGLE_MAPS_SERVER_KEY') ?: env('GOOGLE_MAPS_BROWSER_KEY'))));
+                            @endphp
+                            <div class="p-3.5 {{ $hasGoogleKey ? 'bg-slate-50' : 'bg-amber-50/70 border-amber-200' }} rounded-xl border border-slate-200/80 flex items-center justify-between gap-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg {{ $hasGoogleKey ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800' }} flex items-center justify-center font-bold">
+                                        📍
+                                    </div>
+                                    <div>
+                                        <span class="font-bold text-slate-800 block">Google Places & Maps API</span>
+                                        <span class="text-slate-500 text-[11px]">
+                                            {{ $hasGoogleKey ? 'Places API (New) & Geocoding terhubung.' : 'Google Places belum aktif, hasil pencarian terbatas (menggunakan fallback gratis Photon & OpenStreetMap).' }}
+                                        </span>
+                                    </div>
+                                </div>
+                                @if($hasGoogleKey)
+                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 flex items-center gap-1 shrink-0">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                                    <span>Aktif</span>
+                                </span>
+                                @else
+                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300 flex items-center gap-1 shrink-0" title="Isi GOOGLE_MAPS_API_KEY di .env">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse"></span>
+                                    <span>Google Places belum aktif, hasil pencarian terbatas</span>
+                                </span>
+                                @endif
+                            </div>
+
+                            <!-- 5. Framework & Environtment -->
                             <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center justify-between">
                                 <div class="flex items-center gap-3">
                                     <div class="w-8 h-8 rounded-lg bg-purple-100 text-purple-800 flex items-center justify-center font-bold">
