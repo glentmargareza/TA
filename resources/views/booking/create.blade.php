@@ -839,28 +839,38 @@ async function pkSearch(q){
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
       </svg>
-      <span>Mencari lokasi di Yogyakarta & sekitarnya…</span>
+      <span>Mencari via Google Places…</span>
     </div>`;
   box.classList.remove('hidden');
 
   let items = [];
-  const token = pkGetSessionToken();
 
   try{
-    const searchUrl = (D.searchUrl || '/api/places/search')
-      + '?q=' + encodeURIComponent(q)
-      + '&session_token=' + encodeURIComponent(token);
+    const searchUrl = (D.searchUrl || '/api/places-autocomplete')
+      + '?q=' + encodeURIComponent(q);
 
     const r = await fetch(searchUrl, {
       signal: pkSearchAbort.signal,
       headers: {'Accept': 'application/json'}
     });
-    if(r.ok){
-      const data = await r.json();
-      items = (data.results || []).slice(0, 8);
+
+    const data = await r.json().catch(() => null);
+
+    if(!r.ok || !data || data.ok === false){
+      const errMsg = data?.error || data?.message || ('HTTP ' + r.status);
+      console.error('[Google Places Error]', errMsg);
+      if(spin) spin.classList.add('hidden');
+      pkRenderError(errMsg);
+      return;
     }
+
+    items = (data.results || []).slice(0, 5);
   }catch(e){
     if(e.name === 'AbortError') return;
+    console.error('[Google Places Exception]', e);
+    if(spin) spin.classList.add('hidden');
+    pkRenderError('Tidak dapat terhubung ke server. Coba beberapa saat lagi.');
+    return;
   }
 
   if(spin) spin.classList.add('hidden');
@@ -868,17 +878,54 @@ async function pkSearch(q){
   pkRenderSuggestions(items);
 }
 
+function pkRenderError(msg){
+  const box = $('#addrRes');
+  if(!box) return;
+  box.innerHTML = `
+    <div class="p-3.5 text-xs text-merapiText-secondary space-y-1.5 border-l-4 border-amber-500 bg-amber-50/50">
+      <div class="font-bold text-amber-800 flex items-center gap-1.5">
+        <svg class="w-4 h-4 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+        <span>Pencarian Google Belum Siap</span>
+      </div>
+      <div class="text-[11px] text-merapiText-muted leading-relaxed">${esc(msg)}</div>
+      <div class="text-[10px] text-merapiText-muted pt-1">
+        Tips: Tempel link Google Maps di kolom bawah atau geser pin di peta.
+      </div>
+    </div>`;
+  box.classList.remove('hidden');
+}
+
+function formatHotelDisplay(name, address){
+  name = (name || '').trim();
+  address = (address || '').trim();
+  if(!name && !address) return '';
+  if(!address) return name;
+  if(!name) return address;
+
+  if(name.toLowerCase() === address.toLowerCase()) return name;
+
+  // Format: "Nama Hotel – alamat singkat"
+  const parts = address.split(',').map(s => s.trim()).filter(Boolean);
+  const shortAddr = parts.slice(0, 2).join(', ');
+
+  if(shortAddr && name.toLowerCase().includes(parts[0].toLowerCase())){
+    return name;
+  }
+  return shortAddr ? `${name} – ${shortAddr}` : name;
+}
+
 function pkRenderSuggestions(items){
   const box = $('#addrRes');
   if(!box) return;
 
   if(!items || items.length === 0){
-    // E. Pesan untuk pelanggan jika pencarian nama tidak menemukan hasil
     box.innerHTML = `
       <div class="p-4 text-center text-xs text-merapiText-secondary space-y-1.5">
-        <div class="font-bold text-merapiText-primary">Tidak ketemu?</div>
+        <div class="font-bold text-merapiText-primary">Tidak ditemukan</div>
         <div class="text-[11px] text-merapiText-muted leading-relaxed">
-          Buka Google Maps, tekan <strong>Bagikan</strong> pada lokasi hotel, salin link-nya, lalu tempel di kolom di bawah. Atau geser pin di peta.
+          Geser pin di peta atau tempel link Google Maps.
         </div>
       </div>`;
     box.classList.remove('hidden');
@@ -901,7 +948,7 @@ function pkRenderSuggestions(items){
   html += `</div>
     <div class="px-4 py-1.5 bg-[#fbfbf8] text-[10px] text-merapiText-muted border-t border-wukirsari-border/60 flex items-center justify-between">
       <span>Pilih lokasi yang tepat</span>
-      <span>${items[0]?.source === 'google' ? 'Google Places' : '© OpenStreetMap contributors'}</span>
+      <span class="font-medium">Ditenagai oleh Google Places</span>
     </div>`;
 
   box.innerHTML = html;
@@ -921,26 +968,30 @@ async function pkSelectSuggestion(idx){
   const item = pkSuggestions[idx];
   if(!item) return;
 
-  const currentToken = pkSessionToken;
-  pkResetSessionToken();
+  const hotelText = formatHotelDisplay(item.name, item.address);
+  const addrInput = $('#addr');
+  if(addrInput) addrInput.value = hotelText;
 
-  // Jika item memiliki ID Google Places (ambil detail koordinat via backend proxy)
-  if(item.id && (item.lat === undefined || item.lat === null)){
+  // Jika item sudah punya koordinat (langsung dari Google Places Text Search)
+  if(typeof item.lat === 'number' && typeof item.lng === 'number' && item.lat !== 0 && item.lng !== 0){
+    pkUse(item.lat, item.lng, item.name || hotelText, true, false);
+    return;
+  }
+
+  // Jika perlu detail dari server (fallback ID)
+  if(item.id){
     const spin = $('#addrSpin');
     if(spin) spin.classList.remove('hidden');
     try{
-      const detailUrl = (D.detailUrl || '/api/places/detail')
-        + '?id=' + encodeURIComponent(item.id)
-        + '&session_token=' + encodeURIComponent(currentToken || '');
-
+      const detailUrl = (D.detailUrl || '/api/place-details') + '?id=' + encodeURIComponent(item.id);
       const res = await fetch(detailUrl, { headers: {'Accept': 'application/json'} });
       if(spin) spin.classList.add('hidden');
       if(res.ok){
         const detail = await res.json();
         if(detail.ok && typeof detail.lat === 'number'){
-          $('#addr').value = detail.name || item.name;
-          const label = [detail.name || item.name, detail.address || item.address].filter(Boolean).join(', ');
-          pkUse(detail.lat, detail.lng, label, true, false);
+          const detailText = formatHotelDisplay(detail.name || item.name, detail.address || item.address);
+          if(addrInput) addrInput.value = detailText;
+          pkUse(detail.lat, detail.lng, detail.name || detailText, true, false);
           return;
         }
       }
@@ -948,68 +999,55 @@ async function pkSelectSuggestion(idx){
       if(spin) spin.classList.add('hidden');
     }
   }
-
-  // Jika item sudah punya koordinat (fallback Photon / Nominatim)
-  if(typeof item.lat === 'number' && typeof item.lng === 'number'){
-    $('#addr').value = item.name;
-    const label = item.full_label || [item.name, item.address].filter(Boolean).join(', ');
-    pkUse(item.lat, item.lng, label, true, false);
-  }
 }
 
 /* ====== B. TEMPEL LINK GOOGLE MAPS / KOORDINAT ====== */
+
 let pkLinkTimer = null;
 async function pkProcessLink(raw){
   const v = (raw || '').trim();
   if(!v) return;
 
-  // 1. Coba parse koordinat langsung
-  const pt = pkParse(v);
-  if(pt){
-    pkUse(pt.lat, pt.lng, 'Lokasi dari koordinat', true, true);
-    toast('Titik lokasi ditemukan (' + pt.lat.toFixed(4) + ', ' + pt.lng.toFixed(4) + ').');
-    return;
+  const btn = document.getElementById('btnLink');
+  const origText = btn ? btn.textContent : 'Hitung';
+  if(btn){
+    btn.disabled = true;
+    btn.textContent = 'Membaca…';
   }
 
-  // 2. Link Google Maps (baik maps.app.goo.gl, goo.gl/maps, atau link panjang)
-  if(/goo\.gl|maps\.app|google\.com\/maps/i.test(v)){
-    const btn = document.getElementById('btnLink');
-    const origText = btn ? btn.textContent : '';
+  try{
+    const resolveUrl = (D.resolveUrl || '/api/resolve-place') + '?input=' + encodeURIComponent(v);
+    const res = await fetch(resolveUrl, {
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+    const data = await res.json();
+
     if(btn){
-      btn.disabled = true;
-      btn.textContent = 'Membaca…';
+      btn.disabled = false;
+      btn.textContent = origText;
     }
 
-    try{
-      const resolveUrl = (D.resolveUrl || '/api/resolve-map-link') + '?url=' + encodeURIComponent(v);
-      const res = await fetch(resolveUrl, { headers: {'Accept': 'application/json'} });
-      const data = await res.json();
-      if(btn){
-        btn.disabled = false;
-        btn.textContent = origText;
+    if(data && data.ok && typeof data.lat === 'number'){
+      const hotelText = formatHotelDisplay(data.name, data.address);
+      if(hotelText){
+        $('#addr').value = hotelText;
       }
-      if(data && data.ok && typeof data.lat === 'number'){
-        const label = data.name || data.address || 'Lokasi dari Google Maps';
-        if(data.name || data.address){
-          $('#addr').value = data.name || data.address;
-        }
-        pkUse(data.lat, data.lng, label, true, true);
-        toast('Lokasi berhasil diambil dari link!');
-        return;
-      }else{
-        toast(data.message || 'Link tidak berisi koordinat. Buka Google Maps, tahan lama pada hotel, lalu salin angka koordinat.');
-      }
-    }catch(e){
-      if(btn){
-        btn.disabled = false;
-        btn.textContent = origText;
-      }
-      toast('Gagal membaca link. Salin angka koordinat langsung dari Google Maps.');
+      // Pindahkan pin Leaflet, zoom ke titik, dan hitung jarak (doReverse = false agar nama hotel tidak tertimpa)
+      pkUse(data.lat, data.lng, data.name || hotelText, true, false);
+      toast('Lokasi penjemputan berhasil dibaca!');
+      return;
+    }else{
+      toast('Nama hotel tidak terbaca otomatis, silakan ketik manual.');
     }
-    return;
+  }catch(e){
+    if(btn){
+      btn.disabled = false;
+      btn.textContent = origText;
+    }
+    toast('Nama hotel tidak terbaca otomatis, silakan ketik manual.');
   }
-
-  toast('Format belum dikenali. Contoh: -7.7956, 110.3695 atau link Google Maps.');
 }
  
 function pkRender(){
@@ -1189,10 +1227,33 @@ document.addEventListener('keydown', e => {
   if(e.target.id === 'addr'){
     const box = document.getElementById('addrRes');
     const items = box ? box.querySelectorAll('.sug-item') : [];
-    if(!box || box.classList.contains('hidden') || items.length === 0){
-      if(e.key === 'Escape') box?.classList.add('hidden');
+    const isBoxOpen = box && !box.classList.contains('hidden') && items.length > 0;
+
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      if(isBoxOpen && pkActiveIndex >= 0 && pkActiveIndex < items.length){
+        pkSelectSuggestion(pkActiveIndex);
+      } else if(isBoxOpen && items.length > 0){
+        pkSelectSuggestion(0);
+      } else {
+        // Jalankan pencarian langsung saat user menekan Enter
+        clearTimeout(pkSearchTimer);
+        const q = e.target.value.trim();
+        if(q.length >= 3){
+          pkSearch(q);
+        }
+      }
       return;
     }
+
+    if(e.key === 'Escape'){
+      e.preventDefault();
+      if(box) box.classList.add('hidden');
+      pkActiveIndex = -1;
+      return;
+    }
+
+    if(!isBoxOpen) return;
 
     if(e.key === 'ArrowDown'){
       e.preventDefault();
@@ -1202,17 +1263,6 @@ document.addEventListener('keydown', e => {
       e.preventDefault();
       pkActiveIndex = (pkActiveIndex - 1 + items.length) % items.length;
       pkHighlightSuggestion(items);
-    }else if(e.key === 'Enter'){
-      e.preventDefault();
-      if(pkActiveIndex >= 0 && pkActiveIndex < items.length){
-        pkSelectSuggestion(pkActiveIndex);
-      }else if(items.length > 0){
-        pkSelectSuggestion(0);
-      }
-    }else if(e.key === 'Escape'){
-      e.preventDefault();
-      box.classList.add('hidden');
-      pkActiveIndex = -1;
     }
   }
 

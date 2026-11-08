@@ -19,8 +19,11 @@ Route::get('/paket-wisata/{slug}', [HomeController::class, 'showPackage'])->name
 // 2. Alur Pemesanan (Booking)
 Route::get('/booking', [BookingController::class, 'create'])->name('booking.create');
 Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
-Route::get('/booking/resolve-link', [BookingController::class, 'resolveMapLink'])->name('booking.resolve');
-Route::get('/api/resolve-map-link', [BookingController::class, 'resolveMapLink'])->middleware('throttle:60,1')->name('places.resolve_link');
+Route::get('/booking/resolve-link', [BookingController::class, 'resolvePlace'])->name('booking.resolve');
+Route::match(['get', 'post'], '/api/resolve-place', [BookingController::class, 'resolvePlace'])->middleware('throttle:60,1')->name('places.resolve_place');
+Route::match(['get', 'post'], '/api/resolve-map-link', [BookingController::class, 'resolvePlace'])->middleware('throttle:60,1')->name('places.resolve_link');
+Route::get('/api/places-autocomplete', [BookingController::class, 'placesSearch'])->middleware('throttle:60,1')->name('places.autocomplete');
+Route::get('/api/place-details', [BookingController::class, 'placesDetail'])->middleware('throttle:60,1')->name('places.details');
 Route::get('/api/places/search', [BookingController::class, 'placesSearch'])->middleware('throttle:60,1')->name('places.search');
 Route::get('/api/places/detail', [BookingController::class, 'placesDetail'])->middleware('throttle:60,1')->name('places.detail');
 Route::get('/booking/{code}/payment', [BookingController::class, 'payment'])->name('booking.payment');
