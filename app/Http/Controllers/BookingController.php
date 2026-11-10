@@ -648,7 +648,7 @@ class BookingController extends Controller
             return response()->json(['ok' => true, 'results' => [], 'source' => 'none']);
         }
 
-        $cacheKey = 'places_search_v3_' . md5(mb_strtolower($query));
+        $cacheKey = 'places_search_v4_' . md5(mb_strtolower($query));
         if (Cache::has($cacheKey)) {
             return response()->json(Cache::get($cacheKey));
         }
@@ -816,6 +816,12 @@ class BookingController extends Controller
         }
 
         $queryWords = array_values(array_filter(explode(' ', $cleanQuery), fn($w) => mb_strlen($w) >= 2));
+
+        // Kata umum yang tidak dipakai untuk membedakan hotel
+        $generic = ['hotel','villa','vila','resort','homestay','penginapan','guest','house',
+                    'the','spa','and','resto','hostel','inn','lodge','cottage','kaliurang','merapi'];
+        $queryDistinct = array_values(array_diff($queryWords, $generic)) ?: $queryWords;
+
         $matched = [];
 
         foreach ($hotels as $item) {
@@ -844,62 +850,28 @@ class BookingController extends Controller
                 $cleanCand = $normalize($cand);
                 if (empty($cleanCand)) continue;
 
-                // 1. Exact match / substring
+                // exact match
                 if ($cleanCand === $cleanQuery) {
                     $matchedThis = true;
                     $score = max($score, 100);
                     break;
                 }
-                if (str_contains($cleanCand, $cleanQuery) || str_contains($cleanQuery, $cleanCand)) {
-                    $matchedThis = true;
-                    $score = max($score, 90);
-                    continue;
-                }
 
-                // 2. Pencocokan per kata (semua kata query ada dalam nama/alias)
-                $candWords = array_values(array_filter(explode(' ', $cleanCand), fn($w) => mb_strlen($w) >= 2));
-                $allWordsFound = true;
-                foreach ($queryWords as $qw) {
+                $candWords    = array_values(array_filter(explode(' ', $cleanCand), fn($w) => mb_strlen($w) >= 2));
+                $candDistinct = array_values(array_diff($candWords, $generic)) ?: $candWords;
+
+                // semua kata pembeda dari query harus ada di nama/alias
+                $all = !empty($queryDistinct);
+                foreach ($queryDistinct as $qw) {
                     $found = false;
-                    foreach ($candWords as $cw) {
-                        if (str_contains($cw, $qw) || str_contains($qw, $cw)) {
-                            $found = true;
-                            break;
-                        }
-                        // Toleran salah ketik ringan (levenshtein)
+                    foreach ($candDistinct as $cw) {
+                        if (str_contains($cw, $qw) || str_contains($qw, $cw)) { $found = true; break; }
                         $len = max(mb_strlen($qw), mb_strlen($cw));
-                        if ($len >= 4) {
-                            $dist = levenshtein($qw, $cw);
-                            $maxDist = $len >= 7 ? 2 : 1;
-                            if ($dist <= $maxDist) {
-                                $found = true;
-                                break;
-                            }
-                        }
+                        if ($len >= 4 && levenshtein($qw, $cw) <= ($len >= 7 ? 2 : 1)) { $found = true; break; }
                     }
-                    if (!$found) {
-                        $allWordsFound = false;
-                        break;
-                    }
+                    if (!$found) { $all = false; break; }
                 }
-
-                if ($allWordsFound && !empty($queryWords)) {
-                    $matchedThis = true;
-                    $score = max($score, 80);
-                }
-            }
-
-            // 3. Similar text sebagai toleransi typo menyeluruh
-            if (!$matchedThis) {
-                foreach ($candidates as $cand) {
-                    $cleanCand = $normalize($cand);
-                    if (empty($cleanCand)) continue;
-                    similar_text($cleanQuery, $cleanCand, $percent);
-                    if ($percent >= 70) {
-                        $matchedThis = true;
-                        $score = max($score, (int) $percent);
-                    }
-                }
+                if ($all) { $matchedThis = true; $score = max($score, 85); }
             }
 
             if ($matchedThis) {
@@ -1154,82 +1126,77 @@ class BookingController extends Controller
     {
         $lat = (float) $request->query('lat');
         $lng = (float) $request->query('lng');
+        $acc = (float) $request->query('accuracy', 0);
 
         if (!$lat || !$lng || $lat < -11.5 || $lat > 6.5 || $lng < 94 || $lng > 141.5) {
             return response()->json(['ok' => false, 'name' => null, 'address' => null, 'places' => []], 422);
         }
 
-        $cacheKey = 'geo_rev_v3_' . round($lat, 4) . '_' . round($lng, 4);
-
+        $cacheKey = 'geo_rev_v4_' . round($lat, 4) . '_' . round($lng, 4) . '_' . (int) min($acc, 300);
         if ($cached = Cache::get($cacheKey)) {
             return response()->json($cached);
         }
 
-        $places = $this->nearbyPlaces($lat, $lng);
+        // radius mengikuti akurasi GPS (min 50 m, max 300 m)
+        $radius = min(max($acc, 50), 300);
+        $places = $this->nearbyPlaces($lat, $lng, $radius);
 
-        if (!empty($places)) {
-            $data = [
-                'ok'      => true,
-                'name'    => $places[0]['name'],
-                'address' => $places[0]['address'],
-                'places'  => $places,
-                'source'  => 'google',
-            ];
-        } else {
-            $rev = $this->lookupReverseName($lat, $lng);
-            $data = [
-                'ok'          => !empty($rev['name']) || !empty($rev['address']),
-                'name'        => $rev['name'] ?? null,
-                'address'     => $rev['address'] ?? null,
-                'places'      => [],
-                'source'      => $rev['source'] ?? 'none',
-                'attribution' => '© OpenStreetMap contributors',
-            ];
+        foreach ($places as &$p) {
+            $p['distance_m'] = (int) round($this->haversineKm($lat, $lng, $p['lat'], $p['lng']) * 1000);
         }
+        unset($p);
+        usort($places, fn ($a, $b) => $a['distance_m'] <=> $b['distance_m']);
 
-        if ($data['ok']) {
-            Cache::put($cacheKey, $data, now()->addDay());
-        }
+        $best = $places[0] ?? null;
+        // hanya auto-pilih jika GPS cukup akurat DAN hotel sangat dekat
+        $confident = $best && $acc > 0 && $acc <= 50 && $best['distance_m'] <= 40;
 
+        $rev = $this->lookupReverseName($lat, $lng);
+
+        $data = [
+            'ok'            => true,
+            'lat'           => $lat,          // koordinat ASLI user, jangan ditimpa
+            'lng'           => $lng,
+            'accuracy'      => $acc,
+            'confident'     => $confident,
+            'name'          => $confident ? $best['name'] : null,
+            'address'       => $confident ? $best['address'] : ($rev['address'] ?? null),
+            'places'        => array_slice($places, 0, 5), // saran untuk dipilih user
+            'source'        => $confident ? 'google' : ($rev['source'] ?? 'none'),
+            'attribution'   => '© OpenStreetMap contributors',
+        ];
+
+        Cache::put($cacheKey, $data, now()->addHours(6));
         return response()->json($data);
     }
 
     /**
      * Helper: cari tempat terdekat (hotel dulu) via Google Places Nearby Search (New)
      */
-    private function nearbyPlaces(float $lat, float $lng): array
+    private function nearbyPlaces(float $lat, float $lng, float $radius = 100.0): array
     {
         $key = $this->apiKey();
         if (!$key) return [];
 
-        $search = function (array $extra, float $radius) use ($key, $lat, $lng) {
-            try {
-                $res = Http::timeout(6)->withHeaders([
-                    'X-Goog-Api-Key'   => $key,
-                    'X-Goog-FieldMask' => 'places.id,places.displayName,places.formattedAddress,places.location',
-                ])->post('https://places.googleapis.com/v1/places:searchNearby', array_merge([
-                    'maxResultCount'      => 5,
-                    'rankPreference'      => 'DISTANCE',
-                    'languageCode'        => 'id',
-                    'locationRestriction' => ['circle' => [
-                        'center' => ['latitude' => $lat, 'longitude' => $lng],
-                        'radius' => $radius,
-                    ]],
-                ], $extra));
-
-                if ($res->ok()) {
-                    return $res->json('places') ?? [];
-                }
-                Log::info('Google Nearby Search error: ' . $res->status() . ' ' . $res->body());
-            } catch (\Throwable $e) {
-                Log::info('Google Nearby Search exception: ' . $e->getMessage());
-            }
-            return [];
-        };
-
-        // Bertahap: penginapan 100 m -> tempat apa pun 100 m -> penginapan 300 m
-        $found = $search(['includedTypes' => ['lodging']], 100.0);
-        if (empty($found)) $found = $search(['includedTypes' => ['lodging']], 300.0);
+        try {
+            $res = Http::timeout(6)->withHeaders([
+                'X-Goog-Api-Key'   => $key,
+                'X-Goog-FieldMask' => 'places.id,places.displayName,places.formattedAddress,places.location',
+            ])->post('https://places.googleapis.com/v1/places:searchNearby', [
+                'includedTypes'       => ['lodging'],
+                'maxResultCount'      => 10,
+                'rankPreference'      => 'DISTANCE',
+                'languageCode'        => 'id',
+                'locationRestriction' => ['circle' => [
+                    'center' => ['latitude' => $lat, 'longitude' => $lng],
+                    'radius' => $radius,
+                ]],
+            ]);
+            $found = $res->ok() ? ($res->json('places') ?? []) : [];
+        } catch (\Throwable $e) {
+            Log::info('Nearby error: ' . $e->getMessage());
+            $found = [];
+        }
 
         $places = [];
         foreach ($found as $p) {
@@ -1237,15 +1204,8 @@ class BookingController extends Controller
             $plat = $p['location']['latitude'] ?? null;
             $plng = $p['location']['longitude'] ?? null;
             if (!$name || $plat === null || $plng === null) continue;
-
-            $places[] = [
-                'name'    => $name,
-                'address' => $p['formattedAddress'] ?? '',
-                'lat'     => (float) $plat,
-                'lng'     => (float) $plng,
-            ];
+            $places[] = ['name' => $name, 'address' => $p['formattedAddress'] ?? '', 'lat' => (float) $plat, 'lng' => (float) $plng];
         }
-
         return $places;
     }
     /**

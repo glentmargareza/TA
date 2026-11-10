@@ -1,22 +1,643 @@
 [
-  {
-    "nama": "CONTOH - GANTI (Nama Hotel / Villa 1)",
+    {
+    "nama": "Hotel Lido Kaliurang",
     "alias": [
-      "Contoh Villa 1",
-      "Contoh Homestay 1"
+      "Lido Kaliurang",
+      "Hotel Lido",
+      "Lido Hotel Kaliurang",
+      "Lido Kaliurang Hotel"
     ],
-    "alamat": "CONTOH - GANTI (Jl. Kaliurang Km 18, Pakem, Sleman)",
-    "lat": -7.6000000,
-    "lng": 110.4300000
+    "alamat": "Kaliurang, Pakem, Sleman, D.I. Yogyakarta",
+    "lat": -7.679499,
+    "lng": 110.4183
   },
   {
-    "nama": "CONTOH - GANTI (Nama Penginapan / Homestay 2)",
+    "nama": "Villa Padi Cangkringan Yogyakarta",
     "alias": [
-      "Penginapan Contoh 2",
-      "Homestay Contoh 2"
+      "Villa Padi Cangkringan",
+      "Villa Padi",
+      "Villa Padi Jogja",
+      "Villa Padi Yogyakarta",
+      "Villa Padi Merapi",
+      "Padi Villa",
+      "Villa Padi Pusmalang"
     ],
-    "alamat": "CONTOH - GANTI (Jl. Merapi Golf, Cangkringan, Sleman)",
-    "lat": -7.6100000,
-    "lng": 110.4400000
+    "alamat": "Jl. Cangkringan Km 2, Pusmalang, Wukirsari, Cangkringan, Sleman, D.I. Yogyakarta",
+    "lat": -7.6696423,
+    "lng": 110.4390732
+  },
+  {
+    "nama": "Villa Padi Pakem",
+    "alias": [
+      "Villa Padi Pakem Jogja",
+      "Villa Padi 2"
+    ],
+    "alamat": "Jl. Pakem - Turi Km 0.5, Pakembinangun, Pakem, Sleman, D.I. Yogyakarta",
+    "lat": -7.6663245,
+    "lng": 110.4158931
+  },
+  {
+    "nama": "The Cangkringan Villas & Spa",
+    "alias": [
+      "The Cangkringan",
+      "Cangkringan Villas",
+      "The Cangkringan Resort"
+    ],
+    "alamat": "Jl. Raya Merapi Golf, Umbulharjo, Cangkringan, Sleman, D.I. Yogyakarta",
+    "lat": -7.6266357,
+    "lng": 110.4443825
+  },
+  {
+    "nama": "Sambi Resort, Spa & Resto",
+    "alias": [
+      "Sambi Resort",
+      "Sambi Resort Kaliurang",
+      "Sambi Resort Pakem"
+    ],
+    "alamat": "Jl. Kaliurang Km 19.2, Sambi, Pakembinangun, Pakem, Sleman, D.I. Yogyakarta",
+    "lat": -7.6483448,
+    "lng": 110.4257509
+  },
+  {
+    "nama": "Griya Persada Convention Hotel & Resort Kaliurang",
+    "alias": [
+      "Griya Persada",
+      "Griya Persada Kaliurang",
+      "Hotel Griya Persada"
+    ],
+    "alamat": "Jl. Boyong No. 99, Kaliurang Barat, Hargobinangun, Pakem, Sleman, D.I. Yogyakarta",
+    "lat": -7.5996024,
+    "lng": 110.4243681
+  },
+  {
+    "nama": "Kleret Villa & Resort Cangkringan",
+    "alias": [
+      "Kleret Villa",
+      "Villa Kleret",
+      "Kleret Resort"
+    ],
+    "alamat": "Srowolan, Purwobinangun, Pakem, Sleman, D.I. Yogyakarta",
+    "lat": -7.6421500,
+    "lng": 110.3951200
+  },
+  {
+    "nama": "Omah Noto Plencong Homestay",
+    "alias": [
+      "Omah Noto Plencong",
+      "Noto Plencong",
+      "Homestay Wukirsari"
+    ],
+    "alamat": "Dusun Pusmalang, Wukirsari, Cangkringan, Sleman, D.I. Yogyakarta",
+    "lat": -7.6628900,
+    "lng": 110.4571200
+  },
+  {
+    "nama": "Disaster Oasis Training Center & Homestay",
+    "alias": [
+      "Disaster Oasis",
+      "D-Oasis Kaliurang"
+    ],
+    "alamat": "Jl. Kaliurang Km 21.5, Hargobinangun, Pakem, Sleman, D.I. Yogyakarta",
+    "lat": -7.6087500,
+    "lng": 110.4228900
+  },
+  {
+    "nama": "Kastuba Resort Kaliurang",
+    "alias": [
+      "Villa Kastuba",
+      "Kastuba Kaliurang",
+      "Resort Kastuba"
+    ],
+    "alamat": "Jl. Astomulyo No. 59, Kaliurang Barat, Pakem, Sleman, D.I. Yogyakarta",
+    "lat": -7.5964200,
+    "lng": 110.4261500
+  },
+  {
+    "nama": "@K Hotel Kaliurang",
+    "alias": [
+      "At K Hotel",
+      "K Hotel Kaliurang",
+      "Hotel K Kaliurang"
+    ],
+    "alamat": "Jl. Tlogo Putri, Kaliurang, Hargobinangun, Pakem, Sleman, D.I. Yogyakarta",
+    "lat": -7.5978100,
+    "lng": 110.4287500
+  },
+  {
+    "nama": "Warung Kopi Klotok Pakem",
+    "alias": [
+      "Kopi Klotok",
+      "Kopi Klotok Kaliurang",
+      "Warung Kopi Klotok"
+    ],
+    "alamat": "Jl. Kaliurang Km 16, Area Sawah, Pakembinangun, Pakem, Sleman, D.I. Yogyakarta",
+    "lat": -7.6688190,
+    "lng": 110.4196120
+  },
+  {
+    "nama": "Warung Kopi Merapi",
+    "alias": [
+      "Kopi Merapi",
+      "Kopi Petung",
+      "Warung Kopi Merapi Cangkringan"
+    ],
+    "alamat": "Petung, Kepuharjo, Cangkringan, Sleman, D.I. Yogyakarta",
+    "lat": -7.5987100,
+    "lng": 110.4478100
+  },
+  {
+    "nama": "Ledok Sambi Ecopark & Outbound",
+    "alias": [
+      "Ledok Sambi",
+      "Ledok Sambi Kaliurang",
+      "Wisata Ledok Sambi"
+    ],
+    "alamat": "Jl. Kaliurang Km 19.2, Sambi, Pakembinangun, Pakem, Sleman, D.I. Yogyakarta",
+    "lat": -7.6479500,
+    "lng": 110.4261000
+  },
+  {
+    "nama": "HeHa Forest Kaliurang",
+    "alias": [
+      "HeHa Forest",
+      "Heha Forest Jogja",
+      "Heha Merapi"
+    ],
+    "alamat": "Banteng, Hargobinangun, Pakem, Sleman, D.I. Yogyakarta",
+    "lat": -7.6041200,
+    "lng": 110.4215000
+  },
+  {
+    "nama": "Agrowisata Bhumi Merapi",
+    "alias": [
+      "Bhumi Merapi",
+      "Bumi Merapi",
+      "Agro Bhumi Merapi"
+    ],
+    "alamat": "Jl. Kaliurang Km 20, Sawungan, Hargobinangun, Pakem, Sleman, D.I. Yogyakarta",
+    "lat": -7.6152400,
+    "lng": 110.4221500
+  },
+  {
+    "nama": "Merapi Park Yogyakarta (The World Landmarks)",
+    "alias": [
+      "Merapi Park",
+      "World Landmarks Kaliurang",
+      "The World Landmarks"
+    ],
+    "alamat": "Jl. Kaliurang Km 22.5, Hargobinangun, Pakem, Sleman, D.I. Yogyakarta",
+    "lat": -7.6015200,
+    "lng": 110.4208500
+  },
+  {
+    "nama": "Museum Ullen Sentalu",
+    "alias": [
+      "Ullen Sentalu",
+      "Museum Ullen Sentalu Kaliurang"
+    ],
+    "alamat": "Jl. Boyong Km 25, Kaliurang Barat, Hargobinangun, Pakem, Sleman, D.I. Yogyakarta",
+    "lat": -7.5976500,
+    "lng": 110.4231800
+  },
+  {
+    "nama": "Tlogo Putri Kaliurang",
+    "alias": [
+      "Telogo Putri",
+      "Tlogo Putri",
+      "Taman Tlogo Putri"
+    ],
+    "alamat": "Kaliurang Timur, Hargobinangun, Pakem, Sleman, D.I. Yogyakarta",
+    "lat": -7.5954200,
+    "lng": 110.4312500
+  },
+  {
+    "nama": "Bunker Kaliadem Merapi",
+    "alias": [
+      "Bunker Kaliadem",
+      "Bungker Kaliadem",
+      "Kaliadem Merapi"
+    ],
+    "alamat": "Kinahrejo, Hargobinangun, Pakem, Sleman, D.I. Yogyakarta",
+    "lat": -7.5835600,
+    "lng": 110.4431500
+  },
+  {
+    "nama": "Stonehenge Cangkringan",
+    "alias": [
+      "Stonehenge Jogja",
+      "Stonehenge Merapi"
+    ],
+    "alamat": "Trunyan, Kepuharjo, Cangkringan, Sleman, D.I. Yogyakarta",
+    "lat": -7.6021500,
+    "lng": 110.4485200
+  },
+  {
+    "nama": "Museum Gunungapi Merapi (MGM)",
+    "alias": [
+      "Museum Gunungapi Merapi",
+      "Museum Merapi",
+      "MGM Kaliurang"
+    ],
+    "alamat": "Jl. Kaliurang Km 22, Banteng, Hargobinangun, Pakem, Sleman, D.I. Yogyakarta",
+    "lat": -7.6162500,
+    "lng": 110.4241500
+  },
+  {
+    "nama": "Desa Wisata Pentingsari",
+    "alias": [
+      "Pentingsari",
+      "Desa Wisata Pentingsari Umbulharjo"
+    ],
+    "alamat": "Pentingsari, Umbulharjo, Cangkringan, Sleman, D.I. Yogyakarta",
+    "lat": -7.6321500,
+    "lng": 110.4298500
+  },
+  {
+    "nama": "Tebing Breksi Prambanan",
+    "alias": [
+      "Tebing Breksi",
+      "Breksi Jogja",
+      "Taman Tebing Breksi"
+    ],
+    "alamat": "Gn. Sari, Sambirejo, Prambanan, Sleman, D.I. Yogyakarta",
+    "lat": -7.7816500,
+    "lng": 110.5045100
+  },
+  {
+    "nama": "Candi Prambanan",
+    "alias": [
+      "Prambanan",
+      "Candi Prambanan Yogyakarta"
+    ],
+    "alamat": "Jl. Raya Solo - Yogyakarta Km 16, Bokoharjo, Prambanan, Sleman, D.I. Yogyakarta",
+    "lat": -7.7520200,
+    "lng": 110.4914600
+  },
+  {
+    "nama": "Candi Ratu Boko",
+    "alias": [
+      "Ratu Boko",
+      "Kraton Ratu Boko"
+    ],
+    "alamat": "Jl. Raya Piyungan - Prambanan No. 2, Bokoharjo, Prambanan, Sleman, D.I. Yogyakarta",
+    "lat": -7.7705200,
+    "lng": 110.4891500
+  },
+  {
+    "nama": "Hyatt Regency Yogyakarta",
+    "alias": [
+      "Hotel Hyatt",
+      "Hyatt Jogja",
+      "Hyatt Palagan"
+    ],
+    "alamat": "Jl. Palagan Tentara Pelajar, Panggung Sari, Sariharjo, Ngaglik, Sleman, D.I. Yogyakarta",
+    "lat": -7.7391500,
+    "lng": 110.3756200
+  },
+  {
+    "nama": "Hotel Tentrem Yogyakarta",
+    "alias": [
+      "Tentrem Jogja",
+      "Hotel Tentrem",
+      "Tentrem Mangkubumi"
+    ],
+    "alamat": "Jl. P. Mangkubumi No. 72, Gowongan, Jetis, Kota Yogyakarta, D.I. Yogyakarta",
+    "lat": -7.7731500,
+    "lng": 110.3681500
+  },
+  {
+    "nama": "Yogyakarta Marriott Hotel",
+    "alias": [
+      "Marriott Jogja",
+      "Hotel Marriott",
+      "Marriott Ring Road"
+    ],
+    "alamat": "Jl. Ring Road Utara, Condongcatur, Depok, Sleman, D.I. Yogyakarta",
+    "lat": -7.7601500,
+    "lng": 110.3986500
+  },
+  {
+    "nama": "The Phoenix Hotel Yogyakarta - MGallery",
+    "alias": [
+      "Phoenix Hotel",
+      "The Phoenix Jogja",
+      "Hotel Phoenix"
+    ],
+    "alamat": "Jl. Jend. Sudirman No. 9, Cokrodiningratan, Jetis, Kota Yogyakarta, D.I. Yogyakarta",
+    "lat": -7.7828100,
+    "lng": 110.3685200
+  },
+  {
+    "nama": "Royal Ambarrukmo Yogyakarta",
+    "alias": [
+      "Royal Ambarrukmo",
+      "Hotel Ambarrukmo",
+      "Ambarrukmo Hotel"
+    ],
+    "alamat": "Jl. Laksda Adisucipto No. 81, Caturtunggal, Depok, Sleman, D.I. Yogyakarta",
+    "lat": -7.7825500,
+    "lng": 110.4012500
+  },
+  {
+    "nama": "Eastparc Hotel Yogyakarta",
+    "alias": [
+      "Eastparc Hotel",
+      "Eastparc Jogja",
+      "Eastparc Seturan"
+    ],
+    "alamat": "Jl. Laksda Adisucipto Km 6.5, Seturan, Caturtunggal, Depok, Sleman, D.I. Yogyakarta",
+    "lat": -7.7818500,
+    "lng": 110.4121500
+  },
+  {
+    "nama": "Swiss-Belboutique Yogyakarta",
+    "alias": [
+      "Swiss Belboutique",
+      "Swissbel Jogja",
+      "Swissbel Sudirman"
+    ],
+    "alamat": "Jl. Jend. Sudirman No. 69, Terban, Gondokusuman, Kota Yogyakarta, D.I. Yogyakarta",
+    "lat": -7.7829200,
+    "lng": 110.3748500
+  },
+  {
+    "nama": "Sheraton Mustika Yogyakarta Resort & Spa",
+    "alias": [
+      "Sheraton Jogja",
+      "Sheraton Mustika",
+      "Hotel Sheraton"
+    ],
+    "alamat": "Jl. Laksda Adisucipto Km 8.7, Maguwoharjo, Depok, Sleman, D.I. Yogyakarta",
+    "lat": -7.7812500,
+    "lng": 110.4351200
+  },
+  {
+    "nama": "The Alana Hotel & Convention Center Yogyakarta",
+    "alias": [
+      "The Alana Jogja",
+      "Alana Hotel",
+      "Alana Palagan"
+    ],
+    "alamat": "Jl. Palagan Tentara Pelajar Km 7, Sariharjo, Ngaglik, Sleman, D.I. Yogyakarta",
+    "lat": -7.7332500,
+    "lng": 110.3741500
+  },
+  {
+    "nama": "Indoluxe Hotel Jogjakarta",
+    "alias": [
+      "Indoluxe Hotel",
+      "Hotel Indoluxe",
+      "Indoluxe Palagan"
+    ],
+    "alamat": "Jl. Palagan Tentara Pelajar No. 106, Sariharjo, Ngaglik, Sleman, D.I. Yogyakarta",
+    "lat": -7.7491200,
+    "lng": 110.3721500
+  },
+  {
+    "nama": "Harper Malioboro Yogyakarta",
+    "alias": [
+      "Harper Malioboro",
+      "Hotel Harper Jogja",
+      "Harper Mangkubumi"
+    ],
+    "alamat": "Jl. P. Mangkubumi No. 52, Gowongan, Jetis, Kota Yogyakarta, D.I. Yogyakarta",
+    "lat": -7.7845200,
+    "lng": 110.3668500
+  },
+  {
+    "nama": "Grand Inna Malioboro",
+    "alias": [
+      "Inna Garuda",
+      "Hotel Inna Malioboro",
+      "Grand Inna"
+    ],
+    "alamat": "Jl. Malioboro No. 60, Suryatmajan, Danurejan, Kota Yogyakarta, D.I. Yogyakarta",
+    "lat": -7.7915200,
+    "lng": 110.3662500
+  },
+  {
+    "nama": "PORTA by Ambarrukmo",
+    "alias": [
+      "Porta Hotel",
+      "Porta Jogja",
+      "Porta Colombo"
+    ],
+    "alamat": "Jl. Colombo No. 7, Samirono, Caturtunggal, Depok, Sleman, D.I. Yogyakarta",
+    "lat": -7.7758500,
+    "lng": 110.3831500
+  },
+  {
+    "nama": "ARTOTEL Yogyakarta",
+    "alias": [
+      "Artotel Jogja",
+      "Artotel Kaliurang",
+      "Hotel Artotel"
+    ],
+    "alamat": "Jl. Kaliurang Km 5.6 No. 14, Caturtunggal, Depok, Sleman, D.I. Yogyakarta",
+    "lat": -7.7589200,
+    "lng": 110.3835200
+  },
+  {
+    "nama": "Greenhost Boutique Hotel Prawirotaman",
+    "alias": [
+      "Greenhost",
+      "Greenhost Jogja",
+      "Hotel Greenhost"
+    ],
+    "alamat": "Jl. Prawirotaman II No. 629, Brontokusuman, Mergangsan, Kota Yogyakarta, D.I. Yogyakarta",
+    "lat": -7.8198500,
+    "lng": 110.3702500
+  },
+  {
+    "nama": "Jambuluwuk Malioboro Hotel Yogyakarta",
+    "alias": [
+      "Jambuluwuk Jogja",
+      "Hotel Jambuluwuk"
+    ],
+    "alamat": "Jl. Gajah Mada No. 67, Purwokinanti, Pakualaman, Kota Yogyakarta, D.I. Yogyakarta",
+    "lat": -7.7991500,
+    "lng": 110.3731500
+  },
+  {
+    "nama": "Melia Purosani Yogyakarta",
+    "alias": [
+      "Melia Purosani",
+      "Hotel Melia Jogja"
+    ],
+    "alamat": "Jl. Suryotomo No. 31, Ngupasan, Gondomanan, Kota Yogyakarta, D.I. Yogyakarta",
+    "lat": -7.7978500,
+    "lng": 110.3701500
+  },
+  {
+    "nama": "Whiz Prime Hotel Malioboro",
+    "alias": [
+      "Whiz Prime Malioboro",
+      "Whiz Malioboro",
+      "Hotel Whiz Pasar Kembang"
+    ],
+    "alamat": "Jl. Pasar Kembang No. 9, Sosromenduran, Gedong Tengen, Kota Yogyakarta, D.I. Yogyakarta",
+    "lat": -7.7905200,
+    "lng": 110.3648500
+  },
+  {
+    "nama": "Ibis Styles Yogyakarta",
+    "alias": [
+      "Ibis Styles Malioboro",
+      "Ibis Dagen",
+      "Hotel Ibis Styles Jogja"
+    ],
+    "alamat": "Jl. Dagen No. 109, Sosromenduran, Gedong Tengen, Kota Yogyakarta, D.I. Yogyakarta",
+    "lat": -7.7928500,
+    "lng": 110.3625200
+  },
+  {
+    "nama": "Platinum Adisucipto Hotel & Conference Center",
+    "alias": [
+      "Hotel Platinum Jogja",
+      "Platinum Adisucipto",
+      "Platinum Hotel"
+    ],
+    "alamat": "Jl. Raya Solo - Yogyakarta No. 28, Maguwoharjo, Depok, Sleman, D.I. Yogyakarta",
+    "lat": -7.7831500,
+    "lng": 110.4412500
+  },
+  {
+    "nama": "Satoria Hotel Yogyakarta",
+    "alias": [
+      "Satoria Hotel",
+      "Satoria Jogja"
+    ],
+    "alamat": "Jl. Laksda Adisucipto Km 8, Kalasan, Sleman, D.I. Yogyakarta",
+    "lat": -7.7828500,
+    "lng": 110.4285200
+  },
+  {
+    "nama": "Kotta GO Hotel Yogyakarta",
+    "alias": [
+      "Kotta Go",
+      "Kotta Go Jogja",
+      "Kotta Hotel"
+    ],
+    "alamat": "Jl. P. Mangkubumi No. 125, Gowongan, Jetis, Kota Yogyakarta, D.I. Yogyakarta",
+    "lat": -7.7865200,
+    "lng": 110.3671500
+  },
+  {
+    "nama": "Grand Senyum Hotel Yogyakarta",
+    "alias": [
+      "Grand Senyum",
+      "Hotel Grand Senyum"
+    ],
+    "alamat": "Jl. P. Mangkubumi No. 18, Gowongan, Jetis, Kota Yogyakarta, D.I. Yogyakarta",
+    "lat": -7.7851200,
+    "lng": 110.3670500
+  },
+  {
+    "nama": "D'Senopati Malioboro Grand Hotel",
+    "alias": [
+      "D Senopati",
+      "Hotel Senopati Jogja"
+    ],
+    "alamat": "Jl. Panembahan Senopati No. 40, Prawirodirjan, Gondomanan, Kota Yogyakarta, D.I. Yogyakarta",
+    "lat": -7.8012500,
+    "lng": 110.3705200
+  },
+  {
+    "nama": "Basecamp Jeep Wukirsari",
+    "alias": [
+      "Jeep Wukirsari",
+      "Basecamp Jeep",
+      "Basecamp Wukirsari"
+    ],
+    "alamat": "Bedoyo, Wukirsari, Cangkringan, Sleman, D.I. Yogyakarta",
+    "lat": -7.6437244,
+    "lng": 110.4338597
+  },
+  {
+    "nama": "Jalan Malioboro (Kawasan Wisata Malioboro)",
+    "alias": [
+      "Malioboro",
+      "Jl Malioboro",
+      "Kawasan Malioboro"
+    ],
+    "alamat": "Jl. Malioboro, Sosromenduran, Gedong Tengen, Kota Yogyakarta, D.I. Yogyakarta",
+    "lat": -7.7925000,
+    "lng": 110.3658000
+  },
+  {
+    "nama": "Tugu Jogja (Tugu Pal Putih)",
+    "alias": [
+      "Tugu Jogja",
+      "Tugu Yogyakarta",
+      "Tugu Pal Putih"
+    ],
+    "alamat": "Jl. Jend. Sudirman, Gowongan, Jetis, Kota Yogyakarta, D.I. Yogyakarta",
+    "lat": -7.7828800,
+    "lng": 110.3670800
+  },
+  {
+    "nama": "Stasiun Yogyakarta (Stasiun Tugu)",
+    "alias": [
+      "Stasiun Tugu",
+      "Stasiun Yogyakarta",
+      "Stasiun Kereta Tugu"
+    ],
+    "alamat": "Jl. Pasar Kembang, Sosromenduran, Gedong Tengen, Kota Yogyakarta, D.I. Yogyakarta",
+    "lat": -7.7891800,
+    "lng": 110.3634500
+  },
+  {
+    "nama": "Stasiun Lempuyangan",
+    "alias": [
+      "Stasiun Lempuyangan Jogja",
+      "Lempuyangan"
+    ],
+    "alamat": "Jl. Lempuyangan, Bausasran, Danurejan, Kota Yogyakarta, D.I. Yogyakarta",
+    "lat": -7.7904200,
+    "lng": 110.3756200
+  },
+  {
+    "nama": "Bandara Adisutjipto (JOG)",
+    "alias": [
+      "Bandara Adisucipto",
+      "Bandara JOG",
+      "Adisutjipto Airport"
+    ],
+    "alamat": "Jl. Raya Solo Km 9, Maguwoharjo, Depok, Sleman, D.I. Yogyakarta",
+    "lat": -7.7881500,
+    "lng": 110.4318200
+  },
+  {
+    "nama": "Kecamatan Cangkringan (Kantor Kapanewon Cangkringan)",
+    "alias": [
+      "Cangkringan",
+      "Kapanewon Cangkringan",
+      "Pusat Cangkringan"
+    ],
+    "alamat": "Jl. Cangkringan - Pakem, Bronggang, Argomulyo, Cangkringan, Sleman, D.I. Yogyakarta",
+    "lat": -7.6587900,
+    "lng": 110.4563000
+  },
+  {
+    "nama": "Kecamatan Pakem (Kantor Kapanewon Pakem)",
+    "alias": [
+      "Pakem",
+      "Kapanewon Pakem",
+      "Pasar Pakem"
+    ],
+    "alamat": "Jl. Kaliurang Km 17, Tegalsari, Pakembinangun, Pakem, Sleman, D.I. Yogyakarta",
+    "lat": -7.6668500,
+    "lng": 110.4182500
+  },
+  {
+    "nama": "Dusun Pusmalang (Wukirsari, Cangkringan)",
+    "alias": [
+      "Pusmalang",
+      "Pusmalang Wukirsari",
+      "Desa Wisata Pusmalang"
+    ],
+    "alamat": "Pusmalang, Wukirsari, Cangkringan, Sleman, D.I. Yogyakarta",
+    "lat": -7.6621500,
+    "lng": 110.4565200
   }
 ]

@@ -521,6 +521,8 @@ let pkSearchAbort = null;
 let pkRevAbort = null;
 let pkSuggestions = [];
 let pkActiveIndex = -1;
+let pkAutoFill = false;  // true jika isi kolom nama berasal dari tebakan otomatis
+let pkAccCircle = null;  // lingkaran akurasi GPS di peta
 
 // Konfigurasi icon default Leaflet lokal & CDN fallback
 if (window.L && L.Icon && L.Icon.Default) {
@@ -550,6 +552,7 @@ window.gm_authFailure = () => {
   pkMapEngine = null;
   pkMap = null;
   pkPin = null;
+  pkAccCircle = null;
   pkInitLeaflet();
 };
 
@@ -684,40 +687,60 @@ function pkSetPin(lat, lng, zoom){
   }
 }
 
-/* Satu pintu pemakaian titik: tandai pin di peta, hitung jarak, dan opsional reverse geocode */
-function pkUse(lat, lng, label, zoom, doReverse){
-  pkSetPin(lat, lng, zoom);
-  pkCompute(lat, lng, label);
-  if(doReverse){
-    pkDoReverse(lat, lng);
+/* Lingkaran akurasi di peta */
+function pkDrawAcc(lat, lng, acc){
+  if(!pkMap) return;
+  if(pkMapEngine === 'leaflet'){
+    if(pkAccCircle){ pkMap.removeLayer(pkAccCircle); pkAccCircle = null; }
+    if(acc > 0) pkAccCircle = L.circle([lat, lng], {radius: acc, color: '#1E3F20', weight: 1, fillOpacity: 0.1}).addTo(pkMap);
+  }else if(pkMapEngine === 'google'){
+    if(pkAccCircle){ pkAccCircle.setMap(null); pkAccCircle = null; }
+    if(acc > 0) pkAccCircle = new google.maps.Circle({map: pkMap, center: {lat, lng}, radius: acc, strokeColor: '#1E3F20', strokeWeight: 1, fillColor: '#1E3F20', fillOpacity: 0.1});
   }
 }
 
-async function pkDoReverse(lat, lng){
+/* Satu pintu pemakaian titik: tandai pin di peta, hitung jarak, dan opsional reverse geocode */
+function pkUse(lat, lng, label, zoom, doReverse, acc){
+  pkSetPin(lat, lng, zoom);
+  pkDrawAcc(lat, lng, acc || 0);   // acc kosong (klik/geser pin) = hapus lingkaran
+  pkCompute(lat, lng, label);
+  if(doReverse) pkDoReverse(lat, lng, acc);
+}
+
+async function pkDoReverse(lat, lng, acc){
   if(pkRevAbort) pkRevAbort.abort();
   pkRevAbort = new AbortController();
+  const addrInput = $('#addr');
 
   try{
-    const url = (D.reverseUrl || '/lokasi-jemput/reverse') + '?lat=' + encodeURIComponent(lat) + '&lng=' + encodeURIComponent(lng);
-    const r = await fetch(url, { signal: pkRevAbort.signal, headers: { 'Accept': 'application/json' } });
-    if(r.ok){
-      const j = await r.json();
-      if(j && j.ok && (j.name || j.address)){
-        const title = j.name || j.address;
-        const sub = j.address || title;
-        // Teks ketikan user tidak boleh ditimpa jika ia hanya menggeser pin
-        const addrInput = $('#addr');
-        if(addrInput && !addrInput.value.trim()){
-          addrInput.value = title;
-        }
-        pk.label = (addrInput && addrInput.value.trim()) ? addrInput.value.trim() : sub;
-        const gpsEl = $('#gpsName');
-        if(gpsEl) gpsEl.textContent = pk.label;
-      }
+    const url = (D.reverseUrl || '/lokasi-jemput/reverse')
+      + '?lat=' + encodeURIComponent(lat) + '&lng=' + encodeURIComponent(lng)
+      + '&accuracy=' + encodeURIComponent(acc || 10); // pin manual dianggap presisi
+    const r = await fetch(url, { signal: pkRevAbort.signal, headers: {'Accept': 'application/json'} });
+    const j = await r.json();
+    if(!j || !j.ok) return;
+
+    // Hanya timpa kolom jika kosong ATAU isinya hasil tebakan sebelumnya (bukan ketikan user)
+    const canFill = addrInput && (!addrInput.value.trim() || pkAutoFill);
+    if(canFill){
+      const fillText = j.confident ? (j.name || '') : (j.address || '');
+      addrInput.value = fillText;
+      pkAutoFill = !!fillText;
     }
-  }catch(e){
-    // Aborted or network glitch, silent ignore
-  }
+
+    pk.label = (addrInput && addrInput.value.trim()) || j.address || 'Titik penjemputan';
+    const gpsEl = $('#gpsName'); if(gpsEl) gpsEl.textContent = pk.label;
+
+    // Tidak yakin -> minta user memilih hotel dari daftar terdekat
+    if(canFill && !j.confident && Array.isArray(j.places) && j.places.length){
+      const places = j.places.map(p => ({
+        ...p, source: 'google', id: null,
+        hint: (p.distance_m != null ? p.distance_m + ' m dari titik Anda' : '')
+      }));
+      pkSuggestions = places;
+      pkRenderSuggestions(places);
+    }
+  }catch(e){ /* abort / network, abaikan */ }
 }
 
 async function pkCompute(lat, lng, label){
@@ -927,7 +950,7 @@ function pkRenderSuggestions(items){
         </div>
         <div class="flex-1 min-w-0">
           <div class="font-bold text-xs sm:text-sm text-merapiText-primary group-hover:text-wukirsari-primary transition-colors truncate">${esc(item.name)}</div>
-          ${item.address ? `<div class="text-[11px] text-merapiText-muted truncate mt-0.5">${esc(item.address)}</div>` : ''}
+          ${(item.hint || item.address) ? `<div class="text-[11px] text-merapiText-muted truncate mt-0.5">${esc(item.hint || item.address)}</div>` : ''}
         </div>
       </button>`;
   });
@@ -957,6 +980,7 @@ async function pkSelectSuggestion(idx){
   const hotelText = formatHotelDisplay(item.name, item.address);
   const addrInput = $('#addr');
   if(addrInput) addrInput.value = hotelText;
+  pkAutoFill = false;
 
   // Jika item sudah punya koordinat (langsung dari hotels.json / Photon / Google Places)
   if(typeof item.lat === 'number' && typeof item.lng === 'number' && item.lat !== 0 && item.lng !== 0){
@@ -1019,6 +1043,7 @@ async function pkProcessLink(raw){
       const hotelText = formatHotelDisplay(data.name, data.address);
       if(hotelText){
         $('#addr').value = hotelText;
+        pkAutoFill = false;
       }
       // Pindahkan pin Leaflet, zoom ke titik, dan hitung jarak (doReverse = false agar nama hotel tidak tertimpa)
       pkUse(data.lat, data.lng, data.name || hotelText, true, false);
@@ -1075,6 +1100,29 @@ function pkRender(){
     $('#gpsLink').href = 'https://www.google.com/maps?q=' + pk.lat + ',' + pk.lng;
   }
 }
+
+/* ====== GPS AKURAT: tunggu fix terbaik, bukan hasil pertama ====== */
+function pkGetAccuratePosition(onProgress, targetAcc = 30, maxWait = 15000){
+  return new Promise((resolve, reject) => {
+    let best = null, id = null, timer = null, done = false;
+    const finish = (err) => {
+      if(done) return; done = true;
+      clearTimeout(timer);
+      if(id !== null) navigator.geolocation.clearWatch(id);
+      best ? resolve(best) : reject(err || {code: 2, message: 'Lokasi tidak tersedia'});
+    };
+    id = navigator.geolocation.watchPosition(
+      pos => {
+        if(!best || pos.coords.accuracy < best.coords.accuracy) best = pos;
+        if(onProgress) onProgress(pos.coords.accuracy);
+        if(pos.coords.accuracy <= targetAcc) finish();
+      },
+      err => finish(err),
+      {enableHighAccuracy: true, maximumAge: 0, timeout: maxWait}
+    );
+    timer = setTimeout(() => finish(), maxWait);
+  });
+}
  
 /* ====== HANDLER PENJEMPUTAN (delegation) ====== */
 document.addEventListener('click', e => {
@@ -1104,55 +1152,31 @@ document.addEventListener('click', e => {
       toast('Fitur Bagikan Lokasi memerlukan koneksi HTTPS. Silakan cari nama hotel di atas atau tempel link Google Maps di bawah.');
       return;
     }
+    if(!navigator.geolocation){ toast('Browser tidak mendukung deteksi lokasi.'); return; }
 
     const btn = document.getElementById('btnGps');
     const origHtml = btn.innerHTML;
+    const spinner = `<svg class="animate-spin h-4 w-4 inline-block -mt-0.5 mr-2" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>`;
+    const setBtn = txt => { btn.innerHTML = spinner + '<span>' + txt + '</span>'; };
     btn.disabled = true;
-    btn.innerHTML = `<svg class="animate-spin h-4 w-4 inline-block -mt-0.5 mr-2" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg><span>Sedang mencari lokasi...</span>`;
+    setBtn('Mencari lokasi…');
 
-    const restoreBtn = () => {
-      btn.disabled = false;
-      btn.innerHTML = origHtml;
-    };
-
-    const handleGeoError = (err) => {
-      restoreBtn();
-      if(err.code === 1){ // PERMISSION_DENIED
-        toast('Izin lokasi ditolak. Aktifkan izin lokasi di pengaturan browser (ikon gembok di samping alamat situs), lalu coba lagi. Atau cari nama hotel / tempel link Google Maps.');
-      }else if(err.code === 2){ // POSITION_UNAVAILABLE
-        toast('Lokasi tidak terdeteksi. Pastikan GPS/Lokasi HP menyala, atau cari nama hotel.');
-      }else if(err.code === 3){ // TIMEOUT
-        toast('Mencari lokasi terlalu lama. Coba lagi di tempat terbuka atau cari nama hotel.');
-      }else{
-        toast('Gagal mendeteksi lokasi (' + (err.message || 'Error') + '). Silakan cari nama hotel atau tempel link Google Maps.');
-      }
-    };
-
-    // Tahap 1: Coba akurasi standar (lebih cepat dan minim timeout)
-    navigator.geolocation.getCurrentPosition(
-      pos => {
-        restoreBtn();
-        pkUse(pos.coords.latitude, pos.coords.longitude, 'Lokasi GPS Anda', true, true);
-        toast('Lokasi berhasil terdeteksi!');
-      },
-      err1 => {
-        if(err1.code === 3){ // TIMEOUT -> Coba sekali lagi dengan akurasi tinggi
-          btn.innerHTML = `<svg class="animate-spin h-4 w-4 inline-block -mt-0.5 mr-2" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg><span>Mencoba kembali dengan akurasi GPS tinggi...</span>`;
-          navigator.geolocation.getCurrentPosition(
-            pos => {
-              restoreBtn();
-              pkUse(pos.coords.latitude, pos.coords.longitude, 'Lokasi GPS Anda', true, true);
-              toast('Lokasi berhasil terdeteksi!');
-            },
-            err2 => handleGeoError(err2),
-            {enableHighAccuracy: true, timeout: 20000, maximumAge: 0}
-          );
+    pkGetAccuratePosition(a => setBtn('Mencari lokasi… ±' + Math.round(a) + ' m'))
+      .then(pos => {
+        const {latitude, longitude, accuracy} = pos.coords;
+        pkUse(latitude, longitude, 'Lokasi GPS Anda', true, true, accuracy);
+        if(accuracy > 100){
+          toast('Lokasi kurang akurat (±' + Math.round(accuracy) + ' m). Geser pin ke posisi yang benar atau pilih hotel dari daftar.');
         }else{
-          handleGeoError(err1);
+          toast('Lokasi terdeteksi (±' + Math.round(accuracy) + ' m).');
         }
-      },
-      {enableHighAccuracy: false, timeout: 15000, maximumAge: 60000}
-    );
+      })
+      .catch(err => {
+        if(err.code === 1) toast('Izin lokasi ditolak. Aktifkan izin lokasi di pengaturan browser, lalu coba lagi. Atau cari nama hotel / tempel link Google Maps.');
+        else if(err.code === 3) toast('Mencari lokasi terlalu lama. Coba di tempat terbuka atau cari nama hotel.');
+        else toast('Lokasi tidak terdeteksi. Pastikan GPS/Lokasi HP menyala, atau cari nama hotel.');
+      })
+      .finally(() => { btn.disabled = false; btn.innerHTML = origHtml; });
     return;
   }
 
@@ -1181,6 +1205,7 @@ document.addEventListener('click', e => {
 
 document.addEventListener('input', e => {
   if(e.target.id === 'addr'){
+    pkAutoFill = false;   // ketikan user bukan tebakan otomatis
     clearTimeout(pkSearchTimer);
     const q = e.target.value.trim();
     if(q.length < 3){
