@@ -238,6 +238,15 @@ class BookingController extends Controller
             'snap_token' => $snapToken,
         ]);
 
+        // Pencatatan otomatis kandidat hotel baru jika antar-jemput dan belum ada di hotels.json (> 100 m)
+        if ($arrivalType === 'pickup' && $pickupLat !== null && $pickupLng !== null && !empty($validated['pickup_address'])) {
+            try {
+                $this->recordCandidateHotel($validated['pickup_address'], $pickupLat, $pickupLng);
+            } catch (\Throwable $e) {
+                Log::warning('Gagal mencatat kandidat hotel: ' . $e->getMessage());
+            }
+        }
+
         return redirect()->route('booking.success', $booking->booking_code);
     }
 
@@ -624,136 +633,441 @@ class BookingController extends Controller
     }
 
     /**
-     * Pencarian manual nama penginapan / hotel / alamat penjemputan.
-     * Menggunakan Google Places API (New) Text Search (places:searchText).
-     * Tidak fallback ke Nominatim secara diam-diam.
+     * Pencarian nama penginapan / hotel / alamat penjemputan.
+     * Urutan sumber:
+     * 1. Google Places (hanya jika GOOGLE_MAPS_API_KEY terisi; jika kosong/gagal lewati secara diam-diam).
+     * 2. File hotels.json lokal (pencocokan tidak peka huruf besar/kecil, abaikan kata wilayah, toleran typo).
+     * 3. Photon Komoot API (https://photon.komoot.io/api/?q=...&limit=5&lat=-7.6&lon=110.43).
+     * 4. Jika kosong: kembalikan hasil kosong tanpa error teknis.
      */
     public function placesSearch(Request $request)
     {
         $query = trim((string) $request->query('q', ''));
 
         if (mb_strlen($query) < 3) {
-            return response()->json(['ok' => true, 'results' => [], 'source' => 'google']);
+            return response()->json(['ok' => true, 'results' => [], 'source' => 'none']);
         }
 
-        $key = $this->apiKey();
-        if (empty($key)) {
-            Log::error('Google Places Text Search error: GOOGLE_MAPS_API_KEY belum diisi di file .env server.');
-            return response()->json([
-                'ok'         => false,
-                'error'      => 'Kunci Google Maps belum diatur di server (GOOGLE_MAPS_API_KEY belum diisi).',
-                'error_type' => 'MISSING_KEY',
-                'results'    => [],
-                'source'     => 'google',
-            ]);
-        }
-
-        $cacheKey = 'places_textsearch_' . md5(mb_strtolower($query));
+        $cacheKey = 'places_search_v3_' . md5(mb_strtolower($query));
         if (Cache::has($cacheKey)) {
             return response()->json(Cache::get($cacheKey));
         }
 
-        $performSearch = function (string $text) use ($key) {
-            $body = [
-                'textQuery'    => $text,
-                'languageCode' => 'id',
-                'regionCode'   => 'ID',
-                'locationBias' => [
-                    'circle' => [
-                        'center' => [
-                            'latitude'  => -7.6000,
-                            'longitude' => 110.4300,
+        // 1. Coba Google Places jika key tersedia di backend (lewati diam-diam jika kosong atau gagal)
+        $key = $this->apiKey();
+        if (!empty($key)) {
+            try {
+                $body = [
+                    'textQuery'    => $query,
+                    'languageCode' => 'id',
+                    'regionCode'   => 'ID',
+                    'locationBias' => [
+                        'circle' => [
+                            'center' => [
+                                'latitude'  => -7.6000,
+                                'longitude' => 110.4300,
+                            ],
+                            'radius' => 30000.0,
                         ],
-                        'radius' => 30000.0,
                     ],
-                ],
-            ];
+                ];
 
-            return Http::withHeaders([
-                'X-Goog-Api-Key'   => $key,
-                'X-Goog-FieldMask' => 'places.id,places.displayName,places.formattedAddress,places.location',
-                'Content-Type'     => 'application/json',
-            ])->timeout(6)->post('https://places.googleapis.com/v1/places:searchText', $body);
+                $res = Http::withHeaders([
+                    'X-Goog-Api-Key'   => $key,
+                    'X-Goog-FieldMask' => 'places.id,places.displayName,places.formattedAddress,places.location',
+                    'Content-Type'     => 'application/json',
+                ])->timeout(4)->post('https://places.googleapis.com/v1/places:searchText', $body);
+
+                if ($res->ok()) {
+                    $places = $res->json('places') ?? [];
+
+                    // Retry tanpa kata wilayah jika kosong
+                    if (empty($places)) {
+                        $cleaned = trim(preg_replace('/\b(yogyakarta|jogja|yogya|diy|d\.i\.y|sleman|cangkringan)\b/i', '', $query));
+                        $cleaned = trim(preg_replace('/[,\-\s]+/', ' ', $cleaned));
+                        if (mb_strlen($cleaned) >= 3 && mb_strtolower($cleaned) !== mb_strtolower($query)) {
+                            $body['textQuery'] = $cleaned;
+                            $resRetry = Http::withHeaders([
+                                'X-Goog-Api-Key'   => $key,
+                                'X-Goog-FieldMask' => 'places.id,places.displayName,places.formattedAddress,places.location',
+                                'Content-Type'     => 'application/json',
+                            ])->timeout(4)->post('https://places.googleapis.com/v1/places:searchText', $body);
+                            if ($resRetry->ok()) {
+                                $places = $resRetry->json('places') ?? [];
+                            }
+                        }
+                    }
+
+                    if (!empty($places)) {
+                        $results = [];
+                        foreach ($places as $p) {
+                            $name = $p['displayName']['text'] ?? 'Lokasi';
+                            $address = $p['formattedAddress'] ?? '';
+                            $lat = isset($p['location']['latitude']) ? (float) $p['location']['latitude'] : null;
+                            $lng = isset($p['location']['longitude']) ? (float) $p['location']['longitude'] : null;
+
+                            $results[] = [
+                                'id'         => $p['id'] ?? null,
+                                'name'       => $name,
+                                'address'    => $address,
+                                'full_label' => trim($name . ($address ? ', ' . $address : '')),
+                                'lat'        => $lat,
+                                'lng'        => $lng,
+                                'source'     => 'google',
+                            ];
+                            if (count($results) >= 5) break;
+                        }
+
+                        if (!empty($results)) {
+                            $data = ['ok' => true, 'results' => $results, 'source' => 'google'];
+                            Cache::put($cacheKey, $data, 60);
+                            return response()->json($data);
+                        }
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Lewati Google secara diam-diam
+                Log::info('Google Places skipped: ' . $e->getMessage());
+            }
+        }
+
+        // 2a. Sumber pencarian utama tanpa key: File hotels.json lokal
+        $localHotels = $this->searchHotelsJson($query);
+        if (!empty($localHotels)) {
+            $data = [
+                'ok'      => true,
+                'results' => array_slice($localHotels, 0, 5),
+                'source'  => 'local_json',
+            ];
+            Cache::put($cacheKey, $data, 60);
+            return response()->json($data);
+        }
+
+        // 2b. Sumber cadangan: Photon Komoot API
+        try {
+            $photonResults = $this->searchPhoton($query);
+            if (!empty($photonResults)) {
+                $data = [
+                    'ok'      => true,
+                    'results' => array_slice($photonResults, 0, 5),
+                    'source'  => 'photon',
+                ];
+                Cache::put($cacheKey, $data, 60);
+                return response()->json($data);
+            }
+        } catch (\Throwable $e) {
+            Log::info('Photon search skipped: ' . $e->getMessage());
+        }
+
+        // 2c. Jika kosong: return data kosong tanpa error teknis
+        $data = [
+            'ok'      => true,
+            'results' => [],
+            'source'  => 'none',
+        ];
+        Cache::put($cacheKey, $data, 60);
+        return response()->json($data);
+    }
+
+    /**
+     * Cari hotel dari file hotels.json lokal.
+     * Pencocokan tidak peka huruf besar/kecil, abaikan kata wilayah, toleran salah ketik ringan.
+     */
+    private function searchHotelsJson(string $query): array
+    {
+        $possiblePaths = [
+            database_path('hotels.json'),
+            database_path('data/hotels.json'),
+            storage_path('app/hotels.json'),
+            base_path('hotels.json'),
+        ];
+
+        $filePath = null;
+        foreach ($possiblePaths as $path) {
+            if (file_exists($path)) {
+                $filePath = $path;
+                break;
+            }
+        }
+
+        if (!$filePath) {
+            return [];
+        }
+
+        $json = @file_get_contents($filePath);
+        $hotels = json_decode($json, true);
+        if (!is_array($hotels)) {
+            return [];
+        }
+
+        $normalize = function (string $str): string {
+            $str = mb_strtolower($str);
+            $str = preg_replace('/[^\p{L}\p{N}\s]/u', ' ', $str);
+            $str = preg_replace('/\b(yogyakarta|jogja|yogya|diy|d\.i\.y|sleman|cangkringan|pakem|indonesia)\b/u', ' ', $str);
+            return trim(preg_replace('/\s+/', ' ', $str));
         };
 
-        try {
-            $res = $performSearch($query);
+        $cleanQuery = $normalize($query);
+        if (empty($cleanQuery)) {
+            $cleanQuery = trim(preg_replace('/\s+/', ' ', preg_replace('/[^\p{L}\p{N}\s]/u', ' ', mb_strtolower($query))));
+        }
+        if (mb_strlen($cleanQuery) < 2) {
+            return [];
+        }
 
-            if (!$res->ok()) {
-                $status = $res->status();
-                $body = $res->body();
-                $json = $res->json();
-                $errMsg = $json['error']['message'] ?? ('HTTP Error ' . $status);
-                $errStatus = $json['error']['status'] ?? 'ERROR';
+        $queryWords = array_values(array_filter(explode(' ', $cleanQuery), fn($w) => mb_strlen($w) >= 2));
+        $matched = [];
 
-                Log::error("Google Places Text Search error [{$status} - {$errStatus}]: {$body}");
+        foreach ($hotels as $item) {
+            $name = $item['nama'] ?? ($item['name'] ?? '');
+            if (empty($name)) continue;
 
-                return response()->json([
-                    'ok'         => false,
-                    'error'      => "Google Places error ({$errStatus}): {$errMsg}",
-                    'error_type' => $errStatus,
-                    'results'    => [],
-                    'source'     => 'google',
-                ]);
+            $aliases = $item['alias'] ?? ($item['aliases'] ?? []);
+            if (is_string($aliases)) {
+                $aliases = array_map('trim', explode(',', $aliases));
+            }
+            if (!is_array($aliases)) {
+                $aliases = [];
             }
 
-            $places = $res->json('places') ?? [];
+            $address = $item['alamat'] ?? ($item['address'] ?? '');
+            $lat = isset($item['lat']) ? (float) $item['lat'] : (isset($item['latitude']) ? (float) $item['latitude'] : null);
+            $lng = isset($item['lng']) ? (float) $item['lng'] : (isset($item['longitude']) ? (float) $item['longitude'] : null);
 
-            // Jika Text Search awal kosong, coba ulang tanpa kata wilayah (Yogyakarta, Sleman, Cangkringan, dsb.)
-            if (empty($places)) {
-                $cleaned = trim(preg_replace('/\b(yogyakarta|jogja|yogya|diy|d\.i\.y|sleman|cangkringan)\b/i', '', $query));
-                $cleaned = trim(preg_replace('/[,\-\s]+/', ' ', $cleaned));
+            if ($lat === null || $lng === null) continue;
 
-                if (mb_strlen($cleaned) >= 3 && mb_strtolower($cleaned) !== mb_strtolower($query)) {
-                    $resRetry = $performSearch($cleaned);
-                    if ($resRetry->ok()) {
-                        $places = $resRetry->json('places') ?? [];
+            $candidates = array_merge([$name], $aliases);
+            $matchedThis = false;
+            $score = 0;
+
+            foreach ($candidates as $cand) {
+                $cleanCand = $normalize($cand);
+                if (empty($cleanCand)) continue;
+
+                // 1. Exact match / substring
+                if ($cleanCand === $cleanQuery) {
+                    $matchedThis = true;
+                    $score = max($score, 100);
+                    break;
+                }
+                if (str_contains($cleanCand, $cleanQuery) || str_contains($cleanQuery, $cleanCand)) {
+                    $matchedThis = true;
+                    $score = max($score, 90);
+                    continue;
+                }
+
+                // 2. Pencocokan per kata (semua kata query ada dalam nama/alias)
+                $candWords = array_values(array_filter(explode(' ', $cleanCand), fn($w) => mb_strlen($w) >= 2));
+                $allWordsFound = true;
+                foreach ($queryWords as $qw) {
+                    $found = false;
+                    foreach ($candWords as $cw) {
+                        if (str_contains($cw, $qw) || str_contains($qw, $cw)) {
+                            $found = true;
+                            break;
+                        }
+                        // Toleran salah ketik ringan (levenshtein)
+                        $len = max(mb_strlen($qw), mb_strlen($cw));
+                        if ($len >= 4) {
+                            $dist = levenshtein($qw, $cw);
+                            $maxDist = $len >= 7 ? 2 : 1;
+                            if ($dist <= $maxDist) {
+                                $found = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!$found) {
+                        $allWordsFound = false;
+                        break;
+                    }
+                }
+
+                if ($allWordsFound && !empty($queryWords)) {
+                    $matchedThis = true;
+                    $score = max($score, 80);
+                }
+            }
+
+            // 3. Similar text sebagai toleransi typo menyeluruh
+            if (!$matchedThis) {
+                foreach ($candidates as $cand) {
+                    $cleanCand = $normalize($cand);
+                    if (empty($cleanCand)) continue;
+                    similar_text($cleanQuery, $cleanCand, $percent);
+                    if ($percent >= 70) {
+                        $matchedThis = true;
+                        $score = max($score, (int) $percent);
                     }
                 }
             }
 
-            $results = [];
-            foreach ($places as $p) {
-                $name = $p['displayName']['text'] ?? 'Lokasi';
-                $address = $p['formattedAddress'] ?? '';
-                $lat = isset($p['location']['latitude']) ? (float) $p['location']['latitude'] : null;
-                $lng = isset($p['location']['longitude']) ? (float) $p['location']['longitude'] : null;
-
-                $results[] = [
-                    'id'         => $p['id'] ?? null,
-                    'name'       => $name,
-                    'address'    => $address,
-                    'full_label' => trim($name . ($address ? ', ' . $address : '')),
-                    'lat'        => $lat,
-                    'lng'        => $lng,
-                    'source'     => 'google',
+            if ($matchedThis) {
+                $matched[] = [
+                    'score' => $score,
+                    'item'  => [
+                        'id'         => null,
+                        'name'       => $name,
+                        'address'    => $address,
+                        'full_label' => trim($name . ($address ? ', ' . $address : '')),
+                        'lat'        => $lat,
+                        'lng'        => $lng,
+                        'source'     => 'local_json',
+                    ],
                 ];
+            }
+        }
 
-                if (count($results) >= 5) {
-                    break;
+        usort($matched, fn($a, $b) => $b['score'] <=> $a['score']);
+        return array_column($matched, 'item');
+    }
+
+    /**
+     * Cari nama tempat via Photon Komoot API.
+     * https://photon.komoot.io/api/?q={teks}&limit=5&lat=-7.6&lon=110.43
+     */
+    private function searchPhoton(string $query): array
+    {
+        $headers = [
+            'User-Agent' => 'JeepWukirsari/1.0 (info@jeepwukirsari.id)',
+            'Accept'     => 'application/json',
+        ];
+
+        $callPhoton = function (string $text) use ($headers) {
+            return Http::withHeaders($headers)->timeout(4)->get('https://photon.komoot.io/api/', [
+                'q'     => $text,
+                'limit' => 5,
+                'lat'   => -7.6,
+                'lon'   => 110.43,
+            ]);
+        };
+
+        $res = $callPhoton($query);
+        $features = ($res->ok()) ? ($res->json('features') ?? []) : [];
+
+        // Jika kosong, coba tanpa kata wilayah
+        if (empty($features)) {
+            $cleaned = trim(preg_replace('/\b(yogyakarta|jogja|yogya|diy|d\.i\.y|sleman|cangkringan)\b/i', '', $query));
+            $cleaned = trim(preg_replace('/[,\-\s]+/', ' ', $cleaned));
+            if (mb_strlen($cleaned) >= 3 && mb_strtolower($cleaned) !== mb_strtolower($query)) {
+                $resClean = $callPhoton($cleaned);
+                if ($resClean->ok()) {
+                    $features = $resClean->json('features') ?? [];
+                }
+            }
+        }
+
+        $results = [];
+        foreach ($features as $f) {
+            $props  = $f['properties'] ?? [];
+            $coords = $f['geometry']['coordinates'] ?? null;
+            if (!$coords || count($coords) < 2) continue;
+
+            $lng = (float) $coords[0];
+            $lat = (float) $coords[1];
+
+            $name = $props['name'] ?? ($props['street'] ?? 'Lokasi');
+            $parts = array_filter([
+                $props['street'] ?? null,
+                $props['district'] ?? null,
+                $props['city'] ?? ($props['county'] ?? null),
+                $props['state'] ?? null,
+            ]);
+            $address = implode(', ', $parts);
+            if (empty($address) && !empty($props['country'])) {
+                $address = $props['country'];
+            }
+
+            $results[] = [
+                'id'         => null,
+                'name'       => $name,
+                'address'    => $address,
+                'full_label' => trim($name . ($address ? ', ' . $address : '')),
+                'lat'        => $lat,
+                'lng'        => $lng,
+                'source'     => 'photon',
+            ];
+
+            if (count($results) >= 5) break;
+        }
+
+        return $results;
+    }
+
+    /**
+     * Pencatatan otomatis hotel baru:
+     * Jika nama hotel + koordinat belum ada di hotels.json (jarak > 100 m dari semua hotel terdaftar),
+     * simpan sebagai kandidat baru ke database/hotel_kandidat.json.
+     */
+    private function recordCandidateHotel(string $name, float $lat, float $lng): void
+    {
+        $name = trim($name);
+        if (empty($name) || !$lat || !$lng) {
+            return;
+        }
+
+        $hotelsFile = database_path('hotels.json');
+        $hotels = file_exists($hotelsFile) ? (json_decode(file_get_contents($hotelsFile), true) ?: []) : [];
+
+        // 1. Cek apakah titik koordinat sudah terdaftar di hotels.json (jarak <= 100 meter atau nama identik)
+        foreach ($hotels as $h) {
+            $hLat = isset($h['lat']) ? (float) $h['lat'] : null;
+            $hLng = isset($h['lng']) ? (float) $h['lng'] : null;
+            if ($hLat !== null && $hLng !== null) {
+                $distKm = $this->haversineKm($lat, $lng, $hLat, $hLng);
+                if ($distKm <= 0.100) { // <= 100 meter
+                    return; // Sudah terdaftar di hotels.json
                 }
             }
 
-            $data = [
-                'ok'      => true,
-                'results' => $results,
-                'source'  => 'google',
-            ];
-
-            Cache::put($cacheKey, $data, 60);
-
-            return response()->json($data);
-        } catch (\Throwable $e) {
-            Log::error('Google Places Text Search exception: ' . $e->getMessage());
-
-            return response()->json([
-                'ok'         => false,
-                'error'      => 'Gagal menghubungi Google Places: ' . $e->getMessage(),
-                'error_type' => 'EXCEPTION',
-                'results'    => [],
-                'source'     => 'google',
-            ]);
+            // Cek nama sama persis (case-insensitive)
+            if (mb_strtolower(trim($h['nama'] ?? '')) === mb_strtolower($name)) {
+                return;
+            }
         }
+
+        // 2. Cek apakah sudah pernah masuk ke database/hotel_kandidat.json
+        $candFile = database_path('hotel_kandidat.json');
+        $candidates = file_exists($candFile) ? (json_decode(file_get_contents($candFile), true) ?: []) : [];
+
+        $foundIndex = null;
+        foreach ($candidates as $idx => $c) {
+            $cLat = isset($c['lat']) ? (float) $c['lat'] : null;
+            $cLng = isset($c['lng']) ? (float) $c['lng'] : null;
+            if ($cLat !== null && $cLng !== null) {
+                $distKm = $this->haversineKm($lat, $lng, $cLat, $cLng);
+                if ($distKm <= 0.100) {
+                    $foundIndex = $idx;
+                    break;
+                }
+            }
+            if (mb_strtolower(trim($c['name'] ?? '')) === mb_strtolower($name)) {
+                $foundIndex = $idx;
+                break;
+            }
+        }
+
+        if ($foundIndex !== null) {
+            // Kandidat sudah ada, naikkan jumlah kali dipakai
+            $candidates[$foundIndex]['jumlah_pakai'] = ($candidates[$foundIndex]['jumlah_pakai'] ?? 1) + 1;
+            $candidates[$foundIndex]['updated_at'] = now()->toDateTimeString();
+            if (mb_strlen($name) > mb_strlen($candidates[$foundIndex]['name'] ?? '')) {
+                $candidates[$foundIndex]['name'] = $name;
+            }
+        } else {
+            // Tambah kandidat baru
+            $candidates[] = [
+                'id'           => 'cand_' . substr(md5($name . '_' . $lat . '_' . $lng . '_' . microtime()), 0, 10),
+                'name'         => $name,
+                'lat'          => round($lat, 7),
+                'lng'          => round($lng, 7),
+                'jumlah_pakai' => 1,
+                'created_at'   => now()->toDateTimeString(),
+                'updated_at'   => now()->toDateTimeString(),
+            ];
+        }
+
+        @file_put_contents($candFile, json_encode($candidates, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
     }
 
     /**

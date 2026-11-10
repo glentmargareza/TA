@@ -80,6 +80,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/pengaturan', [AdminController::class, 'settings'])->name('settings');
     Route::put('/pengaturan/profile', [AdminController::class, 'updateAdminProfile'])->name('settings.profile');
     Route::post('/pengaturan/basecamp', [AdminController::class, 'updateBasecampSettings'])->name('settings.basecamp');
+
+    // Kandidat Hotel Baru
+    Route::get('/hotel-kandidat', [AdminController::class, 'hotelCandidates'])->name('hotel_candidates');
+    Route::post('/hotel-kandidat/{id}/approve', [AdminController::class, 'approveHotelCandidate'])->name('hotel_candidates.approve');
+    Route::post('/hotel-kandidat/{id}/delete', [AdminController::class, 'deleteHotelCandidate'])->name('hotel_candidates.delete');
 });
 
 // 5. Payment Gateway Webhook (Midtrans)

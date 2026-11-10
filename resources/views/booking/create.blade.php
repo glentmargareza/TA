@@ -705,9 +705,14 @@ async function pkDoReverse(lat, lng){
       if(j && j.ok && (j.name || j.address)){
         const title = j.name || j.address;
         const sub = j.address || title;
-        $('#addr').value = title;
-        pk.label = sub;
-        $('#gpsName').textContent = pk.label;
+        // Teks ketikan user tidak boleh ditimpa jika ia hanya menggeser pin
+        const addrInput = $('#addr');
+        if(addrInput && !addrInput.value.trim()){
+          addrInput.value = title;
+        }
+        pk.label = (addrInput && addrInput.value.trim()) ? addrInput.value.trim() : sub;
+        const gpsEl = $('#gpsName');
+        if(gpsEl) gpsEl.textContent = pk.label;
       }
     }
   }catch(e){
@@ -839,7 +844,7 @@ async function pkSearch(q){
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
       </svg>
-      <span>Mencari via Google Places…</span>
+      <span>Mencari lokasi penjemputan…</span>
     </div>`;
   box.classList.remove('hidden');
 
@@ -856,45 +861,16 @@ async function pkSearch(q){
 
     const data = await r.json().catch(() => null);
 
-    if(!r.ok || !data || data.ok === false){
-      const errMsg = data?.error || data?.message || ('HTTP ' + r.status);
-      console.error('[Google Places Error]', errMsg);
-      if(spin) spin.classList.add('hidden');
-      pkRenderError(errMsg);
-      return;
+    if(r.ok && data && Array.isArray(data.results)){
+      items = data.results.slice(0, 5);
     }
-
-    items = (data.results || []).slice(0, 5);
   }catch(e){
     if(e.name === 'AbortError') return;
-    console.error('[Google Places Exception]', e);
-    if(spin) spin.classList.add('hidden');
-    pkRenderError('Tidak dapat terhubung ke server. Coba beberapa saat lagi.');
-    return;
   }
 
   if(spin) spin.classList.add('hidden');
   pkSuggestions = items;
   pkRenderSuggestions(items);
-}
-
-function pkRenderError(msg){
-  const box = $('#addrRes');
-  if(!box) return;
-  box.innerHTML = `
-    <div class="p-3.5 text-xs text-merapiText-secondary space-y-1.5 border-l-4 border-amber-500 bg-amber-50/50">
-      <div class="font-bold text-amber-800 flex items-center gap-1.5">
-        <svg class="w-4 h-4 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-        </svg>
-        <span>Pencarian Google Belum Siap</span>
-      </div>
-      <div class="text-[11px] text-merapiText-muted leading-relaxed">${esc(msg)}</div>
-      <div class="text-[10px] text-merapiText-muted pt-1">
-        Tips: Tempel link Google Maps di kolom bawah atau geser pin di peta.
-      </div>
-    </div>`;
-  box.classList.remove('hidden');
 }
 
 function formatHotelDisplay(name, address){
@@ -923,13 +899,23 @@ function pkRenderSuggestions(items){
   if(!items || items.length === 0){
     box.innerHTML = `
       <div class="p-4 text-center text-xs text-merapiText-secondary space-y-1.5">
-        <div class="font-bold text-merapiText-primary">Tidak ditemukan</div>
+        <div class="font-bold text-merapiText-primary">Hotel tidak ditemukan</div>
         <div class="text-[11px] text-merapiText-muted leading-relaxed">
           Geser pin di peta atau tempel link Google Maps.
         </div>
       </div>`;
     box.classList.remove('hidden');
     return;
+  }
+
+  const src = items[0]?.source || 'none';
+  let attrText = 'Pilih lokasi yang tepat';
+  if(src === 'local_json'){
+    attrText = 'Daftar Hotel Tersimpan';
+  } else if(src === 'photon'){
+    attrText = 'Ditenagai oleh Photon (OpenStreetMap)';
+  } else if(src === 'google'){
+    attrText = 'Ditenagai oleh Google Places';
   }
 
   let html = `<div class="max-h-64 overflow-y-auto divide-y divide-wukirsari-border/60" id="suggestList">`;
@@ -948,7 +934,7 @@ function pkRenderSuggestions(items){
   html += `</div>
     <div class="px-4 py-1.5 bg-[#fbfbf8] text-[10px] text-merapiText-muted border-t border-wukirsari-border/60 flex items-center justify-between">
       <span>Pilih lokasi yang tepat</span>
-      <span class="font-medium">Ditenagai oleh Google Places</span>
+      <span class="font-medium">${attrText}</span>
     </div>`;
 
   box.innerHTML = html;
@@ -972,9 +958,9 @@ async function pkSelectSuggestion(idx){
   const addrInput = $('#addr');
   if(addrInput) addrInput.value = hotelText;
 
-  // Jika item sudah punya koordinat (langsung dari Google Places Text Search)
+  // Jika item sudah punya koordinat (langsung dari hotels.json / Photon / Google Places)
   if(typeof item.lat === 'number' && typeof item.lng === 'number' && item.lat !== 0 && item.lng !== 0){
-    pkUse(item.lat, item.lng, item.name || hotelText, true, false);
+    pkUse(item.lat, item.lng, hotelText, true, false);
     return;
   }
 

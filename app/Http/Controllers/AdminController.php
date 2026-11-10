@@ -896,4 +896,111 @@ class AdminController extends Controller
 
         return redirect()->back()->with('success', 'Pengaturan operasional basecamp & kebijakan trip berhasil disimpan!');
     }
+
+    /**
+     * Halaman Daftar Kandidat Hotel Baru
+     * Hotel yang dimasukkan tamu saat booking antar-jemput yang belum ada di hotels.json.
+     */
+    public function hotelCandidates(Request $request)
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!$user || $user->role !== 'admin') {
+            return redirect()->route('login')->with('info', 'Silakan masuk dengan akun Admin Paguyuban untuk membuka portal ini.');
+        }
+
+        $candFile = database_path('hotel_kandidat.json');
+        $candidates = file_exists($candFile) ? (json_decode(file_get_contents($candFile), true) ?: []) : [];
+
+        // Urutkan berdasarkan frekuensi pakai terbanyak, lalu terbaru
+        usort($candidates, function ($a, $b) {
+            $diff = ($b['jumlah_pakai'] ?? 1) <=> ($a['jumlah_pakai'] ?? 1);
+            if ($diff !== 0) return $diff;
+            return strcmp($b['updated_at'] ?? '', $a['updated_at'] ?? '');
+        });
+
+        return view('admin.hotel_candidates', compact('user', 'candidates'));
+    }
+
+    /**
+     * Setujui Kandidat Hotel (Satu Klik):
+     * Otomatis dipindahkan dan masuk ke database/hotels.json
+     */
+    public function approveHotelCandidate(Request $request, string $id)
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!$user || $user->role !== 'admin') {
+            abort(403);
+        }
+
+        $candFile = database_path('hotel_kandidat.json');
+        $candidates = file_exists($candFile) ? (json_decode(file_get_contents($candFile), true) ?: []) : [];
+
+        $target = null;
+        $remaining = [];
+        foreach ($candidates as $c) {
+            if (($c['id'] ?? '') === $id) {
+                $target = $c;
+            } else {
+                $remaining[] = $c;
+            }
+        }
+
+        if (!$target) {
+            return redirect()->back()->withErrors(['msg' => 'Data kandidat hotel tidak ditemukan atau sudah disetujui.']);
+        }
+
+        $hotelName = trim((string) $request->input('name', $target['name'] ?? 'Hotel'));
+        $hotelAddress = trim((string) $request->input('address', $target['name'] . ', Cangkringan, Sleman'));
+        $aliasInput = trim((string) $request->input('alias', ''));
+        $aliases = $aliasInput !== '' ? array_filter(array_map('trim', explode(',', $aliasInput))) : [];
+        if (!in_array($hotelName, $aliases, true)) {
+            array_unshift($aliases, $hotelName);
+        }
+
+        $hotelsFile = database_path('hotels.json');
+        $hotels = file_exists($hotelsFile) ? (json_decode(file_get_contents($hotelsFile), true) ?: []) : [];
+
+        // Tambah ke hotels.json
+        $hotels[] = [
+            'nama'   => $hotelName,
+            'alias'  => array_values(array_unique($aliases)),
+            'alamat' => $hotelAddress,
+            'lat'    => (float) $target['lat'],
+            'lng'    => (float) $target['lng'],
+        ];
+
+        @file_put_contents($hotelsFile, json_encode($hotels, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+        @file_put_contents($candFile, json_encode($remaining, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+
+        ActivityLog::logAdmin(
+            'Persetujuan Hotel Baru',
+            "Admin menyetujui hotel baru '{$hotelName}' ke daftar hotels.json.",
+            'admin',
+            route('admin.hotel_candidates')
+        );
+
+        return redirect()->back()->with('success', "Hotel '{$hotelName}' berhasil disetujui dan otomatis masuk ke hotels.json!");
+    }
+
+    /**
+     * Hapus / Tolak Kandidat Hotel
+     */
+    public function deleteHotelCandidate(Request $request, string $id)
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!$user || $user->role !== 'admin') {
+            abort(403);
+        }
+
+        $candFile = database_path('hotel_kandidat.json');
+        $candidates = file_exists($candFile) ? (json_decode(file_get_contents($candFile), true) ?: []) : [];
+
+        $filtered = array_values(array_filter($candidates, fn($c) => ($c['id'] ?? '') !== $id));
+        @file_put_contents($candFile, json_encode($filtered, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+
+        return redirect()->back()->with('success', 'Kandidat hotel berhasil dihapus.');
+    }
 }

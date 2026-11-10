@@ -1,0 +1,22 @@
+[
+  {
+    "nama": "CONTOH - GANTI (Nama Hotel / Villa 1)",
+    "alias": [
+      "Contoh Villa 1",
+      "Contoh Homestay 1"
+    ],
+    "alamat": "CONTOH - GANTI (Jl. Kaliurang Km 18, Pakem, Sleman)",
+    "lat": -7.6000000,
+    "lng": 110.4300000
+  },
+  {
+    "nama": "CONTOH - GANTI (Nama Penginapan / Homestay 2)",
+    "alias": [
+      "Penginapan Contoh 2",
+      "Homestay Contoh 2"
+    ],
+    "alamat": "CONTOH - GANTI (Jl. Merapi Golf, Cangkringan, Sleman)",
+    "lat": -7.6100000,
+    "lng": 110.4400000
+  }
+]

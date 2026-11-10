@@ -105,6 +105,24 @@
                     <span>Pengaturan</span>
                 </div>
             </a>
+
+            @php
+                $sidebarCandFile = database_path('hotel_kandidat.json');
+                $sidebarCandCount = file_exists($sidebarCandFile) ? count(json_decode(file_get_contents($sidebarCandFile), true) ?: []) : 0;
+            @endphp
+
+            <!-- 10. Kandidat Hotel Baru -->
+            <a href="{{ route('admin.hotel_candidates') }}" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs transition-all duration-150 {{ request()->routeIs('admin.hotel_candidates*') ? 'bg-[#1D5E30] text-white font-bold shadow-md shadow-emerald-950/40' : 'text-white/80 hover:bg-white/10 hover:text-white' }}">
+                <div class="flex items-center gap-3">
+                    <svg class="w-4 h-4 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                    <span>Kandidat Hotel</span>
+                </div>
+                @if($sidebarCandCount > 0)
+                <span class="px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold shadow-xs">
+                    {{ $sidebarCandCount }}
+                </span>
+                @endif
+            </a>
         </nav>
     </div>
 
