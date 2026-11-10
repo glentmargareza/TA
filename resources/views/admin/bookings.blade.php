@@ -96,8 +96,9 @@
                         <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Status Pembayaran</label>
                         <select name="status" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 shadow-2xs">
                             <option value="">Semua Status</option>
+                            <option value="WAITING_CONFIRMATION" {{ (isset($status) && $status === 'WAITING_CONFIRMATION') ? 'selected' : '' }}>Menunggu Verifikasi Bukti</option>
                             <option value="PENDING" {{ (isset($status) && $status === 'PENDING') ? 'selected' : '' }}>Menunggu Bayar</option>
-                            <option value="DP_PAID" {{ (isset($status) && $status === 'DP_PAID') ? 'selected' : '' }}>DP Terbayar (50%)</option>
+                            <option value="DP_PAID" {{ (isset($status) && $status === 'DP_PAID') ? 'selected' : '' }}>DP Terbayar</option>
                             <option value="FULL_PAID" {{ (isset($status) && $status === 'FULL_PAID') ? 'selected' : '' }}>Lunas (100%)</option>
                             <option value="COMPLETED" {{ (isset($status) && $status === 'COMPLETED') ? 'selected' : '' }}>Selesai</option>
                             <option value="CANCELLED" {{ (isset($status) && $status === 'CANCELLED') ? 'selected' : '' }}>Dibatalkan</option>
@@ -195,6 +196,11 @@
                                             Sisa: Rp {{ number_format($b->remaining_amount, 0, ',', '.') }}
                                         </span>
                                     </div>
+                                    @elseif($b->booking_status === 'WAITING_CONFIRMATION')
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+                                        MENUNGGU VERIFIKASI
+                                    </span>
                                     @elseif($b->booking_status === 'CANCELLED')
                                     <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">
                                         <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
@@ -262,6 +268,30 @@
                                 </td>
                                 <td class="py-3 px-4 text-center">
                                     <div class="flex items-center justify-center gap-1.5">
+                                        @php
+                                            $pendingManual = $b->payments->where('payment_type', 'MANUAL_BPD_DIY')->where('payment_status', 'PENDING')->first();
+                                            $pendingCash = $b->payments->where('payment_type', 'CASH')->where('payment_status', 'PENDING')->first();
+                                        @endphp
+
+                                        @if($b->booking_status === 'WAITING_CONFIRMATION' && $pendingManual)
+                                        <button type="button" 
+                                            onclick="openProofModal('{{ $b->id }}', '{{ $b->booking_code }}', '{{ addslashes($b->customer_name) }}', '{{ addslashes($pendingManual->sender_name ?? '-') }}', '{{ addslashes($pendingManual->sender_bank ?? '-') }}', '{{ number_format($pendingManual->gross_amount, 0, ',', '.') }}', '{{ $pendingManual->proof_image ? asset($pendingManual->proof_image) : ($pendingManual->payload_response['proof_url'] ?? '#') }}', '{{ route('admin.verify_payment', $b->id) }}', '{{ route('admin.reject_payment', $b->id) }}')"
+                                            class="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-bold text-[10px] shadow-xs cursor-pointer flex items-center gap-1"
+                                            title="Verifikasi Bukti Transfer">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                            <span>Verifikasi</span>
+                                        </button>
+                                        @endif
+
+                                        @if($b->booking_status === 'PENDING' && $pendingCash)
+                                        <form action="{{ route('admin.confirm_cash', $b->id) }}" method="POST" onsubmit="return confirm('Konfirmasi penerimaan pembayaran kasir Rp {{ number_format($pendingCash->gross_amount, 0, ',', '.') }} untuk booking #{{ $b->booking_code }}?')">
+                                            @csrf
+                                            <button type="submit" class="px-2.5 py-1 rounded-lg bg-teal-600 hover:bg-teal-700 text-white font-bold text-[10px] shadow-xs cursor-pointer flex items-center gap-1" title="Terima Pembayaran Kasir">
+                                                <span>Terima Kasir</span>
+                                            </button>
+                                        </form>
+                                        @endif
+
                                         <!-- Tombol Detail Informasi Pemesan -->
                                         <button type="button" data-booking='@json($detailData)' onclick="openBookingDetailModal(this)" class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-emerald-50 hover:border-emerald-300 text-slate-600 hover:text-emerald-700 text-xs font-semibold shadow-2xs transition-all cursor-pointer" title="Lihat detail lengkap pemesan">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
@@ -706,6 +736,8 @@
 
         </main>
     </div>
+
+    @include('admin.partials.modal-manual-proof')
 
 </body>
 </html>

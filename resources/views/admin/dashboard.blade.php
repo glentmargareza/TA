@@ -479,6 +479,10 @@
                                             <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#DCFCE7] text-[#16A34A]">
                                                 Dikonfirmasi (DP)
                                             </span>
+                                            @elseif($rb->booking_status === 'WAITING_CONFIRMATION')
+                                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800">
+                                                Menunggu Verifikasi
+                                            </span>
                                             @elseif($rb->booking_status === 'COMPLETED')
                                             <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#DCFCE7] text-[#16A34A]">
                                                 Selesai
@@ -494,9 +498,21 @@
                                             @endif
                                         </td>
                                         <td class="py-3 px-4 text-center">
-                                            <button type="button" data-booking='@json($rbDetail)' onclick="openBookingDetailModal(this)" class="px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 font-semibold text-[11px] shadow-2xs transition-all cursor-pointer">
-                                                👁 Detail
-                                            </button>
+                                            <div class="flex items-center justify-center gap-1.5">
+                                                @php
+                                                    $rbPendingManual = $rb->payments->where('payment_type', 'MANUAL_BPD_DIY')->where('payment_status', 'PENDING')->first();
+                                                @endphp
+                                                @if($rb->booking_status === 'WAITING_CONFIRMATION' && $rbPendingManual)
+                                                <button type="button" 
+                                                    onclick="openProofModal('{{ $rb->id }}', '{{ $rb->booking_code }}', '{{ addslashes($rb->customer_name) }}', '{{ addslashes($rbPendingManual->sender_name ?? '-') }}', '{{ addslashes($rbPendingManual->sender_bank ?? '-') }}', '{{ number_format($rbPendingManual->gross_amount, 0, ',', '.') }}', '{{ $rbPendingManual->proof_image ? asset($rbPendingManual->proof_image) : ($rbPendingManual->payload_response['proof_url'] ?? '#') }}', '{{ route('admin.verify_payment', $rb->id) }}', '{{ route('admin.reject_payment', $rb->id) }}')"
+                                                    class="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-bold text-[11px] shadow-2xs transition-all cursor-pointer">
+                                                    Verifikasi
+                                                </button>
+                                                @endif
+                                                <button type="button" data-booking='@json($rbDetail)' onclick="openBookingDetailModal(this)" class="px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 font-semibold text-[11px] shadow-2xs transition-all cursor-pointer">
+                                                    👁 Detail
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                     @empty

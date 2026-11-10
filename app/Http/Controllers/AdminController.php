@@ -14,6 +14,8 @@ use App\Models\Review;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
@@ -103,7 +105,7 @@ class AdminController extends Controller
         }
 
         // 5 Booking Terkini untuk Tampilan Widget Cepat
-        $recentBookings = Booking::with(['package', 'slot', 'assignments.jeep', 'assignments.driver'])
+        $recentBookings = Booking::with(['package', 'slot', 'assignments.jeep', 'assignments.driver', 'payments'])
             ->orderBy('id', 'desc')
             ->take(5)
             ->get();
@@ -153,7 +155,7 @@ class AdminController extends Controller
         $packageId = $request->query('package_id');
         $status = $request->query('status', 'ALL');
 
-        $query = Booking::with(['package', 'slot', 'pickupZone', 'assignments.jeep', 'assignments.driver']);
+        $query = Booking::with(['package', 'slot', 'pickupZone', 'assignments.jeep', 'assignments.driver', 'payments']);
 
         if (!empty($search)) {
             $query->where(function ($q) use ($search) {
@@ -921,7 +923,7 @@ class AdminController extends Controller
             $payment = Payment::where('booking_id', $booking->id)
                 ->where('payment_type', 'MANUAL_BPD_DIY')
                 ->where('payment_status', 'PENDING')
-                ->latest()
+                ->latest('id')
                 ->lockForUpdate()
                 ->first();
 
@@ -950,11 +952,12 @@ class AdminController extends Controller
                 'method' => 'Bank BPD DIY Manual Transfer Verification',
             ];
 
-            // 1. Update Payment menjadi SETTLED sah dengan audit log admin
+            // 1. Update Payment menjadi SETTLED sah dengan audit log admin (pertahankan metadata payload sebelumnya)
+            $existingPayload = is_array($payment->payload_response) ? $payment->payload_response : [];
             $payment->update([
                 'payment_status' => 'SETTLED',
                 'paid_at' => now(),
-                'payload_response' => $adminVerificationMeta,
+                'payload_response' => array_merge($existingPayload, $adminVerificationMeta),
             ]);
 
             // Batalkan pembayaran pending metode lain jika ada
@@ -970,6 +973,13 @@ class AdminController extends Controller
                 'remaining_amount' => $newRemainingAmount,
                 'lock_expires_at' => null,
             ]);
+
+            // 3. Catat notifikasi aktivitas pembayaran sah ke sistem
+            ActivityLog::logPaymentSuccess(
+                $booking,
+                (float) $grossInt,
+                "Transfer Manual Bank BPD DIY (Pengirim: " . ($payment->sender_name ?? '-') . " - " . ($payment->sender_bank ?? '-') . ")"
+            );
 
             return redirect()->back()->with('success', "Pembayaran transfer Bank BPD DIY sebesar Rp " . number_format($grossInt, 0, ',', '.') . " untuk booking {$booking->booking_code} berhasil disetujui ({$newBookingStatus})!");
         });
@@ -1004,7 +1014,7 @@ class AdminController extends Controller
             $payment = Payment::where('booking_id', $booking->id)
                 ->where('payment_type', 'CASH')
                 ->where('payment_status', 'PENDING')
-                ->latest()
+                ->latest('id')
                 ->lockForUpdate()
                 ->first();
 
@@ -1089,7 +1099,7 @@ class AdminController extends Controller
             'rejection_reason.max' => 'Alasan penolakan maksimal 500 karakter.',
         ]);
 
-        return DB::transaction(function () use ($id, $validated) {
+        return DB::transaction(function () use ($id, $validated, $user) {
             /** @var Booking $booking */
             $booking = Booking::where('id', $id)->lockForUpdate()->firstOrFail();
 
@@ -1100,14 +1110,21 @@ class AdminController extends Controller
             $payment = Payment::where('booking_id', $booking->id)
                 ->where('payment_type', 'MANUAL_BPD_DIY')
                 ->where('payment_status', 'PENDING')
-                ->latest()
+                ->latest('id')
                 ->lockForUpdate()
                 ->first();
 
             if ($payment) {
+                $existingPayload = is_array($payment->payload_response) ? $payment->payload_response : [];
                 $payment->update([
                     'payment_status' => 'FAILED',
                     'rejection_reason' => $validated['rejection_reason'],
+                    'payload_response' => array_merge($existingPayload, [
+                        'rejected_by_admin_id' => $user->id,
+                        'rejected_by_admin_name' => $user->full_name ?? $user->name,
+                        'rejected_at' => now()->toDateTimeString(),
+                        'rejection_reason' => $validated['rejection_reason'],
+                    ]),
                 ]);
             }
 
@@ -1145,10 +1162,24 @@ class AdminController extends Controller
 
         $payment = Payment::where('id', $paymentId)->where('booking_id', $id)->firstOrFail();
 
-        if (!$payment->proof_image || !Storage::disk('local')->exists($payment->proof_image)) {
-            abort(404, 'Berkas fisik bukti transfer tidak ditemukan di penyimpanan server.');
+        $filePath = $payment->proof_image ?: ($payment->payload_response['proof_url'] ?? null);
+
+        if (!$filePath) {
+            abort(404, 'Berkas fisik bukti transfer tidak tercatat di sistem.');
         }
 
-        return Storage::disk('local')->response($payment->proof_image);
+        if (Storage::disk('local')->exists($filePath)) {
+            return Storage::disk('local')->response($filePath);
+        }
+
+        if (file_exists(public_path($filePath))) {
+            return response()->file(public_path($filePath));
+        }
+
+        if (Storage::disk('public')->exists($filePath)) {
+            return Storage::disk('public')->response($filePath);
+        }
+
+        abort(404, 'Berkas fisik bukti transfer tidak ditemukan di penyimpanan server.');
     }
 }

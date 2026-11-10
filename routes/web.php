@@ -41,6 +41,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('/bookings/{id}/settle', [AdminController::class, 'settleDp'])->name('settle');
     Route::post('/bookings/{id}/assign', [AdminController::class, 'assignDriver'])->name('assign');
     Route::post('/bookings/{id}/cancel', [AdminController::class, 'cancelBooking'])->name('cancel');
+    Route::post('/bookings/{id}/verify-payment', [AdminController::class, 'verifyPayment'])->name('verify_payment');
+    Route::post('/bookings/{id}/reject-payment', [AdminController::class, 'rejectPayment'])->name('reject_payment');
+    Route::post('/bookings/{id}/confirm-cash', [AdminController::class, 'confirmCashPayment'])->name('confirm_cash');
+    Route::get('/bookings/{id}/proof/{paymentId}', [AdminController::class, 'viewProof'])->name('proof');
     Route::post('/jeep/{id}/status', [AdminController::class, 'updateJeepStatus'])->name('jeeps.status');
     Route::post('/jeep/activate-all', [AdminController::class, 'activateAllJeeps'])->name('jeeps.activateAll');
     Route::post('/notifikasi/mark-all-read', [AdminController::class, 'markAllNotificationsRead'])->name('notifications.markAllRead');

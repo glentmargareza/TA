@@ -11,6 +11,7 @@ use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
@@ -243,9 +244,24 @@ class BookingController extends Controller
             ->where('booking_code', $code)
             ->firstOrFail();
 
-        // Jika booking sudah selesai dibayar, langsung alihkan ke e-tiket
+        // Jika booking sudah selesai dibayar dan sah secara finansial, alihkan ke e-tiket
         if (in_array($booking->booking_status, ['FULL_PAID', 'DP_PAID'])) {
-            return redirect()->route('booking.success', $booking->booking_code);
+            $settledPayments = $booking->payments->where('payment_status', 'SETTLED');
+            $accumulatedSettledInt = (int) round($settledPayments->sum('gross_amount'));
+            $totalAmountInt = (int) round($booking->total_amount);
+            $paidAmountInt  = (int) round($booking->paid_amount);
+
+            $isValid = false;
+            if ($booking->booking_status === 'FULL_PAID') {
+                $isValid = !$settledPayments->isEmpty() && (int) round($booking->remaining_amount) === 0 && $accumulatedSettledInt >= $totalAmountInt;
+            } elseif ($booking->booking_status === 'DP_PAID') {
+                $isValid = !$settledPayments->isEmpty() && (int) round($booking->remaining_amount) > 0 && $accumulatedSettledInt >= $paidAmountInt;
+            }
+
+            if ($isValid) {
+                return redirect()->route('booking.success', $booking->booking_code);
+            }
+            // Jika tidak valid secara finansial, jangan redirect balik ke success untuk mencegah ERR_TOO_MANY_REDIRECTS
         }
 
         // Auto-expire jika booking PENDING telah melewati batas waktu lock (mencegah slot tertahan tanpa batas)
@@ -273,58 +289,135 @@ class BookingController extends Controller
             'sender_name' => 'required|string|max:100',
             'sender_bank' => 'required|string|max:50',
             'payment_proof' => 'required|file|image|mimes:jpeg,png,jpg,webp|max:5120',
+        ], [
+            'sender_name.required' => 'Nama pemilik rekening / pengirim wajib diisi.',
+            'sender_bank.required' => 'Bank asal pengirim wajib dipilih.',
+            'payment_proof.required' => 'Foto struk / bukti transfer wajib dilampirkan.',
+            'payment_proof.image' => 'Berkas bukti transfer harus berupa gambar yang valid.',
+            'payment_proof.mimes' => 'Format berkas bukti transfer harus berupa JPG, JPEG, PNG, atau WEBP.',
+            'payment_proof.max' => 'Ukuran berkas bukti transfer maksimal 5MB.',
         ]);
 
         $booking = Booking::with('package')->where('booking_code', $code)->firstOrFail();
 
-        // 1. Simpan berkas bukti transfer ke public/uploads/proofs
-        $file = $request->file('payment_proof');
-        $fileName = 'proof_' . $booking->booking_code . '_' . time() . '.' . $file->getClientOriginalExtension();
-        $destinationPath = public_path('uploads/proofs');
-        if (!file_exists($destinationPath)) {
-            mkdir($destinationPath, 0755, true);
+        // 1. Guard: Booking sudah lunas atau DP sah terverifikasi
+        if (in_array($booking->booking_status, ['FULL_PAID', 'DP_PAID'])) {
+            return redirect()->route('booking.success', $booking->booking_code)
+                ->with('info', 'Pesanan ini sudah berhasil diverifikasi.');
         }
-        $file->move($destinationPath, $fileName);
-        $proofUrl = 'uploads/proofs/' . $fileName;
 
-        // 2. Buat record transaksi pembayaran sah (SETTLED)
-        $payableAmount = (float) $booking->paid_amount;
-        $stage = $booking->payment_mode === 'DP' ? 'DOWN_PAYMENT' : 'FULL_PAYMENT';
+        // 2. Guard: Cegah pengiriman bukti berulang jika status masih menunggu konfirmasi admin
+        if ($booking->booking_status === 'WAITING_CONFIRMATION') {
+            return redirect()->route('booking.payment', $booking->booking_code)
+                ->with('warning', 'Bukti transfer Anda sedang dalam antrean verifikasi Admin Loket Paguyuban. Mohon menunggu proses verifikasi.');
+        }
 
-        Payment::create([
-            'booking_id' => $booking->id,
-            'order_id' => 'BPD-' . $booking->booking_code . '-' . strtoupper(Str::random(4)),
-            'transaction_ref' => 'BPD-MANUAL-' . date('YmdHis'),
-            'payment_stage' => $stage,
-            'payment_type' => 'bank_transfer',
-            'payment_method' => 'Bank BPD DIY (Transfer Manual)',
-            'gross_amount' => $payableAmount,
-            'payment_status' => 'SETTLED',
-            'paid_at' => now(),
-            'payload_response' => [
+        // 3. Guard: Cek apakah reservasi sudah dibatalkan atau kedaluwarsa
+        if ($booking->booking_status === 'CANCELLED') {
+            return redirect()->route('booking.create')
+                ->with('error', 'Reservasi ini telah dibatalkan.');
+        }
+
+        if ($booking->booking_status === 'PENDING' && $booking->lock_expires_at && $booking->lock_expires_at->isPast()) {
+            $booking->update(['booking_status' => 'CANCELLED']);
+            $booking->payments()->where('payment_status', 'PENDING')->update(['payment_status' => 'EXPIRED']);
+            return redirect()->route('booking.create')
+                ->with('error', 'Batas waktu pembayaran untuk reservasi ' . $booking->booking_code . ' telah habis. Silakan buat reservasi baru.');
+        }
+
+        return DB::transaction(function () use ($request, $booking, $validated) {
+            /** @var Booking $lockedBooking */
+            $lockedBooking = Booking::where('id', $booking->id)->lockForUpdate()->firstOrFail();
+
+            // Re-check di dalam row lock untuk mencegah submit ganda
+            if (in_array($lockedBooking->booking_status, ['FULL_PAID', 'DP_PAID'])) {
+                return redirect()->route('booking.success', $lockedBooking->booking_code);
+            }
+
+            $hasActivePending = Payment::where('booking_id', $lockedBooking->id)
+                ->where('payment_type', 'MANUAL_BPD_DIY')
+                ->where('payment_status', 'PENDING')
+                ->exists();
+
+            if ($hasActivePending || $lockedBooking->booking_status === 'WAITING_CONFIRMATION') {
+                return redirect()->route('booking.payment', $lockedBooking->booking_code)
+                    ->with('warning', 'Bukti transfer Anda sudah terkirim dan sedang menunggu verifikasi admin.');
+            }
+
+            // Simpan berkas bukti transfer ke public/uploads/proofs
+            $file = $request->file('payment_proof');
+            $fileName = 'proof_' . $lockedBooking->booking_code . '_' . time() . '_' . Str::random(6) . '.' . $file->getClientOriginalExtension();
+            $destinationPath = public_path('uploads/proofs');
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+            $file->move($destinationPath, $fileName);
+            $proofUrl = 'uploads/proofs/' . $fileName;
+
+            $payableAmount = (float) $lockedBooking->paid_amount > 0 
+                ? (float) $lockedBooking->paid_amount 
+                : (($lockedBooking->payment_mode === 'DP') ? round($lockedBooking->total_amount * 0.3) : (float) $lockedBooking->total_amount);
+            $stage = ($lockedBooking->payment_mode === 'DP') ? 'DOWN_PAYMENT' : 'FULL_PAYMENT';
+            $orderId = 'BPD-' . $lockedBooking->booking_code . '-' . strtoupper(Str::random(6));
+
+            // Batalkan pembayaran PENDING metode lain jika customer beralih ke transfer manual
+            Payment::where('booking_id', $lockedBooking->id)
+                ->where('payment_status', 'PENDING')
+                ->where('payment_type', '!=', 'MANUAL_BPD_DIY')
+                ->update(['payment_status' => 'EXPIRED']);
+
+            // Buat record Payment dengan status PENDING dan simpan proof_image, sender_name, sender_bank
+            Payment::create([
+                'booking_id' => $lockedBooking->id,
+                'order_id' => $orderId,
+                'transaction_ref' => 'BPD-MANUAL-' . date('YmdHis') . '-' . strtoupper(Str::random(4)),
+                'payment_stage' => $stage,
+                'payment_type' => 'MANUAL_BPD_DIY',
+                'payment_method' => 'Bank BPD DIY (Transfer Manual)',
+                'gross_amount' => $payableAmount,
+                'payment_status' => 'PENDING',
+                'proof_image' => $proofUrl,
                 'sender_name' => $validated['sender_name'],
                 'sender_bank' => $validated['sender_bank'],
-                'proof_url' => $proofUrl,
-                'target_account' => '069211001060',
-                'target_bank' => 'Bank BPD DIY',
-                'target_name' => 'Ariyanto',
-                'submitted_at' => now()->toDateTimeString(),
-            ],
-        ]);
+                'paid_at' => null,
+                'payload_response' => [
+                    'sender_name' => $validated['sender_name'],
+                    'sender_bank' => $validated['sender_bank'],
+                    'proof_url' => $proofUrl,
+                    'target_account' => config('services.bpd_diy.account_number', '069211001060'),
+                    'target_bank' => config('services.bpd_diy.bank_name', 'Bank BPD DIY'),
+                    'target_name' => config('services.bpd_diy.account_name', 'Ariyanto'),
+                    'submitted_at' => now()->toDateTimeString(),
+                ],
+            ]);
 
-        // 3. Perbarui status booking
-        $booking->booking_status = $booking->payment_mode === 'DP' ? 'DP_PAID' : 'FULL_PAID';
-        $booking->save();
+            // Ubah status booking ke WAITING_CONFIRMATION
+            $lockedBooking->update([
+                'booking_status' => 'WAITING_CONFIRMATION',
+            ]);
 
-        // 4. Catat notifikasi aktivitas admin
-        ActivityLog::logPaymentSuccess(
-            $booking,
-            $payableAmount,
-            "Transfer Manual Bank BPD DIY (Pengirim: {$validated['sender_name']} - {$validated['sender_bank']})"
-        );
+            // Catat notifikasi aktivitas ke admin (tanpa memicu logPaymentSuccess sebelum disetujui)
+            ActivityLog::create([
+                'user_id' => Auth::id() ?? $lockedBooking->user_id,
+                'type' => 'BOOKING_PAYMENT',
+                'title' => 'Bukti Transfer Bank BPD DIY Diunggah 📤',
+                'message' => "Wisatawan {$lockedBooking->customer_name} telah mengirimkan bukti transfer Bank BPD DIY untuk booking #{$lockedBooking->booking_code} sebesar Rp " . number_format($payableAmount, 0, ',', '.') . ". Menunggu verifikasi admin.",
+                'icon_type' => 'payment',
+                'link' => route('admin.bookings', ['search' => $lockedBooking->booking_code]),
+                'is_read' => false,
+                'metadata' => [
+                    'booking_id' => $lockedBooking->id,
+                    'booking_code' => $lockedBooking->booking_code,
+                    'customer_name' => $lockedBooking->customer_name,
+                    'amount' => $payableAmount,
+                    'sender_name' => $validated['sender_name'],
+                    'sender_bank' => $validated['sender_bank'],
+                ],
+            ]);
 
-        return redirect()->route('booking.success', $booking->booking_code)
-            ->with('success', 'Bukti transfer Bank BPD DIY berhasil dikirim! E-Tiket reservasi Anda telah aktif.');
+            return redirect()->route('booking.payment', $lockedBooking->booking_code)
+                ->with('success', 'Bukti transfer Bank BPD DIY berhasil dikirim! Pembayaran Anda sedang dalam antrean verifikasi Admin Paguyuban.');
+        });
     }
 
     /**
@@ -333,6 +426,17 @@ class BookingController extends Controller
     public function confirmCash(Request $request, string $code)
     {
         $booking = Booking::with('package')->where('booking_code', $code)->firstOrFail();
+
+        // Guard: Jika sedang menunggu verifikasi manual transfer
+        if ($booking->booking_status === 'WAITING_CONFIRMATION') {
+            return redirect()->route('booking.payment', $booking->booking_code)
+                ->with('warning', 'Bukti transfer Anda sedang dalam antrean verifikasi Admin Loket.');
+        }
+
+        if (in_array($booking->booking_status, ['FULL_PAID', 'DP_PAID'])) {
+            return redirect()->route('booking.success', $booking->booking_code)
+                ->with('info', 'Pesanan ini sudah berhasil diverifikasi.');
+        }
 
         $payableAmount = (float) $booking->paid_amount;
         $stage = $booking->payment_mode === 'DP' ? 'DOWN_PAYMENT' : 'FULL_PAYMENT';
@@ -408,14 +512,16 @@ class BookingController extends Controller
 
         if ($booking->booking_status === 'FULL_PAID') {
             // Skenario Lunas (Lunas Online ATAU DP Online + Pelunasan Kasir Basecamp)
-            if ($settledPayments->isEmpty() || $remainingInt !== 0 || $accumulatedSettledInt !== $totalAmountInt) {
+            // Memastikan pembayaran telah mencapai atau melampaui total tagihan dan sisa 0
+            if ($settledPayments->isEmpty() || $remainingInt !== 0 || $accumulatedSettledInt < $totalAmountInt) {
                 Log::warning("Inkonsistensi finansial pada tiket FULL_PAID: {$booking->booking_code}. Akumulasi: {$accumulatedSettledInt}, Total: {$totalAmountInt}");
                 return redirect()->route('booking.payment', $booking->booking_code)
                     ->with('error', 'Pembayaran sah belum terverifikasi secara lengkap oleh sistem.');
             }
         } elseif ($booking->booking_status === 'DP_PAID') {
             // Skenario DP (Uang Muka Sah Online)
-            if ($settledPayments->isEmpty() || $remainingInt <= 0 || $accumulatedSettledInt !== $paidAmountInt) {
+            // Memastikan pembayaran telah mencapai atau melampaui nominal DP wajib
+            if ($settledPayments->isEmpty() || $remainingInt <= 0 || $accumulatedSettledInt < $paidAmountInt) {
                 Log::warning("Inkonsistensi finansial pada tiket DP_PAID: {$booking->booking_code}. Akumulasi: {$accumulatedSettledInt}, Paid: {$paidAmountInt}");
                 return redirect()->route('booking.payment', $booking->booking_code)
                     ->with('error', 'Pembayaran uang muka sah belum terverifikasi oleh sistem.');

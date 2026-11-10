@@ -318,7 +318,66 @@
                         </div>
                     </div>
 
+                    @if($isWaiting && $activeManualPayment)
+                    <!-- KOTAK STATUS BUKTI SEDANG DALAM PENINJAUAN ADMIN -->
+                    <div class="pt-3">
+                        <div class="p-5 sm:p-6 rounded-2xl bg-blue-50/90 border border-blue-200 space-y-4">
+                            <div class="flex items-start gap-3.5">
+                                <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 shadow-xs">
+                                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-blue-950">Bukti Pembayaran Sedang Diverifikasi Admin</h4>
+                                    <p class="text-xs text-blue-900 mt-1 leading-relaxed">
+                                        Bukti transfer Anda telah diterima oleh sistem dan saat ini sedang dalam antrean peninjauan oleh <strong>Admin Loket Paguyuban</strong>. E-Tiket resmi akan aktif secara otomatis setelah pembayaran disetujui.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="p-4 rounded-xl bg-white border border-blue-100 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                                <div>
+                                    <span class="text-slate-400 block text-[11px]">Nama Pengirim Rekening:</span>
+                                    <span class="font-bold text-slate-800">{{ $activeManualPayment->sender_name ?? '-' }}</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-400 block text-[11px]">Bank Asal Pengirim:</span>
+                                    <span class="font-bold text-slate-800">{{ $activeManualPayment->sender_bank ?? '-' }}</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-400 block text-[11px]">Nominal Transfer:</span>
+                                    <span class="font-bold text-emerald-800">Rp {{ number_format($activeManualPayment->gross_amount, 0, ',', '.') }}</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-400 block text-[11px]">Waktu Pengiriman:</span>
+                                    <span class="font-medium text-slate-700">{{ $activeManualPayment->created_at ? $activeManualPayment->created_at->translatedFormat('d M Y, H:i') : '-' }} WIB</span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-2 pt-1 text-[11px] text-blue-800 font-medium">
+                                <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                                <span>Sistem aktif memantau status persetujuan admin. Anda dapat mengecek halaman ini secara berkala.</span>
+                            </div>
+                        </div>
+                    </div>
+                    @else
                     <!-- FORMULIR KONFIRMASI PENGIRIMAN BUKTI -->
+                    @if($latestFailedManualPayment && $booking->booking_status === 'PENDING')
+                    <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 text-xs space-y-1">
+                        <div class="flex items-center gap-2 font-bold text-sm text-rose-800">
+                            <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span>Bukti Transfer Sebelumnya Ditolak</span>
+                        </div>
+                        <p class="leading-relaxed">
+                            <strong>Alasan Admin:</strong> {{ $latestFailedManualPayment->rejection_reason ?? 'Bukti transfer tidak valid atau tidak terbaca.' }}
+                        </p>
+                        <p class="text-[11px] text-rose-700">Silakan unggah kembali foto struk / mutasi yang sah melalui formulir di bawah ini.</p>
+                    </div>
+                    @endif
+
                     <div class="pt-3">
                         <div class="flex items-center gap-2 text-sm font-bold text-merapiText-primary mb-4">
                             <svg class="w-4 h-4 text-wukirsari-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -373,7 +432,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                         </svg>
                                         <div class="text-sm font-semibold text-merapiText-primary">
-                                            Pilih berkas atau seret foto ke sini
+                                             Pilih berkas atau seret foto ke sini
                                         </div>
                                         <div class="text-xs text-merapiText-muted">
                                             Format JPG, JPEG, PNG, atau WEBP (Maksimal 5MB)
@@ -400,6 +459,7 @@
                             </button>
                         </form>
                     </div>
+                    @endif
 
                 </div>
 
@@ -1145,6 +1205,10 @@
     // FILE UPLOAD PREVIEW
     // ─────────────────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', function () {
+        @if($isWaiting)
+        startBriPolling();
+        @endif
+
         // Load any active BRIVA session
         loadActiveBriOnLoad();
 
