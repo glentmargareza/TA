@@ -126,18 +126,6 @@
             </div>
         </div>
 
-        <!-- FLASH NOTIFIKASI / FEEDBACK -->
-        @if(session('success'))
-        <div class="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-sm flex items-start gap-3">
-            <svg class="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-            </svg>
-            <div>
-                <p class="font-bold">Berhasil!</p>
-                <p class="text-xs text-emerald-800 mt-0.5">{{ session('success') }}</p>
-            </div>
-        </div>
-        @endif
 
         @if(session('error'))
         <div class="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 text-red-900 text-sm flex items-start gap-3">

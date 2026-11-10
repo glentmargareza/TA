@@ -427,6 +427,7 @@
                                 $qrUrl  = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' . urlencode($qrData) . '&color=1E3F20&bgcolor=FFFFFF&margin=4&format=png';
                             @endphp
                             <img src="{{ $qrUrl }}"
+                                 crossorigin="anonymous"
                                  alt="QR Code Tiket {{ $booking->booking_code }}"
                                  class="w-full h-full object-contain rounded-xl"
                                  onerror="this.style.display='none'; document.getElementById('qrFallback').style.display='flex'">
@@ -489,13 +490,54 @@
         @endphp
 
         <div class="hidden sm:flex items-center justify-center gap-3 mt-6 flex-wrap no-print">
-            {{-- Simpan E-Ticket --}}
-            <button onclick="saveTicket()" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#E2EAE3] bg-white text-[#19231A] text-sm font-semibold hover:bg-[#F7F7F2] transition-colors shadow-sm">
-                <svg class="w-4 h-4 text-[#526054]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                </svg>
-                Simpan E-Ticket
-            </button>
+            {{-- Dropdown Simpan E-Ticket (PDF & PNG) --}}
+            <div class="relative inline-block text-left" id="desktopSaveWrapper">
+                <button type="button"
+                        id="btnSaveDesktop"
+                        onclick="toggleSaveDropdown('desktop')"
+                        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#E2EAE3] bg-white text-[#19231A] text-sm font-semibold hover:bg-[#F7F7F2] transition-colors shadow-sm focus:outline-none cursor-pointer">
+                    <svg class="w-4 h-4 text-[#526054]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                    </svg>
+                    <span>Simpan E-Ticket</span>
+                    <svg class="w-3.5 h-3.5 text-[#526054] transition-transform duration-200" id="desktopChevron" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+
+                {{-- Popover Dropdown Desktop --}}
+                <div id="desktopSaveMenu"
+                     class="hidden absolute left-0 mt-2 w-56 rounded-2xl bg-white border border-[#E2EAE3] shadow-xl p-1.5 z-50 transition-all">
+                    <button type="button"
+                            onclick="saveTicketAs('pdf')"
+                            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left hover:bg-[#F7F7F2] transition-colors group cursor-pointer">
+                        <div class="w-8 h-8 rounded-lg bg-rose-50 border border-rose-100 flex items-center justify-center shrink-0 text-rose-600 group-hover:scale-105 transition-transform">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-6 4h4"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <span class="block text-xs font-bold text-[#19231A]">Simpan sebagai PDF</span>
+                            <span class="block text-[10px] text-[#526054]">Format dokumen cetak</span>
+                        </div>
+                    </button>
+                    <button type="button"
+                            onclick="saveTicketAs('png')"
+                            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left hover:bg-[#F7F7F2] transition-colors group cursor-pointer">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0 text-emerald-600 group-hover:scale-105 transition-transform">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <span class="block text-xs font-bold text-[#19231A]">Unduh sebagai PNG</span>
+                            <span class="block text-[10px] text-[#526054]">Gambar resolusi tinggi</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
             {{-- Cetak --}}
             <button onclick="window.print()" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#E2EAE3] bg-white text-[#19231A] text-sm font-semibold hover:bg-[#F7F7F2] transition-colors shadow-sm">
                 <svg class="w-4 h-4 text-[#526054]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -533,12 +575,50 @@
 
 {{-- ===== STICKY BOTTOM BAR (Mobile) ===== --}}
 <div class="sticky-bar sm:hidden no-print" id="stickyActionBar">
+    {{-- Popover menu for mobile (opens above the sticky bar) --}}
+    <div id="mobileSaveMenu"
+         class="hidden absolute bottom-full left-4 right-4 mb-2 bg-white border border-[#E2EAE3] rounded-2xl shadow-2xl p-1.5 z-50">
+        <button type="button"
+                onclick="saveTicketAs('pdf')"
+                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left hover:bg-[#F7F7F2] transition-colors">
+            <div class="w-8 h-8 rounded-lg bg-rose-50 border border-rose-100 flex items-center justify-center shrink-0 text-rose-600">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-6 4h4"/>
+                </svg>
+            </div>
+            <div>
+                <span class="block text-xs font-bold text-[#19231A]">Simpan sebagai PDF</span>
+                <span class="block text-[10px] text-[#526054]">Format dokumen cetak</span>
+            </div>
+        </button>
+        <button type="button"
+                onclick="saveTicketAs('png')"
+                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left hover:bg-[#F7F7F2] transition-colors">
+            <div class="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0 text-emerald-600">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+            </div>
+            <div>
+                <span class="block text-xs font-bold text-[#19231A]">Unduh sebagai PNG</span>
+                <span class="block text-[10px] text-[#526054]">Gambar resolusi tinggi</span>
+            </div>
+        </button>
+    </div>
+
     <div class="flex gap-2">
-        <button onclick="saveTicket()" class="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-full border border-[#E2EAE3] bg-white text-[#19231A] text-xs font-semibold hover:bg-[#F7F7F2] transition-colors">
+        <button type="button"
+                id="btnSaveMobile"
+                onclick="toggleSaveDropdown('mobile')"
+                class="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-full border border-[#E2EAE3] bg-white text-[#19231A] text-xs font-semibold hover:bg-[#F7F7F2] transition-colors">
             <svg class="w-3.5 h-3.5 text-[#526054]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
             </svg>
-            Simpan
+            <span>Simpan</span>
+            <svg class="w-3 h-3 text-[#526054] transition-transform duration-200" id="mobileChevron" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/>
+            </svg>
         </button>
         <button onclick="window.print()" class="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-full border border-[#E2EAE3] bg-white text-[#19231A] text-xs font-semibold hover:bg-[#F7F7F2] transition-colors">
             <svg class="w-3.5 h-3.5 text-[#526054]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -561,21 +641,136 @@
     </div>
 </div>
 
-{{-- Inline script — layout tidak memiliki @stack('scripts') --}}
+{{-- Library html2canvas via CDN untuk unduh PNG --}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+{{-- Inline script — penanganan simpan tiket (PDF & PNG) dan cetak --}}
 <script>
     /**
-     * saveTicket() - Simpan e-ticket menggunakan window.print() dengan print-media fallback
-     * Menggunakan pendekatan yang sudah ada (browser print to PDF / save)
+     * toggleSaveDropdown(target) - Buka/tutup dropdown pilihan format
+     */
+    function toggleSaveDropdown(target) {
+        var desktopMenu = document.getElementById('desktopSaveMenu');
+        var mobileMenu = document.getElementById('mobileSaveMenu');
+        var desktopChevron = document.getElementById('desktopChevron');
+        var mobileChevron = document.getElementById('mobileChevron');
+
+        if (target === 'desktop') {
+            if (mobileMenu) mobileMenu.classList.add('hidden');
+            if (desktopMenu) {
+                var isHidden = desktopMenu.classList.contains('hidden');
+                desktopMenu.classList.toggle('hidden');
+                if (desktopChevron) {
+                    desktopChevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+                }
+            }
+        } else if (target === 'mobile') {
+            if (desktopMenu) desktopMenu.classList.add('hidden');
+            if (mobileMenu) {
+                var isHidden = mobileMenu.classList.contains('hidden');
+                mobileMenu.classList.toggle('hidden');
+                if (mobileChevron) {
+                    mobileChevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+                }
+            }
+        }
+    }
+
+    /**
+     * closeAllSaveDropdowns() - Tutup semua menu popover/dropdown
+     */
+    function closeAllSaveDropdowns() {
+        var desktopMenu = document.getElementById('desktopSaveMenu');
+        var mobileMenu = document.getElementById('mobileSaveMenu');
+        var desktopChevron = document.getElementById('desktopChevron');
+        var mobileChevron = document.getElementById('mobileChevron');
+        if (desktopMenu) desktopMenu.classList.add('hidden');
+        if (mobileMenu) mobileMenu.classList.add('hidden');
+        if (desktopChevron) desktopChevron.style.transform = 'rotate(0deg)';
+        if (mobileChevron) mobileChevron.style.transform = 'rotate(0deg)';
+    }
+
+    /**
+     * Listener klik di luar area dropdown untuk menutup otomatis
+     */
+    document.addEventListener('click', function(e) {
+        var desktopWrapper = document.getElementById('desktopSaveWrapper');
+        var mobileBar = document.getElementById('stickyActionBar');
+        var clickedInsideDesktop = desktopWrapper && desktopWrapper.contains(e.target);
+        var clickedInsideMobile = mobileBar && mobileBar.contains(e.target);
+        if (!clickedInsideDesktop && !clickedInsideMobile) {
+            closeAllSaveDropdowns();
+        }
+    });
+
+    /**
+     * saveTicketAs(format) - Eksekusi penyimpanan sesuai format ('pdf' atau 'png')
+     */
+    function saveTicketAs(format) {
+        closeAllSaveDropdowns();
+        if (format === 'pdf') {
+            saveTicket();
+        } else if (format === 'png') {
+            downloadTicketPNG();
+        }
+    }
+
+    /**
+     * saveTicket() - Simpan e-ticket sebagai PDF menggunakan print dialog browser
      */
     function saveTicket() {
-        // Simpan judul asli
         var originalTitle = document.title;
-        // Set judul sementara dengan kode booking agar nama file PDF terisi otomatis
         document.title = 'E-Tiket-{{ $booking->booking_code }}-Jeep-Wukirsari';
-        // Trigger print dialog (browser biasanya menawarkan "Simpan sebagai PDF")
         window.print();
-        // Kembalikan judul asli setelah print
         setTimeout(function() { document.title = originalTitle; }, 1500);
+    }
+
+    /**
+     * downloadTicketPNG() - Tangkap kartu e-ticket dan unduh sebagai file PNG
+     */
+    function downloadTicketPNG() {
+        var card = document.getElementById('eticketCard');
+        if (!card) return;
+
+        function runCapture() {
+            var toast = document.createElement('div');
+            toast.id = 'pngDownloadToast';
+            toast.className = 'fixed bottom-20 sm:bottom-6 right-6 z-50 bg-[#142B16] text-white px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-2.5 text-xs font-semibold';
+            toast.innerHTML = '<svg class="w-4 h-4 animate-spin text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg><span>Menyiapkan gambar PNG...</span>';
+            document.body.appendChild(toast);
+
+            html2canvas(card, {
+                scale: 2,
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: '#ffffff',
+                logging: false
+            }).then(function(canvas) {
+                if (toast && toast.parentNode) toast.parentNode.removeChild(toast);
+                var link = document.createElement('a');
+                link.download = 'E-Tiket-{{ $booking->booking_code }}-Jeep-Wukirsari.png';
+                link.href = canvas.toDataURL('image/png');
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }).catch(function(err) {
+                if (toast && toast.parentNode) toast.parentNode.removeChild(toast);
+                console.error('Gagal membuat gambar PNG:', err);
+                alert('Gagal membuat gambar PNG tiket. Anda dapat menggunakan opsi Simpan sebagai PDF.');
+            });
+        }
+
+        if (typeof html2canvas === 'undefined') {
+            var s = document.createElement('script');
+            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+            s.onload = runCapture;
+            s.onerror = function() {
+                alert('Tidak dapat memuat modul pengunduh gambar. Silakan gunakan opsi Simpan sebagai PDF.');
+            };
+            document.head.appendChild(s);
+        } else {
+            runCapture();
+        }
     }
 </script>
 
