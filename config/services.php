@@ -50,4 +50,10 @@ return [
         'branch' => env('BPD_DIY_BRANCH', 'Cabang Sleman / DIY'),
     ],
 
+    'google' => [
+        'maps_api_key'     => env('GOOGLE_MAPS_API_KEY') ?: (env('GOOGLE_MAPS_SERVER_KEY') ?: env('GOOGLE_MAPS_BROWSER_KEY')),
+        'maps_browser_key' => env('GOOGLE_MAPS_BROWSER_KEY'),
+        'maps_server_key'  => env('GOOGLE_MAPS_SERVER_KEY'),
+    ],
+
 ];
