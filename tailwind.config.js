@@ -32,6 +32,7 @@ export default {
         sans: ["'Plus Jakarta Sans'", "sans-serif"],
         display: ["'Outfit'", "sans-serif"],
         accent: ["'Playfair Display'", "serif"],
+        script: ["'Caveat'", "cursive"],
       },
       borderRadius: {
         '2xl': '1rem',

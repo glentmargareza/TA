@@ -104,6 +104,14 @@ class Package extends Model
      */
     public function getCoverImageAttribute(?string $value = null): string
     {
+        if (!empty($value)) {
+            if (str_starts_with($value, 'http://') || str_starts_with($value, 'https://')) {
+                return $value;
+            }
+            $cleanPath = ltrim(preg_replace('#^/?(public/)?#', '', $value), '/');
+            return asset($cleanPath);
+        }
+
         $map = [
             'short-trip' => 'img/short_trip.jpeg',
             'medium-trip-a' => 'img/medium_trip_a.jpeg',
@@ -115,16 +123,6 @@ class Package extends Model
         $slug = $this->attributes['slug'] ?? '';
         if (!empty($slug) && isset($map[$slug]) && file_exists(public_path($map[$slug]))) {
             return asset($map[$slug]);
-        }
-
-        if (!empty($value)) {
-            if (str_starts_with($value, 'http://') || str_starts_with($value, 'https://')) {
-                return $value;
-            }
-            if (file_exists(public_path($value))) {
-                return asset($value);
-            }
-            return asset($value);
         }
 
         return asset('img/beranda.jpeg');

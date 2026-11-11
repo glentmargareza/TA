@@ -38,8 +38,8 @@ Route::get('/lokasi-jemput', [BookingController::class, 'placesSearch'])->middle
 Route::get('/lokasi-jemput/reverse', [BookingController::class, 'reverseLocation'])->middleware('throttle:60,1')->name('booking.reverse');
 Route::get('/lokasi-jemput/nearby', [BookingController::class, 'nearbyLodging'])->name('booking.nearby');
 
-// 3. Pelacakan Tiket Mandiri
-Route::get('/cek-tiket', [TicketController::class, 'check'])->name('ticket.check');
+// 3. Pelacakan Tiket Mandiri (Wajib Login)
+Route::get('/cek-tiket', [TicketController::class, 'check'])->middleware('auth')->name('ticket.check');
 
 // 4. Portal Admin & Loket Basecamp
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -51,8 +51,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('/bookings/{id}/settle', [AdminController::class, 'settleDp'])->name('settle');
     Route::post('/bookings/{id}/assign', [AdminController::class, 'assignDriver'])->name('assign');
     Route::post('/bookings/{id}/cancel', [AdminController::class, 'cancelBooking'])->name('cancel');
+    Route::post('/jeep', [AdminController::class, 'storeJeep'])->name('jeeps.store');
     Route::post('/jeep/{id}/status', [AdminController::class, 'updateJeepStatus'])->name('jeeps.status');
+    Route::delete('/jeep/{id}', [AdminController::class, 'destroyJeep'])->name('jeeps.destroy');
     Route::post('/jeep/activate-all', [AdminController::class, 'activateAllJeeps'])->name('jeeps.activateAll');
+    Route::post('/driver/{id}/status', [AdminController::class, 'toggleDriverStatus'])->name('drivers.status');
+    Route::delete('/driver/{id}', [AdminController::class, 'destroyDriver'])->name('drivers.destroy');
     Route::post('/notifikasi/mark-all-read', [AdminController::class, 'markAllNotificationsRead'])->name('notifications.markAllRead');
 
     // Laporan Penjualan

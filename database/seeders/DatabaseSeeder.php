@@ -209,8 +209,7 @@ class DatabaseSeeder extends Seeder
         $maintenanceIds = [13, 20];
 
         foreach ($armadaOwners as $no => $ownerName) {
-            $numPad = str_pad($no, 4, '0', STR_PAD_LEFT);
-            $plate = "AB {$numPad} WK";
+            $plate = (string) $no; // Urutan nomor unit / plat dari 1
             $status = 'READY';
             if (in_array($no, $onTripIds)) {
                 $status = 'ON_TRIP';
@@ -229,23 +228,41 @@ class DatabaseSeeder extends Seeder
 
         // 5. Seed Driver Paguyuban (Jeep Wukirsari Adventure)
         $driversData = [
-            ['full_name' => 'Joko', 'phone_number' => '081234567801'],
-            ['full_name' => 'Sriyatin', 'phone_number' => '081234567802'],
-            ['full_name' => 'Tringandiyanto', 'phone_number' => '081234567803'],
-            ['full_name' => 'Arif Dwi', 'phone_number' => '081234567804'],
-            ['full_name' => 'Fendi', 'phone_number' => '081234567805'],
-            ['full_name' => 'Anjar', 'phone_number' => '081234567806'],
-            ['full_name' => 'Gunardi', 'phone_number' => '081234567807'],
-            ['full_name' => 'Ditiya', 'phone_number' => '081234567808'],
-            ['full_name' => 'Bimo', 'phone_number' => '081234567809'],
-            ['full_name' => 'Ariyanto', 'phone_number' => '081234567810'],
-            ['full_name' => 'Marjuki', 'phone_number' => '081234567811'],
-            ['full_name' => 'Koko', 'phone_number' => '081234567812'],
-            ['full_name' => 'Edo', 'phone_number' => '081234567813'],
-            ['full_name' => 'Benyamin', 'phone_number' => '081234567814'],
+            // Driver Aktif (13)
+            ['id' => 1, 'full_name' => 'Joko Iriyanto', 'phone_number' => '081234567801', 'is_active' => true],
+            ['id' => 2, 'full_name' => 'Sriyatin', 'phone_number' => '081234567802', 'is_active' => true],
+            ['id' => 3, 'full_name' => 'Tringandiyanto', 'phone_number' => '081234567803', 'is_active' => true],
+            ['id' => 4, 'full_name' => 'Arif Dwi Nurcahya', 'phone_number' => '081234567804', 'is_active' => true],
+            ['id' => 5, 'full_name' => 'Pendi Haryanto', 'phone_number' => '081234567805', 'is_active' => true],
+            ['id' => 6, 'full_name' => 'Anjar Subekti', 'phone_number' => '081234567806', 'is_active' => true],
+            ['id' => 7, 'full_name' => 'Gunardi', 'phone_number' => '081234567807', 'is_active' => true],
+            ['id' => 8, 'full_name' => 'Ditya', 'phone_number' => '081234567808', 'is_active' => true],
+            ['id' => 9, 'full_name' => 'Bimo Prabowo Aji', 'phone_number' => '081234567809', 'is_active' => true],
+            ['id' => 10, 'full_name' => 'Ariyanto', 'phone_number' => '081234567810', 'is_active' => true],
+            ['id' => 11, 'full_name' => 'Marjuki', 'phone_number' => '081234567811', 'is_active' => true],
+            ['id' => 12, 'full_name' => 'Haji Koko', 'phone_number' => '081234567812', 'is_active' => true],
+            ['id' => 13, 'full_name' => 'Widodo Susanto', 'phone_number' => '081234567813', 'is_active' => true],
+
+            // Driver Tidak Aktif (8)
+            ['id' => 14, 'full_name' => 'Binyamin', 'phone_number' => '081234567814', 'is_active' => false],
+            ['id' => 15, 'full_name' => 'Winarto', 'phone_number' => '081234567815', 'is_active' => false],
+            ['id' => 16, 'full_name' => 'Ganang', 'phone_number' => '081234567816', 'is_active' => false],
+            ['id' => 17, 'full_name' => 'Lilik Sugiati', 'phone_number' => '081234567817', 'is_active' => false],
+            ['id' => 18, 'full_name' => 'Yogel', 'phone_number' => '081234567818', 'is_active' => false],
+            ['id' => 19, 'full_name' => 'Haryono', 'phone_number' => '081234567819', 'is_active' => false],
+            ['id' => 20, 'full_name' => 'Rubisa', 'phone_number' => '081234567820', 'is_active' => false],
+            ['id' => 21, 'full_name' => 'Yusuf', 'phone_number' => '081234567821', 'is_active' => false],
         ];
         foreach ($driversData as $d) {
-            Driver::updateOrCreate(['full_name' => $d['full_name']], ['phone_number' => $d['phone_number'], 'is_active' => true]);
+            Driver::updateOrCreate(
+                ['id' => $d['id']],
+                [
+                    'full_name' => $d['full_name'],
+                    'phone_number' => $d['phone_number'],
+                    'license_number' => 'SIM-B1-' . (1000 + $d['id']),
+                    'is_active' => $d['is_active'],
+                ]
+            );
         }
 
         // 6. Seed Akun Default (Admin Paguyuban & Wisatawan)

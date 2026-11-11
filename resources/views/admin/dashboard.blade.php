@@ -43,7 +43,7 @@
         <div class="relative bg-[#E8EFEA] border-b border-slate-200/80 shadow-xs z-30">
             <!-- Background Image with Soft Fade -->
             <div class="absolute inset-0 pointer-events-none overflow-hidden">
-                <img src="{{ asset('img/beranda.jpeg') }}" alt="Merapi" class="w-full h-full object-cover object-right opacity-45 mix-blend-multiply">
+                <img src="{{ $heroBg ?? asset('img/beranda.jpeg') }}" alt="Merapi" class="w-full h-full object-cover object-right opacity-45 mix-blend-multiply">
             </div>
             <!-- Soft White/Cream to Transparent Gradient so left texts are crisp -->
             <div class="absolute inset-0 bg-gradient-to-r from-white via-white/85 to-transparent pointer-events-none"></div>
@@ -58,15 +58,15 @@
                 <!-- Right: Header Quick Controls (Date, Notifications, Avatar) -->
                 <div class="flex items-center gap-3">
                     <!-- Tombol Cepat Kunjungi Beranda -->
-                    <a href="{{ route('home') }}" class="hidden sm:inline-flex items-center gap-2 bg-emerald-800 hover:bg-emerald-900 text-white px-3.5 py-1.5 rounded-full text-xs font-bold shadow-xs hover:shadow transition-all" title="Buka website Beranda wisatawan">
+                    <a href="{{ route('home') }}" target="_self" class="inline-flex items-center gap-2 bg-emerald-800 hover:bg-emerald-900 active:scale-95 text-white px-3.5 py-1.5 rounded-full text-xs font-bold shadow-xs hover:shadow transition-all cursor-pointer" title="Buka website Beranda wisatawan">
                         <svg class="w-3.5 h-3.5 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                         <span>Lihat Beranda</span>
                     </a>
 
-                    <!-- Date Pill -->
-                    <div class="flex items-center gap-2 bg-white/95 backdrop-blur-md border border-slate-200 text-slate-700 px-3.5 py-1.5 rounded-full text-xs font-semibold shadow-xs">
-                        <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                        <span>{{ now()->locale('id')->translatedFormat('D, j M Y') }}</span>
+                    <!-- Live Clock Pill (Jam, Menit, Detik) -->
+                    <div class="flex items-center gap-2 bg-white/95 backdrop-blur-md border border-slate-200 text-slate-700 px-3.5 py-1.5 rounded-full text-xs font-bold shadow-xs tracking-wide">
+                        <svg class="w-4 h-4 text-emerald-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span id="adminLiveClock">{{ now()->timezone('Asia/Jakarta')->format('H:i:s') }} WIB</span>
                     </div>
 
                     <!-- Notification Bell with Dropdown -->
@@ -132,11 +132,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- User Avatar Initial (Dark Green Circle with 'A') -->
-                    <div class="w-8 h-8 rounded-full bg-[#143B1E] text-white font-black text-sm flex items-center justify-center border-2 border-white shadow-xs cursor-pointer" title="{{ Auth::user()->name ?? 'Admin Loket' }}">
-                        {{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}
-                    </div>
                 </div>
             </div>
         </div>
@@ -154,7 +149,7 @@
             </div>
             @endif
 
-            <!-- ROW 1: 4 METRIC CARDS (Persis Gambar Referensi Atas) -->
+            <!-- ROW 1: 4 METRIC CARDS (Persis Gambar Referensi Atas - Data Dinamis Riil) -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
                 
                 <!-- 1. Total Booking Hari Ini -->
@@ -164,20 +159,26 @@
                             <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                             </div>
+                            @if($todayPercentChange >= 0)
                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#DCFCE7] text-[#16A34A] border border-emerald-200/60">
-                                &uarr; +20%
+                                &uarr; +{{ $todayPercentChange }}%
                             </span>
+                            @else
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FEE2E2] text-[#DC2626] border border-rose-200/60">
+                                &darr; {{ $todayPercentChange }}%
+                            </span>
+                            @endif
                         </div>
                         <span class="text-xs font-semibold text-slate-500 block">Total Booking Hari Ini</span>
                         <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 block mt-1 tracking-tight">
-                            {{ $todayBookingsCount > 0 ? $todayBookingsCount : 12 }}
+                            {{ $todayBookingsCount }}
                         </span>
                     </div>
                     <div class="mt-4 pt-2 border-t border-slate-100 flex items-center justify-between">
-                        <span class="text-[11px] text-slate-400">Dibanding kemarin: {{ max(10, $todayBookingsCount - 2) }}</span>
+                        <span class="text-[11px] text-slate-400">Dibanding kemarin: {{ $yesterdayBookingsCount }}</span>
                         <!-- Subtle wave decoration -->
-                        <svg class="w-16 h-5 text-emerald-500/50" viewBox="0 0 80 20" fill="none">
-                            <path d="M0 15 C 20 18, 40 5, 80 8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                        <svg class="w-16 h-5 {{ $todayPercentChange >= 0 ? 'text-emerald-500/50' : 'text-rose-400/60' }}" viewBox="0 0 80 20" fill="none">
+                            <path d="{{ $todayPercentChange >= 0 ? 'M0 15 C 20 18, 40 5, 80 8' : 'M0 6 C 30 10, 50 16, 80 18' }}" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
                         </svg>
                     </div>
                 </div>
@@ -190,12 +191,12 @@
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             </div>
                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#DCFCE7] text-[#16A34A] border border-emerald-200/60">
-                                &uarr; +5%
+                                &uarr; +{{ $upcomingPercentage }}%
                             </span>
                         </div>
                         <span class="text-xs font-semibold text-slate-500 block">Booking Mendatang</span>
                         <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 block mt-1 tracking-tight">
-                            {{ $upcomingBookingsCount > 0 ? $upcomingBookingsCount : 48 }}
+                            {{ $upcomingBookingsCount }}
                         </span>
                     </div>
                     <div class="mt-4 pt-2 border-t border-slate-100 flex items-center justify-between">
@@ -214,12 +215,12 @@
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/></svg>
                             </div>
                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#DCFCE7] text-[#16A34A] border border-emerald-200/60">
-                                &uarr; +8%
+                                &uarr; +{{ $completedPercentage }}%
                             </span>
                         </div>
                         <span class="text-xs font-semibold text-slate-500 block">Booking Selesai</span>
                         <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 block mt-1 tracking-tight">
-                            {{ $completedBookingsCount > 0 ? number_format($completedBookingsCount, 0, ',', '.') : '1.245' }}
+                            {{ $completedBookingsCount }}
                         </span>
                     </div>
                     <div class="mt-4 pt-2 border-t border-slate-100 flex items-center justify-between">
@@ -238,12 +239,12 @@
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                             </div>
                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FEE2E2] text-[#DC2626] border border-rose-200/60">
-                                &darr; -6%
+                                &darr; -{{ $cancelPercentage }}%
                             </span>
                         </div>
                         <span class="text-xs font-semibold text-slate-500 block">Booking Dibatalkan</span>
                         <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 block mt-1 tracking-tight">
-                            {{ $cancelledBookingsCount > 0 ? $cancelledBookingsCount : 28 }}
+                            {{ $cancelledBookingsCount }}
                         </span>
                     </div>
                     <div class="mt-4 pt-2 border-t border-slate-100 flex items-center justify-between">
@@ -262,33 +263,51 @@
                 <!-- Card 1: Grafik Omzet & Booking (lg:col-span-6) -->
                 <div class="lg:col-span-6 bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
                     <div>
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="flex items-center gap-2">
-                                <svg class="w-4 h-4 text-emerald-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-                                <h3 class="text-sm font-bold text-slate-800">Grafik Omzet & Booking</h3>
+                        <!-- Header Bar with Title, Metric Switcher, Chart Type & Period -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center shrink-0 border border-emerald-100">
+                                    <svg class="w-4 h-4 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-sm font-bold text-slate-800">Tren Performa Penjualan</h3>
+                                    <p class="text-[11px] text-slate-500 font-medium" id="chartSubtitle">Statistik omzet penjualan harian</p>
+                                </div>
                             </div>
                             
-                            <div class="flex items-center gap-3">
-                                <!-- Legend -->
-                                <div class="hidden sm:flex items-center gap-3 text-xs">
-                                    <span class="inline-flex items-center gap-1.5 text-slate-600 font-medium">
-                                        <span class="w-2.5 h-2.5 rounded-full bg-[#18532A]"></span>
+                            <!-- Controls: Metric Switcher, Chart Type, & Period Filter -->
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <!-- Metric Tab Switcher -->
+                                <div class="inline-flex p-0.5 rounded-xl bg-slate-100 border border-slate-200/70 text-xs">
+                                    <button type="button" onclick="setChartMetric('revenue')" id="btnMetricRevenue" class="px-2.5 py-1 rounded-lg bg-white text-emerald-800 shadow-2xs font-bold transition-all cursor-pointer">
                                         Omzet (Rp)
-                                    </span>
-                                    <span class="inline-flex items-center gap-1.5 text-slate-600 font-medium">
-                                        <span class="w-2.5 h-2.5 rounded-full bg-[#75C48A]"></span>
-                                        Jumlah Booking
-                                    </span>
+                                    </button>
+                                    <button type="button" onclick="setChartMetric('bookings')" id="btnMetricBookings" class="px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 font-semibold transition-all cursor-pointer">
+                                        Booking
+                                    </button>
                                 </div>
-                                <!-- Dropdown Filter 7 Hari -->
-                                <div class="px-2.5 py-1 rounded-lg border border-slate-200 text-xs text-slate-600 font-semibold bg-white shadow-2xs">
-                                    7 Hari Terakhir &or;
+
+                                <!-- Chart Type Toggle (Area vs Bar) -->
+                                <div class="inline-flex p-0.5 rounded-xl bg-slate-100 border border-slate-200/70 text-xs">
+                                    <button type="button" onclick="setChartType('line')" id="btnTypeLine" class="p-1.5 rounded-lg bg-white text-emerald-800 shadow-2xs font-bold transition-all cursor-pointer" title="Tampilan Garis Area">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M4 17h16"/></svg>
+                                    </button>
+                                    <button type="button" onclick="setChartType('bar')" id="btnTypeBar" class="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 font-semibold transition-all cursor-pointer" title="Tampilan Grafik Batang">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                                    </button>
                                 </div>
+
+                                <!-- Period Dropdown -->
+                                <select id="chartPeriodSelect" onchange="changeChartPeriod(this.value)" class="text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl px-2.5 py-1 shadow-2xs cursor-pointer focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                                    <option value="7">7 Hari</option>
+                                    <option value="14">14 Hari</option>
+                                    <option value="30">30 Hari</option>
+                                </select>
                             </div>
                         </div>
 
                         <!-- Canvas Chart Container -->
-                        <div class="relative w-full h-[220px]">
+                        <div class="relative w-full h-[225px]">
                             <canvas id="chartOmzetBooking"></canvas>
                         </div>
                     </div>
@@ -430,6 +449,18 @@
                                 <tbody class="divide-y divide-slate-100">
                                     @forelse($recentBookings as $rb)
                                     @php
+                                        $proofUrl = null;
+                                        $senderName = null;
+                                        $senderBank = null;
+                                        foreach ($rb->payments as $p) {
+                                            if (is_array($p->payload_response) && !empty($p->payload_response['proof_url'])) {
+                                                $proofUrl = asset($p->payload_response['proof_url']);
+                                                $senderName = $p->payload_response['sender_name'] ?? null;
+                                                $senderBank = $p->payload_response['sender_bank'] ?? null;
+                                                break;
+                                            }
+                                        }
+
                                         $rbDetail = [
                                             'id' => $rb->id,
                                             'booking_code' => $rb->booking_code,
@@ -445,7 +476,7 @@
                                             'arrival_type' => strtolower((string)$rb->arrival_type) === 'pickup' ? 'Jemput di Hotel / Alamat' : 'Datang Sendiri ke Basecamp',
                                             'pickup_zone' => $rb->pickupZone?->name ?? ($rb->pickup_distance_km ? 'Antar-Jemput (' . number_format($rb->pickup_distance_km, 1) . ' km)' : 'Layanan Antar-Jemput'),
                                             'pickup_address' => $rb->pickup_address ?? '-',
-                                            'payment_mode' => $rb->payment_mode === 'DP' ? 'Uang Muka (DP 50%)' : 'Pembayaran Penuh (100%)',
+                                            'payment_mode' => $rb->payment_mode === 'DP' ? 'Uang Muka (DP 30%)' : 'Pembayaran Penuh (100%)',
                                             'package_subtotal' => number_format($rb->package_subtotal, 0, ',', '.'),
                                             'pickup_fee' => number_format($rb->pickup_fee, 0, ',', '.'),
                                             'maps_link' => ($rb->pickup_address && $rb->pickup_address !== '-') ? 'https://www.google.com/maps/search/?api=1&query=' . urlencode($rb->pickup_address) : null,
@@ -457,6 +488,9 @@
                                             'jeep_name' => $rb->assignments->first()?->jeep?->model_name ?? 'Belum Ditugaskan',
                                             'driver_name' => $rb->assignments->first()?->driver?->full_name ?? 'Dialokasikan Otomatis',
                                             'customer_notes' => $rb->customer_notes ?? '',
+                                            'proof_url' => $proofUrl,
+                                            'sender_name' => $senderName,
+                                            'sender_bank' => $senderBank,
                                         ];
                                     @endphp
                                     <tr class="hover:bg-slate-50/70 transition-colors">
@@ -504,9 +538,24 @@
                                             @endif
                                         </td>
                                         <td class="py-3 px-4 text-center">
-                                            <button type="button" data-booking='@json($rbDetail)' onclick="openBookingDetailModal(this)" class="px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 font-semibold text-[11px] shadow-2xs transition-all cursor-pointer">
-                                                👁 Detail
-                                            </button>
+                                            <div class="flex items-center justify-center gap-1.5">
+                                                <button type="button" data-booking='@json($rbDetail)' onclick="openBookingDetailModal(this)" class="px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 font-semibold text-[11px] shadow-2xs transition-all cursor-pointer">
+                                                    👁 Detail
+                                                </button>
+                                                @if(!empty($rbDetail['proof_url']))
+                                                <!-- Tombol Akses Bukti Transfer Cepat (1 Tab / Modal Lightbox) -->
+                                                <button type="button" 
+                                                    data-proof-url="{{ $rbDetail['proof_url'] }}" 
+                                                    data-booking-code="{{ $rb->booking_code }}" 
+                                                    data-sender-name="{{ $rbDetail['sender_name'] ?? 'Wisatawan' }}" 
+                                                    data-sender-bank="{{ $rbDetail['sender_bank'] ?? 'Bank BPD DIY' }}" 
+                                                    onclick="openProofFromBtn(this)" 
+                                                    class="p-1 rounded-lg border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold shadow-2xs transition-all cursor-pointer" 
+                                                    title="Lihat Bukti Transfer Pelanggan">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                                </button>
+                                                @endif
+                                            </div>
                                         </td>
                                     </tr>
                                     @empty
@@ -792,13 +841,46 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- 5. Bukti Transfer Pelanggan (Jika Ada) -->
+                        <div id="detail_proof_box" class="bg-blue-50/70 p-4 sm:p-5 rounded-2xl border border-blue-200/80 space-y-3 hidden">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-bold text-blue-900 flex items-center gap-2 text-xs uppercase tracking-wider">
+                                    <svg class="w-4 h-4 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                    Bukti Transfer Pelanggan (Bank BPD DIY)
+                                </h4>
+                                <span id="detail_proof_bank_badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800"></span>
+                            </div>
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-blue-100">
+                                <div class="flex items-center gap-3">
+                                    <img id="detail_proof_thumb" src="" alt="Thumbnail Bukti" onclick="showCurrentProofLightbox()" class="w-12 h-12 sm:w-14 sm:h-14 object-cover rounded-xl border border-slate-200 cursor-pointer hover:opacity-80 transition-opacity shrink-0 shadow-xs" title="Klik untuk memperbesar bukti transfer" />
+                                    <div>
+                                        <span class="text-slate-400 text-xs block">Nama Pengirim (Sesuai Rekening / Struk):</span>
+                                        <span id="detail_proof_sender" class="font-bold text-slate-800 text-xs sm:text-sm block"></span>
+                                        <span class="text-[11px] text-blue-600 block mt-0.5">Transfer Resmi Bank BPD DIY &bull; <button type="button" onclick="showCurrentProofLightbox()" class="underline font-semibold hover:text-blue-800 cursor-pointer">Klik gambar untuk perbesar</button></span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" id="btnDetailViewProof" onclick="showCurrentProofLightbox()" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs hover:shadow transition-all cursor-pointer">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                        <span>Lihat Bukti Transfer</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Modal Footer -->
-                    <div class="p-5 sm:p-6 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
-                        <a id="btnWhatsappCustomer" href="#" target="_blank" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm hover:shadow transition-all cursor-pointer">
-                            <span>Hubungi Pemesan (WhatsApp)</span>
-                        </a>
+                    <div class="p-5 sm:p-6 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-2 flex-wrap">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <a id="btnWhatsappCustomer" href="#" target="_blank" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm hover:shadow transition-all cursor-pointer">
+                                <span>Hubungi Pemesan (WhatsApp)</span>
+                            </a>
+                            <button type="button" id="btnFooterViewProof" onclick="showCurrentProofLightbox()" class="hidden inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm hover:shadow transition-all cursor-pointer">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                <span>Lihat Bukti Transfer</span>
+                            </button>
+                        </div>
                         <button type="button" onclick="closeBookingDetailModal()" class="px-5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs transition-colors cursor-pointer">
                             Tutup
                         </button>
@@ -806,8 +888,81 @@
                 </div>
             </div>
 
+            <!-- MODAL POPUP LIGHTBOX BUKTI TRANSFER (1 TAB / IN-PAGE PREVIEW) -->
+            <div id="modalProofLightbox" onclick="if(event.target === this) closeProofLightbox()" class="fixed inset-0 z-[60] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 hidden transition-all duration-200">
+                <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[92vh] flex flex-col overflow-hidden shadow-2xl border border-slate-100 transform transition-all animate-in fade-in zoom-in-95">
+                    <!-- Lightbox Header -->
+                    <div class="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold shrink-0">
+                                <svg class="w-5 h-5 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h3 class="font-bold text-slate-800 text-sm sm:text-base">Bukti Transfer Pelanggan</h3>
+                                    <span id="proofLightboxCode" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800"></span>
+                                </div>
+                                <p id="proofLightboxSender" class="text-xs text-slate-500 font-medium mt-0.5"></p>
+                            </div>
+                        </div>
+                        <button type="button" onclick="closeProofLightbox()" class="w-8 h-8 rounded-lg hover:bg-slate-200 text-slate-400 hover:text-slate-700 flex items-center justify-center font-bold text-xl cursor-pointer" title="Tutup Bukti">&times;</button>
+                    </div>
+
+                    <!-- Lightbox Body Image -->
+                    <div class="p-4 sm:p-6 bg-slate-900/5 flex items-center justify-center overflow-auto flex-1 min-h-[280px]">
+                        <img id="proofLightboxImg" src="" alt="Bukti Transfer Pelanggan" class="max-h-[65vh] w-auto max-w-full object-contain rounded-2xl shadow-md border border-slate-200 bg-white" />
+                    </div>
+
+                    <!-- Lightbox Footer -->
+                    <div class="p-3.5 sm:p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-2">
+                        <span id="proofLightboxBank" class="text-xs font-semibold text-slate-600 px-3 py-1 bg-white border border-slate-200 rounded-lg"></span>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="closeProofLightbox()" class="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs transition-colors cursor-pointer">
+                                Tutup Preview
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- SCRIPTS: DETAIL MODAL, DROPDOWN, & CHART.JS INITIALIZATION -->
             <script>
+                // State bukti transfer aktif untuk modal detail
+                let currentDetailProof = { url: '', code: '', sender: '', bank: '' };
+
+                // Lightbox Modal Bukti Transfer (1 Tab)
+                function openProofLightbox(url, code, sender, bank) {
+                    if (!url) return;
+                    document.getElementById('proofLightboxImg').src = url;
+                    document.getElementById('proofLightboxCode').textContent = code ? ('#' + code) : '';
+                    document.getElementById('proofLightboxSender').textContent = sender ? ('Pengirim: ' + sender) : 'Pengirim: Wisatawan';
+                    document.getElementById('proofLightboxBank').textContent = bank || 'Transfer Bank BPD DIY';
+                    document.getElementById('modalProofLightbox').classList.remove('hidden');
+                }
+
+                function closeProofLightbox() {
+                    const lightbox = document.getElementById('modalProofLightbox');
+                    if (lightbox) lightbox.classList.add('hidden');
+                    const img = document.getElementById('proofLightboxImg');
+                    if (img) img.src = '';
+                }
+
+                function showCurrentProofLightbox() {
+                    if (currentDetailProof.url) {
+                        openProofLightbox(currentDetailProof.url, currentDetailProof.code, currentDetailProof.sender, currentDetailProof.bank);
+                    }
+                }
+
+                function openProofFromBtn(btn) {
+                    if (!btn) return;
+                    openProofLightbox(
+                        btn.getAttribute('data-proof-url'),
+                        btn.getAttribute('data-booking-code'),
+                        btn.getAttribute('data-sender-name'),
+                        btn.getAttribute('data-sender-bank')
+                    );
+                }
+
                 // 1. Modal Booking Detail
                 function openBookingDetailModal(source) {
                     let data;
@@ -898,6 +1053,34 @@
                         waBtn.classList.add('hidden');
                     }
 
+                    // Handle Bukti Transfer Pelanggan
+                    currentDetailProof = {
+                        url: data.proof_url || '',
+                        code: data.booking_code || '',
+                        sender: (data.sender_name || 'Wisatawan') + (data.sender_bank ? ' (' + data.sender_bank + ')' : ''),
+                        bank: data.sender_bank || 'Transfer Bank BPD DIY'
+                    };
+
+                    const proofBox = document.getElementById('detail_proof_box');
+                    const btnFooterViewProof = document.getElementById('btnFooterViewProof');
+                    const thumbImg = document.getElementById('detail_proof_thumb');
+
+                    if (data.proof_url) {
+                        if (proofBox) proofBox.classList.remove('hidden');
+                        if (thumbImg) thumbImg.src = data.proof_url;
+                        if (document.getElementById('detail_proof_sender')) {
+                            document.getElementById('detail_proof_sender').textContent = currentDetailProof.sender;
+                        }
+                        if (document.getElementById('detail_proof_bank_badge')) {
+                            document.getElementById('detail_proof_bank_badge').textContent = data.sender_bank || 'Transfer Bank BPD DIY';
+                        }
+                        if (btnFooterViewProof) btnFooterViewProof.classList.remove('hidden');
+                    } else {
+                        if (proofBox) proofBox.classList.add('hidden');
+                        if (thumbImg) thumbImg.src = '';
+                        if (btnFooterViewProof) btnFooterViewProof.classList.add('hidden');
+                    }
+
                     document.getElementById('modalBookingDetail').classList.remove('hidden');
                 }
 
@@ -907,6 +1090,11 @@
 
                 document.addEventListener('keydown', function(e) {
                     if (e.key === 'Escape') {
+                        const lightbox = document.getElementById('modalProofLightbox');
+                        if (lightbox && !lightbox.classList.contains('hidden')) {
+                            closeProofLightbox();
+                            return;
+                        }
                         closeBookingDetailModal();
                     }
                 });
@@ -926,6 +1114,18 @@
                         dd.classList.add('hidden');
                     }
                 });
+
+                // 2b. Jam Digital Real-time (Jam, Menit, Detik WIB)
+                function updateAdminLiveClock() {
+                    const clockEl = document.getElementById('adminLiveClock');
+                    if (!clockEl) return;
+                    const now = new Date();
+                    const hours = String(now.getHours()).padStart(2, '0');
+                    const minutes = String(now.getMinutes()).padStart(2, '0');
+                    const seconds = String(now.getSeconds()).padStart(2, '0');
+                    clockEl.textContent = `${hours}:${minutes}:${seconds} WIB`;
+                }
+                setInterval(updateAdminLiveClock, 1000);
 
                 // 3. Inisialisasi Chart.js
                 document.addEventListener('DOMContentLoaded', function() {
@@ -950,39 +1150,84 @@
                         }
                     }
 
-                    // Chart 1: Omzet & Booking (Combo Bar & Line)
-                    const ctxOmzet = document.getElementById('chartOmzetBooking');
-                    if (ctxOmzet) {
-                        new Chart(ctxOmzet, {
+                    // Chart 1: Omzet & Booking (Modern Reactive Area / Bar Chart with Metric & Period Switchers)
+                    let mainChart = null;
+                    let currentMetric = 'revenue';
+                    let currentChartType = 'line';
+                    let currentPeriod = '7';
+
+                    function buildOmzetChart() {
+                        const ctx = document.getElementById('chartOmzetBooking');
+                        if (!ctx) return;
+
+                        if (mainChart) {
+                            mainChart.destroy();
+                        }
+
+                        const dataPeriod = (dashboardConfig.chartData && dashboardConfig.chartData[currentPeriod])
+                            ? dashboardConfig.chartData[currentPeriod]
+                            : {
+                                days: dashboardConfig.chartDays,
+                                revenue: dashboardConfig.chartRevenue,
+                                bookings: dashboardConfig.chartBookings
+                            };
+
+                        const isRevenue = currentMetric === 'revenue';
+                        const labels = dataPeriod.days;
+                        const values = isRevenue ? dataPeriod.revenue : dataPeriod.bookings;
+
+                        // Create gradient fill for smooth line/area
+                        const context2d = ctx.getContext('2d');
+                        let bgFill = '#10B981';
+                        let borderColor = '#059669';
+
+                        if (currentChartType === 'line') {
+                            const gradient = context2d.createLinearGradient(0, 0, 0, 220);
+                            if (isRevenue) {
+                                gradient.addColorStop(0, 'rgba(5, 150, 105, 0.35)');
+                                gradient.addColorStop(0.8, 'rgba(5, 150, 105, 0.05)');
+                                gradient.addColorStop(1, 'rgba(5, 150, 105, 0.0)');
+                                borderColor = '#059669';
+                            } else {
+                                gradient.addColorStop(0, 'rgba(2, 132, 199, 0.35)');
+                                gradient.addColorStop(0.8, 'rgba(2, 132, 199, 0.05)');
+                                gradient.addColorStop(1, 'rgba(2, 132, 199, 0.0)');
+                                borderColor = '#0284c7';
+                            }
+                            bgFill = gradient;
+                        } else {
+                            bgFill = isRevenue ? '#10B981' : '#0284c7';
+                            borderColor = isRevenue ? '#059669' : '#0369a1';
+                        }
+
+                        mainChart = new Chart(ctx, {
+                            type: currentChartType,
                             data: {
-                                labels: dashboardConfig.chartDays,
-                                datasets: [
-                                    {
-                                        type: 'line',
-                                        label: 'Jumlah Booking',
-                                        data: dashboardConfig.chartBookings,
-                                        borderColor: '#60C988',
-                                        backgroundColor: '#60C988',
-                                        borderWidth: 2,
-                                        tension: 0.35,
-                                        pointRadius: 4,
-                                        pointBackgroundColor: '#60C988',
-                                        yAxisID: 'y1'
-                                    },
-                                    {
-                                        type: 'bar',
-                                        label: 'Omzet (Rp)',
-                                        data: dashboardConfig.chartRevenue,
-                                        backgroundColor: '#1E6234',
-                                        borderRadius: 6,
-                                        barThickness: 24,
-                                        yAxisID: 'y'
-                                    }
-                                ]
+                                labels: labels,
+                                datasets: [{
+                                    label: isRevenue ? 'Omzet Penjualan' : 'Jumlah Booking',
+                                    data: values,
+                                    backgroundColor: bgFill,
+                                    borderColor: borderColor,
+                                    borderWidth: currentChartType === 'line' ? 2.5 : 1,
+                                    fill: currentChartType === 'line',
+                                    tension: 0.35,
+                                    borderRadius: currentChartType === 'bar' ? 8 : 0,
+                                    maxBarThickness: currentPeriod === '30' ? 14 : (currentPeriod === '14' ? 24 : 36),
+                                    pointRadius: currentChartType === 'line' ? 3.5 : 0,
+                                    pointHoverRadius: currentChartType === 'line' ? 6.5 : 0,
+                                    pointBackgroundColor: borderColor,
+                                    pointBorderColor: '#ffffff',
+                                    pointBorderWidth: 2,
+                                }]
                             },
                             options: {
                                 responsive: true,
                                 maintainAspectRatio: false,
+                                interaction: {
+                                    intersect: false,
+                                    mode: 'index',
+                                },
                                 plugins: {
                                     legend: { display: false },
                                     tooltip: {
@@ -993,10 +1238,10 @@
                                         cornerRadius: 10,
                                         callbacks: {
                                             label: function(context) {
-                                                if (context.dataset.type === 'bar') {
+                                                if (isRevenue) {
                                                     return 'Omzet: Rp ' + context.parsed.y.toLocaleString('id-ID');
                                                 }
-                                                return 'Booking: ' + context.parsed.y + ' Sesi';
+                                                return 'Reservasi: ' + context.parsed.y + ' Sesi';
                                             }
                                         }
                                     }
@@ -1004,35 +1249,77 @@
                                 scales: {
                                     x: {
                                         grid: { display: false },
-                                        ticks: { font: { size: 10 }, color: '#64748b' }
+                                        ticks: {
+                                            font: { size: 10 },
+                                            color: '#64748b',
+                                            maxRotation: currentPeriod === '30' ? 45 : 0,
+                                            autoSkip: currentPeriod === '30',
+                                            maxTicksLimit: currentPeriod === '30' ? 12 : 14
+                                        }
                                     },
                                     y: {
                                         type: 'linear',
-                                        position: 'left',
+                                        beginAtZero: true,
                                         grid: { color: '#f1f5f9' },
                                         ticks: {
                                             font: { size: 10 },
                                             color: '#64748b',
-                                            callback: function(value) {
-                                                if (value >= 1000000) return 'Rp ' + (value / 1000000) + 'jt';
-                                                if (value === 0) return 'Rp 0';
-                                                return value;
+                                            callback: function(val) {
+                                                if (isRevenue) {
+                                                    if (val >= 1000000) return 'Rp ' + (val / 1000000) + 'jt';
+                                                    if (val >= 1000) return 'Rp ' + (val / 1000) + 'rb';
+                                                    if (val === 0) return 'Rp 0';
+                                                    return val;
+                                                }
+                                                return Number.isInteger(val) ? (val + ' sesi') : '';
                                             }
-                                        }
-                                    },
-                                    y1: {
-                                        type: 'linear',
-                                        position: 'right',
-                                        grid: { display: false },
-                                        ticks: {
-                                            display: false,
-                                            suggestedMax: 10
                                         }
                                     }
                                 }
                             }
                         });
                     }
+
+                    window.setChartMetric = function(metric) {
+                        currentMetric = metric;
+                        const btnRev = document.getElementById('btnMetricRevenue');
+                        const btnBkg = document.getElementById('btnMetricBookings');
+                        const subtitle = document.getElementById('chartSubtitle');
+
+                        if (metric === 'revenue') {
+                            btnRev.className = "px-2.5 py-1 rounded-lg bg-white text-emerald-800 shadow-2xs font-bold transition-all cursor-pointer";
+                            btnBkg.className = "px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 font-semibold transition-all cursor-pointer";
+                            if (subtitle) subtitle.textContent = "Statistik omzet penjualan harian";
+                        } else {
+                            btnBkg.className = "px-2.5 py-1 rounded-lg bg-white text-blue-700 shadow-2xs font-bold transition-all cursor-pointer";
+                            btnRev.className = "px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 font-semibold transition-all cursor-pointer";
+                            if (subtitle) subtitle.textContent = "Statistik volume booking harian";
+                        }
+                        buildOmzetChart();
+                    };
+
+                    window.setChartType = function(type) {
+                        currentChartType = type;
+                        const btnLine = document.getElementById('btnTypeLine');
+                        const btnBar = document.getElementById('btnTypeBar');
+
+                        if (type === 'line') {
+                            btnLine.className = "p-1.5 rounded-lg bg-white text-emerald-800 shadow-2xs font-bold transition-all cursor-pointer";
+                            btnBar.className = "p-1.5 rounded-lg text-slate-500 hover:text-slate-800 font-semibold transition-all cursor-pointer";
+                        } else {
+                            btnBar.className = "p-1.5 rounded-lg bg-white text-emerald-800 shadow-2xs font-bold transition-all cursor-pointer";
+                            btnLine.className = "p-1.5 rounded-lg text-slate-500 hover:text-slate-800 font-semibold transition-all cursor-pointer";
+                        }
+                        buildOmzetChart();
+                    };
+
+                    window.changeChartPeriod = function(period) {
+                        currentPeriod = period;
+                        buildOmzetChart();
+                    };
+
+                    // Initial build
+                    buildOmzetChart();
 
                     // Chart 2: Status Pembayaran Donut
                     const ctxPayment = document.getElementById('chartPaymentStatus');
@@ -1114,6 +1401,7 @@
                     'chartDays' => $chartDays ?? ['25 Okt', '26 Okt', '27 Okt', '28 Okt', '29 Okt', '30 Okt', '1 Nov'],
                     'chartRevenue' => $chartRevenue ?? [2200000, 1800000, 1600000, 2400000, 2000000, 2700000, 2100000],
                     'chartBookings' => $chartBookings ?? [4, 3, 3, 5, 4, 6, 5],
+                    'chartData' => $chartData ?? null,
                     'paidPercentage' => (int)($paidPercentage ?? 95),
                     'pendingPercentage' => (int)($pendingPercentage ?? 3),
                     'cancelPercentage' => (int)($cancelPercentage ?? 2),

@@ -9,7 +9,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Outfit:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Tailwind CSS CDN dengan Konfigurasi Resmi Wukirsari -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -45,6 +45,7 @@
                         sans: ['"Plus Jakarta Sans"', 'sans-serif'],
                         display: ['Outfit', 'sans-serif'],
                         accent: ['"Playfair Display"', 'serif'],
+                        script: ['"Caveat"', 'cursive'],
                     }
                 }
             }
@@ -62,141 +63,150 @@
     @hasSection('header')
         @yield('header')
     @else
-    <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-wukirsari-border transition-all">
+    <header id="mainNavbar" class="{{ request()->routeIs('home') ? 'sticky top-0 z-50 bg-[#0c2314] border-b border-emerald-900/60 text-white shadow-md transition-all' : 'sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-wukirsari-border text-merapiText-secondary transition-all' }}">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16 sm:h-20 gap-3 xl:gap-6">
                 
-                <!-- Logo Brand -->
-                <a href="{{ route('home') }}" class="flex items-center gap-2 sm:gap-3 group shrink-0">
-                    <div class="w-8 h-8 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-wukirsari-primary/10 p-1 flex items-center justify-center border border-wukirsari-border shadow-xs group-hover:scale-105 transition-transform shrink-0">
+                <!-- Logo Brand (Logo Asli Jeep Wukirsari) -->
+                <a href="{{ route('home') }}" class="flex items-center gap-2.5 sm:gap-3 group shrink-0">
+                    <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl {{ request()->routeIs('home') ? 'bg-black/40 border border-white/20' : 'bg-wukirsari-primary/10 border border-wukirsari-border' }} p-1 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform shrink-0">
                         <img src="{{ asset('img/logo.png') }}" alt="Logo Jeep Wukirsari" class="w-full h-full object-contain">
                     </div>
                     <div>
-                        <span class="block font-display font-extrabold text-sm sm:text-lg text-merapiText-primary tracking-tight leading-none">
+                        <span class="block font-display font-extrabold text-sm sm:text-base {{ request()->routeIs('home') ? 'text-white' : 'text-merapiText-primary' }} tracking-tight leading-none">
                             JEEP WUKIRSARI
                         </span>
-                        <span class="block text-[9px] sm:text-[11px] font-medium text-merapiText-secondary uppercase tracking-widest mt-0.5">
-                            Adventure Tour
+                        <span class="block text-[9px] sm:text-[10px] font-medium {{ request()->routeIs('home') ? 'text-emerald-300' : 'text-merapiText-secondary' }} uppercase tracking-widest mt-0.5">
+                            ADVENTURE TOUR
                         </span>
                     </div>
                 </a>
 
-                <!-- Desktop Nav Links -->
-                <nav class="hidden lg:flex items-center gap-3.5 xl:gap-6 shrink-0">
-                    <a href="{{ route('home') }}" class="text-xs xl:text-sm py-1 relative whitespace-nowrap transition-colors {{ request()->routeIs('home') ? 'font-semibold text-wukirsari-primary' : 'font-medium text-merapiText-secondary hover:text-wukirsari-primary' }}">
+                <!-- Desktop Nav Links (Matching Mockup) -->
+                <nav class="hidden lg:flex items-center gap-4 xl:gap-7 shrink-0">
+                    <a href="{{ route('home') }}" class="text-xs xl:text-sm py-1 relative whitespace-nowrap transition-colors {{ request()->routeIs('home') ? 'font-semibold text-white' : 'font-medium text-merapiText-secondary hover:text-wukirsari-primary' }}">
                         Beranda
                         @if(request()->routeIs('home'))
-                        <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-wukirsari-primary rounded-full"></span>
+                        <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-white rounded-full"></span>
                         @endif
                     </a>
-                    <a href="{{ route('home') }}#tentang" class="text-xs xl:text-sm font-medium text-merapiText-secondary hover:text-wukirsari-primary transition-colors py-1 whitespace-nowrap">
+                    <a href="{{ route('home') }}#paket" class="text-xs xl:text-sm font-medium {{ request()->routeIs('home') ? 'text-white/85 hover:text-white' : 'text-merapiText-secondary hover:text-wukirsari-primary' }} transition-colors py-1 whitespace-nowrap">
+                        Paket Wisata
+                    </a>
+                    <a href="{{ route('home') }}#tentang" class="text-xs xl:text-sm font-medium {{ request()->routeIs('home') ? 'text-white/85 hover:text-white' : 'text-merapiText-secondary hover:text-wukirsari-primary' }} transition-colors py-1 whitespace-nowrap">
                         Tentang Kami
                     </a>
-                    <a href="{{ route('home') }}#galeri" class="text-xs xl:text-sm font-medium text-merapiText-secondary hover:text-wukirsari-primary transition-colors py-1 whitespace-nowrap">
+                    <a href="{{ route('home') }}#galeri" class="text-xs xl:text-sm font-medium {{ request()->routeIs('home') ? 'text-white/85 hover:text-white' : 'text-merapiText-secondary hover:text-wukirsari-primary' }} transition-colors py-1 whitespace-nowrap">
                         Galeri
                     </a>
+                    <a href="{{ route('home') }}#kontak" class="text-xs xl:text-sm font-medium {{ request()->routeIs('home') ? 'text-white/85 hover:text-white' : 'text-merapiText-secondary hover:text-wukirsari-primary' }} transition-colors py-1 whitespace-nowrap">
+                        Kontak
+                    </a>
+                    @if(!request()->routeIs('home'))
                     <a href="{{ route('reviews.index') }}" class="text-xs xl:text-sm py-1 relative whitespace-nowrap transition-colors {{ request()->routeIs('reviews.*') ? 'font-semibold text-wukirsari-primary' : 'font-medium text-merapiText-secondary hover:text-wukirsari-primary' }}">
                         Ulasan
                         @if(request()->routeIs('reviews.*'))
                         <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-wukirsari-primary rounded-full"></span>
                         @endif
                     </a>
-                    <a href="{{ route('ticket.check') }}" class="text-xs xl:text-sm py-1 relative whitespace-nowrap transition-colors {{ request()->routeIs('ticket.*') ? 'font-semibold text-wukirsari-primary' : 'font-medium text-merapiText-secondary hover:text-wukirsari-primary' }}">
-                        Cek Tiket
-                        @if(request()->routeIs('ticket.*'))
-                        <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-wukirsari-primary rounded-full"></span>
-                        @endif
-                    </a>
+                    @endif
                 </nav>
 
                 <!-- Right Action -->
                 <div class="hidden lg:flex items-center gap-2 xl:gap-3 shrink-0">
-                    <a href="{{ route('home') }}#paket" class="p-2 rounded-full hover:bg-wukirsari-sage text-merapiText-secondary hover:text-wukirsari-primary transition-colors shrink-0" title="Cari Paket Wisata">
+                    <a href="{{ route('home') }}#paket" class="p-2 rounded-full {{ request()->routeIs('home') ? 'hover:bg-white/15 text-white/85 hover:text-white' : 'hover:bg-wukirsari-sage text-merapiText-secondary hover:text-wukirsari-primary' }} transition-colors shrink-0" title="Cari Paket Wisata">
                         <svg class="w-4 h-4 xl:w-5 xl:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
                     </a>
 
-                    <a href="https://wa.me/6281234567890" target="_blank" class="p-2 rounded-full hover:bg-wukirsari-sage text-merapiText-secondary hover:text-wukirsari-primary transition-colors shrink-0" title="Bantuan WhatsApp CS">
-                        <svg class="w-4 h-4 xl:w-5 xl:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
-                        </svg>
-                    </a>
-
-                    <!-- MENU PROFIL / LOGIN (USER & ADMIN) -->
+                    <!-- MENU PROFIL / LOGIN (USER & ADMIN - Sesuai Image 2) -->
                     @auth
                         @if(Auth::user()->isAdmin())
-                        <!-- Menu Khusus Admin -->
+                        <!-- Menu Khusus Admin (Image 2) -->
                         <div class="relative shrink-0">
-                            <button type="button" id="btnAuthAdmin" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-wukirsari-sage/70 border border-wukirsari-border text-wukirsari-primary text-xs font-bold hover:bg-wukirsari-sage transition-all cursor-pointer whitespace-nowrap shrink-0">
-                                <span class="w-5 h-5 rounded-full bg-wukirsari-primary text-white flex items-center justify-center text-[10px] font-extrabold shrink-0">A</span>
+                            <button type="button" id="btnAuthAdmin" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#EAF3EB] border border-[#C5DEC8] text-[#1E3F20] text-xs font-bold hover:bg-[#DDEEDE] transition-all cursor-pointer whitespace-nowrap shrink-0 shadow-xs">
+                                <span class="w-5 h-5 rounded-full bg-[#1E3F20] text-white flex items-center justify-center text-[10px] font-extrabold shrink-0">A</span>
                                 <span class="max-w-[80px] xl:max-w-[110px] truncate">{{ Auth::user()->name }}</span>
-                                <span class="text-[9px] px-1.5 py-0.5 rounded bg-wukirsari-primary text-white font-extrabold uppercase tracking-wider shrink-0">Admin</span>
-                                <svg class="w-3 h-3 text-wukirsari-primary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                <span class="text-[9px] px-1.5 py-0.5 rounded bg-[#1E3F20] text-white font-extrabold uppercase tracking-wider shrink-0">ADMIN</span>
+                                <svg class="w-3 h-3 text-[#1E3F20] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                             </button>
-                            <div id="menuAuthAdmin" class="app-dropdown-menu hidden absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-wukirsari-border py-2 transition-all z-50">
-                                <div class="px-4 py-2 border-b border-wukirsari-border">
-                                    <p class="text-[10px] font-bold text-wukirsari-primary uppercase tracking-wider">Peran: Administrator</p>
-                                    <p class="text-xs font-bold text-merapiText-primary truncate">{{ Auth::user()->name }}</p>
-                                    <p class="text-[11px] text-merapiText-muted truncate">{{ Auth::user()->email }}</p>
+
+                            <div id="menuAuthAdmin" class="app-dropdown-menu hidden absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 py-0 overflow-hidden transition-all z-50">
+                                <div class="px-4 py-2.5 border-b border-gray-100">
+                                    <p class="text-[10px] font-extrabold text-[#1E3F20] uppercase tracking-wider">PERAN: ADMINISTRATOR</p>
+                                    <p class="text-xs font-bold text-gray-900 truncate mt-0.5">{{ Auth::user()->name }}</p>
+                                    <p class="text-[11px] text-gray-500 truncate">{{ Auth::user()->email }}</p>
                                 </div>
-                                <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-merapiText-primary hover:bg-wukirsari-sage/40 hover:text-wukirsari-primary transition-colors">
+                                <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-semibold text-gray-800 hover:bg-[#EAF3EB]/60 hover:text-[#1E3F20] transition-colors">
                                     Dashboard Loket & Armada
                                 </a>
-                                <a href="{{ route('home') }}" class="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-merapiText-primary hover:bg-wukirsari-sage/40 hover:text-wukirsari-primary transition-colors">
+                                <a href="{{ route('home') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-semibold text-gray-800 hover:bg-[#EAF3EB]/60 hover:text-[#1E3F20] transition-colors">
                                     Beranda Wisatawan
                                 </a>
-                                <form action="{{ route('logout') }}" method="POST" class="border-t border-wukirsari-border mt-1 pt-1">
-                                    @csrf
-                                    <button type="submit" class="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50 transition-colors text-left cursor-pointer">
-                                        Keluar (Logout)
-                                    </button>
-                                </form>
+                                <div class="border-t border-gray-100">
+                                    <form action="{{ route('logout') }}" method="POST"
+                                          data-confirm-title="Keluar Sesi Administrator"
+                                          data-confirm-message="Apakah Anda yakin ingin keluar dari akun Anda?"
+                                          data-confirm-type="danger"
+                                          data-confirm-text="Ya, Keluar"
+                                          data-confirm-cancel="Batal">
+                                        @csrf
+                                        <button type="submit" class="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-semibold text-rose-600 bg-rose-50/70 hover:bg-rose-100 transition-colors text-left cursor-pointer">
+                                            Keluar (Logout)
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                         @else
                         <!-- Menu Khusus Wisatawan / User -->
                         <div class="relative shrink-0">
-                            <button type="button" id="btnAuthUser" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-wukirsari-sage/60 border border-wukirsari-border text-merapiText-primary text-xs font-bold hover:bg-wukirsari-sage transition-all cursor-pointer whitespace-nowrap shrink-0">
-                                <span class="w-5 h-5 rounded-full bg-wukirsari-primary text-white flex items-center justify-center text-[10px] font-bold shrink-0">
-                                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                                </span>
+                            <button type="button" id="btnAuthUser" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#EAF3EB] border border-[#C5DEC8] text-[#1E3F20] text-xs font-bold hover:bg-[#DDEEDE] transition-all cursor-pointer whitespace-nowrap shrink-0 shadow-xs">
+                                <span class="w-5 h-5 rounded-full bg-[#1E3F20] text-white flex items-center justify-center text-[10px] font-extrabold shrink-0">{{ strtoupper(substr(Auth::user()->name, 0, 1)) }}</span>
                                 <span class="max-w-[80px] xl:max-w-[110px] truncate">{{ Auth::user()->name }}</span>
-                                <span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-700 text-white font-extrabold uppercase tracking-wider shrink-0">User</span>
-                                <svg class="w-3 h-3 text-merapiText-secondary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                <svg class="w-3 h-3 text-[#1E3F20] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                             </button>
-                            <div id="menuAuthUser" class="app-dropdown-menu hidden absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-wukirsari-border py-2 transition-all z-50">
-                                <div class="px-4 py-2 border-b border-wukirsari-border">
-                                    <p class="text-[10px] font-bold text-wukirsari-primary uppercase tracking-wider">Akun Wisatawan</p>
-                                    <p class="text-xs font-bold text-merapiText-primary truncate">{{ Auth::user()->name }}</p>
-                                    <p class="text-[11px] text-merapiText-muted truncate">{{ Auth::user()->email }}</p>
+
+                            <div id="menuAuthUser" class="app-dropdown-menu hidden absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 py-0 overflow-hidden transition-all z-50">
+                                <div class="px-4 py-2.5 border-b border-gray-100">
+                                    <p class="text-[10px] font-extrabold text-[#1E3F20] uppercase tracking-wider">Akun Wisatawan</p>
+                                    <p class="text-xs font-bold text-gray-900 truncate mt-0.5">{{ Auth::user()->name }}</p>
+                                    <p class="text-[11px] text-gray-500 truncate">{{ Auth::user()->email }}</p>
                                 </div>
-                                <a href="{{ route('profile') }}" class="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-merapiText-primary hover:bg-wukirsari-sage/40 hover:text-wukirsari-primary transition-colors">
+                                <a href="{{ route('profile') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-semibold text-gray-800 hover:bg-[#EAF3EB]/60 hover:text-[#1E3F20] transition-colors">
                                     Profil & Tiket Saya
                                 </a>
-                                <a href="{{ route('booking.create') }}" class="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-merapiText-primary hover:bg-wukirsari-sage/40 hover:text-wukirsari-primary transition-colors">
+                                <a href="{{ route('booking.create') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-semibold text-gray-800 hover:bg-[#EAF3EB]/60 hover:text-[#1E3F20] transition-colors">
                                     Booking Jeep Baru
                                 </a>
-                                <form action="{{ route('logout') }}" method="POST" class="border-t border-wukirsari-border mt-1 pt-1">
-                                    @csrf
-                                    <button type="submit" class="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50 transition-colors text-left cursor-pointer">
-                                        Keluar (Logout)
-                                    </button>
-                                </form>
+                                <div class="border-t border-gray-100">
+                                    <form action="{{ route('logout') }}" method="POST"
+                                          data-confirm-title="Keluar Sesi Akun"
+                                          data-confirm-message="Apakah Anda yakin ingin keluar dari akun Anda?"
+                                          data-confirm-type="danger"
+                                          data-confirm-text="Ya, Keluar"
+                                          data-confirm-cancel="Batal">
+                                        @csrf
+                                        <button type="submit" class="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-semibold text-rose-600 bg-rose-50/70 hover:bg-rose-100 transition-colors text-left cursor-pointer">
+                                            Keluar (Logout)
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                         @endif
                     @else
                     <!-- Tombol Masuk Akun Tunggal -->
-                    <a href="{{ route('login') }}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-wukirsari-border text-xs font-semibold text-merapiText-primary hover:border-wukirsari-primary hover:text-wukirsari-primary hover:bg-wukirsari-sage/40 transition-all cursor-pointer whitespace-nowrap shrink-0">
-                        <svg class="w-4 h-4 text-wukirsari-primary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="{{ route('login') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full {{ request()->routeIs('home') ? 'border border-white/35 text-white/90 hover:bg-white/15' : 'border border-wukirsari-border text-merapiText-primary hover:border-wukirsari-primary hover:text-wukirsari-primary hover:bg-wukirsari-sage/40' }} text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0">
+                        <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                         </svg>
                         <span>Masuk</span>
                     </a>
                     @endauth
 
-                    <a href="{{ route('booking.create') }}" class="whitespace-nowrap shrink-0 inline-flex items-center gap-1.5 px-4 xl:px-5 py-2.5 rounded-full bg-wukirsari-primary text-white text-xs font-semibold hover:bg-wukirsari-hover transition-all shadow-sm shadow-wukirsari-primary/20 hover:scale-[1.02]">
+                    <a href="{{ route('booking.create') }}" class="whitespace-nowrap shrink-0 inline-flex items-center gap-1.5 px-5 xl:px-6 py-2.5 rounded-full bg-[#245329] hover:bg-[#2d6633] text-white text-xs font-bold border border-white/20 transition-all shadow-md hover:scale-[1.02]">
                         <span>Booking Sekarang</span>
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                     </a>
@@ -204,16 +214,16 @@
 
                 <!-- Mobile Header Actions & Hamburger Toggle (lg:hidden) -->
                 <div class="flex items-center gap-2 lg:hidden">
-                    <a href="https://wa.me/6281234567890" target="_blank" class="p-2 rounded-full border border-wukirsari-border text-merapiText-secondary hover:text-wukirsari-primary hover:bg-wukirsari-sage/40 transition-colors" title="Chat WhatsApp CS">
-                        <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                    <a href="https://wa.me/6281234567890" target="_blank" class="p-2 rounded-full border {{ request()->routeIs('home') ? 'border-white/25 text-emerald-300 hover:bg-white/10' : 'border-wukirsari-border text-emerald-600 hover:bg-wukirsari-sage/40' }} transition-colors" title="Chat WhatsApp CS">
+                        <svg class="w-4 h-4 fill-none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
                     </a>
 
-                    <a href="{{ route('booking.create') }}" class="px-3 sm:px-4 py-1.5 rounded-full bg-wukirsari-primary text-white text-xs font-semibold shadow-xs hover:bg-wukirsari-hover transition-all">
+                    <a href="{{ route('booking.create') }}" class="px-3 sm:px-4 py-1.5 rounded-full bg-[#245329] hover:bg-[#2d6633] border border-white/20 text-white text-xs font-semibold shadow-xs transition-all">
                         Booking
                     </a>
 
                     <!-- Hamburger Button -->
-                    <button type="button" id="btnMobileMenuToggle" aria-label="Buka Menu Navigasi" class="p-2 rounded-xl border border-wukirsari-border text-merapiText-primary hover:bg-wukirsari-sage/50 active:scale-95 transition-all cursor-pointer">
+                    <button type="button" id="btnMobileMenuToggle" aria-label="Buka Menu Navigasi" class="p-2 rounded-xl border {{ request()->routeIs('home') ? 'border-white/25 text-white hover:bg-white/10' : 'border-wukirsari-border text-merapiText-primary hover:bg-wukirsari-sage/50' }} active:scale-95 transition-all cursor-pointer">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                         </svg>
@@ -339,10 +349,6 @@
                 <a href="{{ route('reviews.index') }}" class="mobile-nav-link flex items-center px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold transition-colors {{ request()->routeIs('reviews.*') ? 'bg-wukirsari-sage/70 text-wukirsari-primary font-bold' : 'text-merapiText-primary hover:bg-slate-50' }}">
                     <span>Ulasan Wisatawan</span>
                 </a>
-
-                <a href="{{ route('ticket.check') }}" class="mobile-nav-link flex items-center px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold transition-colors {{ request()->routeIs('ticket.*') ? 'bg-wukirsari-sage/70 text-wukirsari-primary font-bold' : 'text-merapiText-primary hover:bg-slate-50' }}">
-                    <span>Cek Status Tiket</span>
-                </a>
             </nav>
         </div>
 
@@ -417,80 +423,194 @@
     @hasSection('footer')
         @yield('footer')
     @else
-    <footer class="bg-wukirsari-dark text-white/80 pt-14 pb-24 md:pb-12 border-t border-wukirsari-primary/30 mt-auto">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-white/10">
+    <footer id="kontak" class="bg-gradient-to-b from-[#091F12] via-[#0D2918] to-[#06140B] text-white/80 pt-14 sm:pt-16 pb-24 md:pb-12 border-t border-emerald-900/40 relative overflow-hidden select-none mt-auto">
+        
+        <!-- Ambient Glowing Lights -->
+        <div class="absolute -top-24 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-24 right-1/4 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <!-- Topographic Contour Lines - Left -->
+        <svg class="absolute bottom-0 left-0 w-80 sm:w-96 lg:w-[540px] h-auto pointer-events-none opacity-20 text-emerald-400 z-0" viewBox="0 0 500 280" fill="none" stroke="currentColor" stroke-width="1.2">
+            <path d="M-60,280 C40,240 100,270 200,200 C300,130 380,180 500,80" />
+            <path d="M-60,255 C50,220 110,250 210,180 C310,110 390,160 500,60" />
+            <path d="M-60,230 C60,200 120,230 220,160 C320,90 400,140 500,40" />
+            <path d="M-60,205 C70,180 130,210 230,140 C330,70 410,120 500,20" />
+            <path d="M-60,180 C80,160 140,190 240,120 C340,50 420,100 500,0" />
+            <path d="M-60,155 C90,140 150,170 250,100 C350,30 430,80 500,-20" />
+        </svg>
+
+        <!-- Topographic Contour Lines - Right -->
+        <svg class="absolute bottom-0 right-0 w-80 sm:w-96 lg:w-[540px] h-auto pointer-events-none opacity-20 text-emerald-400 z-0 transform scale-x-[-1]" viewBox="0 0 500 280" fill="none" stroke="currentColor" stroke-width="1.2">
+            <path d="M-60,280 C40,240 100,270 200,200 C300,130 380,180 500,80" />
+            <path d="M-60,255 C50,220 110,250 210,180 C310,110 390,160 500,60" />
+            <path d="M-60,230 C60,200 120,230 220,160 C320,90 400,140 500,40" />
+            <path d="M-60,205 C70,180 130,210 230,140 C330,70 410,120 500,20" />
+            <path d="M-60,180 C80,160 140,190 240,120 C340,50 420,100 500,0" />
+        </svg>
+
+        <!-- Botanical Corner Fronds (Echoing the natural botanical aesthetic of the site) -->
+        <div class="hidden lg:block absolute bottom-0 left-0 pointer-events-none opacity-25 text-emerald-400/80 z-0">
+            <svg class="w-40 h-auto" viewBox="-5 0 175 125" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M -5,108 C 28,105 65,86 102,56 C 126,36 146,20 162,7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                <path d="M 26,98 C 14,86 8,74 15,64 C 25,66 31,82 34,92 Z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1.1"/>
+                <path d="M 36,92 C 48,80 60,76 65,84 C 59,93 47,95 40,94 Z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1.1"/>
+                <path d="M 46,80 C 32,67 28,53 36,46 C 44,50 49,64 52,75 Z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1.1"/>
+                <path d="M 56,74 C 70,61 82,58 86,66 C 78,74 68,76 60,75 Z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1.1"/>
+                <path d="M 68,61 C 56,48 54,35 62,30 C 69,34 71,47 74,57 Z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1.1"/>
+                <path d="M 76,56 C 90,44 100,41 104,49 C 96,56 86,57 79,57 Z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1.1"/>
+                <path d="M 88,45 C 78,34 78,23 85,18 C 91,23 92,32 93,41 Z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1"/>
+                <path d="M 96,40 C 108,30 117,28 120,35 C 113,41 105,42 98,41 Z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1"/>
+                <path d="M 130,18 C 141,9 148,7 152,9 C 148,15 142,20 135,20 Z" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="1"/>
+            </svg>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+
+            <!-- MAIN 3-COLUMN FOOTER CONTENT -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12 pb-12 items-start">
                 
-                <!-- Kolom 1 -->
-                <div class="space-y-4">
+                <!-- Kolom 1: Brand, Logo & Status Operasional (lg:col-span-5) -->
+                <div class="lg:col-span-5 space-y-4">
                     <div class="flex items-center gap-3">
-                        <div class="w-11 h-11 rounded-xl bg-white/10 p-1 flex items-center justify-center border border-white/20">
-                            <img src="{{ asset('img/logo.png') }}" alt="Logo Jeep Wukirsari" class="w-full h-full object-contain">
+                        <div class="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center p-2 shrink-0 shadow-md shadow-black/20">
+                            <img src="{{ asset('img/logo.png') }}" alt="Logo Jeep Wukirsari" class="w-full h-full object-contain filter drop-shadow">
                         </div>
                         <div>
-                            <span class="block font-display font-extrabold text-lg text-white tracking-tight leading-none">JEEP WUKIRSARI</span>
-                            <span class="block text-[10px] font-medium text-wukirsari-sage uppercase tracking-widest mt-0.5">Adventure Tour</span>
+                            <span class="block font-display font-extrabold text-base sm:text-lg text-white tracking-tight leading-none">
+                                JEEP WUKIRSARI
+                            </span>
+                            <span class="block text-[10px] sm:text-[11px] font-semibold text-emerald-300 uppercase tracking-widest mt-1">
+                                ADVENTURE TOUR
+                            </span>
                         </div>
                     </div>
-                    <p class="text-sm text-white/70 leading-relaxed font-accent italic">"Petualangan hari ini, cerita untuk selamanya."</p>
-                    <p class="text-xs text-white/60 leading-relaxed">Jelajahi jalur lahar dingin, bebatuan vulkanik, dan keindahan alam Gunung Merapi bersama pemandu profesional dan armada 4x4 tangguh.</p>
+                    
+                    <p class="text-xs sm:text-sm text-white/75 leading-relaxed font-normal pr-4">
+                        Petualangan hari ini, cerita untuk selamanya. Jelajahi pesona lereng Gunung Merapi dengan armada tangguh dan pemandu ramah terpercaya.
+                    </p>
+
+                    <!-- Status Operasional Pill -->
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 text-xs">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span class="font-medium">Buka Setiap Hari: 06.00 – 18.00 WIB</span>
+                    </div>
                 </div>
 
-                <!-- Kolom 2 -->
-                <div>
-                    <h4 class="text-white font-semibold text-sm tracking-wider uppercase mb-4">Navigasi</h4>
-                    <ul class="space-y-2.5 text-sm">
-                        <li><a href="{{ route('home') }}" class="hover:text-white transition-colors">Beranda</a></li>
-                        <li><a href="{{ route('home') }}#paket" class="hover:text-white transition-colors">Paket Wisata</a></li>
-                        <li><a href="{{ route('home') }}#tentang" class="hover:text-white transition-colors">Tentang Kami</a></li>
-                        <li><a href="{{ route('home') }}#galeri" class="hover:text-white transition-colors">Galeri Dokumentasi</a></li>
-                        <li><a href="{{ route('ticket.check') }}" class="hover:text-white transition-colors">Cek Status Tiket</a></li>
+                <!-- Kolom 2: Navigasi Cepat (lg:col-span-3) -->
+                <div class="lg:col-span-3">
+                    <h4 class="text-white font-bold text-xs sm:text-sm tracking-wider mb-4 font-display flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                        <span>Navigasi</span>
+                    </h4>
+                    <ul class="space-y-2.5 text-xs sm:text-sm text-white/75">
+                        <li>
+                            <a href="{{ route('home') }}" class="hover:text-emerald-300 hover:translate-x-1 inline-flex items-center gap-1.5 transition-all">
+                                <span class="text-emerald-400 text-xs">›</span>
+                                <span>Beranda</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('home') }}#paket" class="hover:text-emerald-300 hover:translate-x-1 inline-flex items-center gap-1.5 transition-all">
+                                <span class="text-emerald-400 text-xs">›</span>
+                                <span>Paket Wisata</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('home') }}#tentang" class="hover:text-emerald-300 hover:translate-x-1 inline-flex items-center gap-1.5 transition-all">
+                                <span class="text-emerald-400 text-xs">›</span>
+                                <span>Tentang Kami</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('home') }}#galeri" class="hover:text-emerald-300 hover:translate-x-1 inline-flex items-center gap-1.5 transition-all">
+                                <span class="text-emerald-400 text-xs">›</span>
+                                <span>Galeri Foto</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('reviews.index') }}" class="hover:text-emerald-300 hover:translate-x-1 inline-flex items-center gap-1.5 transition-all">
+                                <span class="text-emerald-400 text-xs">›</span>
+                                <span>Ulasan Wisatawan</span>
+                            </a>
+                        </li>
+                        </li>
                     </ul>
                 </div>
 
-                <!-- Kolom 3 -->
-                <div>
-                    <h4 class="text-white font-semibold text-sm tracking-wider uppercase mb-4">Kontak Kami</h4>
-                    <ul class="space-y-3 text-sm">
-                        <li class="flex items-start gap-3">
-                            <span class="text-emerald-400 mt-0.5 shrink-0">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-                            </span>
-                            <a href="tel:+6281234567890" class="hover:text-white transition-colors">+62 812-3456-7890</a>
+                <!-- Kolom 3: Basecamp & Media Sosial (lg:col-span-4) -->
+                <div class="lg:col-span-4 space-y-4">
+                    <h4 class="text-white font-bold text-xs sm:text-sm tracking-wider mb-4 font-display flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                        <span>Basecamp & Kontak</span>
+                    </h4>
+                    
+                    <ul class="space-y-2.5 text-xs sm:text-sm text-white/75">
+                        <li class="flex items-center gap-2.5">
+                            <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
+                                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                                    <path d="M20 15.5c-1.2 0-2.4-.2-3.6-.6-.3-.1-.7 0-1 .2l-2.2 2.2c-2.8-1.4-5.1-3.8-6.6-6.6l2.2-2.2c.3-.3.4-.7.2-1-.3-1.1-.5-2.3-.5-3.5 0-.6-.4-1-1-1H4c-.6 0-1 .4-1 1 0 9.4 7.6 17 17 17 .6 0 1-.4 1-1v-3.5c0-.6-.4-1-1-1z"/>
+                                </svg>
+                            </div>
+                            <a href="https://wa.me/6281234567890" target="_blank" class="hover:text-emerald-300 transition-colors font-medium">+62 812-3456-7890</a>
                         </li>
-                        <li class="flex items-start gap-3">
-                            <span class="text-emerald-400 mt-0.5 shrink-0">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                            </span>
-                            <a href="mailto:jeepwukirsari@gmail.com" class="hover:text-white transition-colors">jeepwukirsari@gmail.com</a>
+                        <li class="flex items-center gap-2.5">
+                            <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
+                                <svg class="w-3.5 h-3.5 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
+                                    <rect x="3" y="5" width="18" height="14" rx="2"/>
+                                    <path d="M3 7l9 6 9-6"/>
+                                </svg>
+                            </div>
+                            <a href="mailto:jeepwukirsari@gmail.com" class="hover:text-emerald-300 transition-colors">jeepwukirsari@gmail.com</a>
                         </li>
-                        <li class="flex items-start gap-3">
-                            <span class="text-emerald-400 mt-0.5 shrink-0">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                            </span>
-                            <a href="https://maps.google.com/?q=Basecamp+Jeep+Wukirsari,+Kapanewon+Cangkringan,+Sleman,+D.I.+Yogyakarta" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">Basecamp Jeep Wukirsari, Kapanewon Cangkringan, Sleman, D.I. Yogyakarta</a>
+                        <li class="flex items-start gap-2.5">
+                            <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30 mt-0.5">
+                                <svg class="w-3.5 h-3.5 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
+                                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+                                    <circle cx="12" cy="9" r="2.2" fill="currentColor"/>
+                                </svg>
+                            </div>
+                            <a href="https://maps.google.com/?q=Basecamp+Jeep+Wukirsari,+Kapanewon+Cangkringan,+Sleman,+D.I.+Yogyakarta" target="_blank" rel="noopener noreferrer" class="text-white/70 hover:text-emerald-300 transition-colors leading-snug">Wukirsari, Cangkringan, Sleman, D.I. Yogyakarta 55583</a>
                         </li>
                     </ul>
-                </div>
 
-                <!-- Kolom 4 -->
-                <div>
-                    <h4 class="text-white font-semibold text-sm tracking-wider uppercase mb-4">Pangkalan Operasional</h4>
-                    <div class="p-3 bg-white/5 rounded-2xl border border-white/10 text-xs text-white/60">
-                        <span class="block font-medium text-white mb-1">Siaga 24 Jam</span>
-                        <span>Layanan booking online instan dengan konfirmasi e-tiket WhatsApp langsung.</span>
+                    <!-- Social Media Pills -->
+                    <div class="pt-2">
+                        <span class="block text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-2.5">Ikuti Media Sosial</span>
+                        <div class="flex items-center gap-2.5">
+                            <!-- Instagram -->
+                            <a href="https://instagram.com" target="_blank" class="w-9 h-9 rounded-xl bg-white/5 hover:bg-emerald-500 hover:text-white border border-white/10 flex items-center justify-center text-white/80 transition-all hover:-translate-y-1 shadow-sm" title="Instagram">
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                            </a>
+                            <!-- TikTok -->
+                            <a href="https://tiktok.com" target="_blank" class="w-9 h-9 rounded-xl bg-white/5 hover:bg-emerald-500 hover:text-white border border-white/10 flex items-center justify-center text-white/80 transition-all hover:-translate-y-1 shadow-sm" title="TikTok">
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.24 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
+                            </a>
+                            <!-- YouTube -->
+                            <a href="https://youtube.com" target="_blank" class="w-9 h-9 rounded-xl bg-white/5 hover:bg-emerald-500 hover:text-white border border-white/10 flex items-center justify-center text-white/80 transition-all hover:-translate-y-1 shadow-sm" title="YouTube">
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                            </a>
+                            <!-- WhatsApp -->
+                            <a href="https://wa.me/6281234567890" target="_blank" class="w-9 h-9 rounded-xl bg-white/5 hover:bg-emerald-500 hover:text-white border border-white/10 flex items-center justify-center text-white/80 transition-all hover:-translate-y-1 shadow-sm" title="WhatsApp">
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                            </a>
+                        </div>
                     </div>
                 </div>
 
             </div>
 
-            <div class="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-white/50 gap-4">
-                <p>© 2026 Jeep Wukirsari Adventure Tour. Tugas Akhir (TA) Sistem Informasi.</p>
-                <div class="flex items-center gap-6">
-                    <a href="#" class="hover:text-white transition-colors">Syarat & Ketentuan</a>
-                    <a href="#" class="hover:text-white transition-colors">Kebijakan Privasi</a>
+            <!-- 3. BOTTOM COPYRIGHT & LEGAL BAR -->
+            <div class="pt-6 border-t border-white/10 flex flex-col md:flex-row items-center justify-between text-xs text-white/60 gap-3">
+                <p>© 2025 <span class="text-white font-medium">Jeep Wukirsari Adventure Tour</span>. Seluruh hak cipta dilindungi.</p>
+                <div class="flex items-center gap-4 text-white/60">
+                    <a href="#" class="hover:text-emerald-300 transition-colors">Syarat & Ketentuan</a>
+                    <span class="text-white/20">•</span>
+                    <a href="#" class="hover:text-emerald-300 transition-colors">Kebijakan Privasi</a>
+                    <span class="text-white/20">•</span>
+                    <a href="https://wa.me/6281234567890" target="_blank" class="hover:text-emerald-300 transition-colors">Pusat Bantuan</a>
                 </div>
             </div>
+
         </div>
     </footer>
     @endif
@@ -672,5 +792,6 @@
         });
     </script>
 
+    @include('admin.partials.confirm-modal')
 </body>
 </html>

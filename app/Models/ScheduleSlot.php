@@ -17,6 +17,11 @@ class ScheduleSlot extends Model
         'is_active',
     ];
 
+    protected $casts = [
+        'is_active' => 'boolean',
+        'max_jeeps' => 'integer',
+    ];
+
     public function bookings()
     {
         return $this->hasMany(Booking::class, 'slot_id');
