@@ -1147,11 +1147,12 @@ class AdminController extends Controller
 
         $payment = Payment::where('id', $paymentId)->where('booking_id', $id)->firstOrFail();
 
-        if (!$payment->proof_image || !Storage::disk('local')->exists($payment->proof_image)) {
+        $filePath = Storage::disk('local')->path($payment->proof_image ?? '');
+        if (!$payment->proof_image || !file_exists($filePath)) {
             abort(404, 'Berkas fisik bukti transfer tidak ditemukan di penyimpanan server.');
         }
 
-        return Storage::disk('local')->response($payment->proof_image);
+        return response()->file($filePath);
     }
 
     /**
