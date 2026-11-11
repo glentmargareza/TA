@@ -136,6 +136,7 @@ class BookingController extends Controller
         ]);
 
         $package = Package::findOrFail($validated['package_id']);
+        $slot = ScheduleSlot::findOrFail($validated['slot_id']);
 
         $pax = (int) $validated['passenger_count'];
         $childCount = (int) ($validated['child_count'] ?? 0);
@@ -143,14 +144,23 @@ class BookingController extends Controller
         $minJeeps = ($pax === 5 && $childCount >= 1) ? 1 : (int) ceil($pax / 4);
         $jeepQuantity = max((int) ($validated['jeep_quantity'] ?? $minJeeps), $minJeeps);
 
+        // Validasi Ketersediaan Slot Jadwal (Batas Kapasitas Armada)
+        if (!$slot->isAvailableFor($validated['trip_date'], $jeepQuantity)) {
+            $remaining = $slot->remainingJeepsFor($validated['trip_date']);
+            return back()->withInput()->withErrors([
+                'slot_id' => "Mohon maaf, kuota armada untuk sesi {$slot->slot_label} pada tanggal {$validated['trip_date']} tersisa {$remaining} Jeep. Silakan pilih sesi jadwal lain."
+            ]);
+        }
+
         $packageSubtotal = $package->price_per_jeep * $jeepQuantity;
 
-        $arrivalType = $validated['arrival_type'] ?? 'self_drive';
-        $address     = $validated['pickup_address'] ?? null;
-        $pickupFee   = 0.00;
-        $pickupKm    = null;
-        $pickupLat   = null;
-        $pickupLng   = null;
+        $arrivalType   = $validated['arrival_type'] ?? 'self_drive';
+        $address       = $validated['pickup_address'] ?? null;
+        $pickupFee     = 0.00;
+        $pickupKm      = null;
+        $pickupLat     = null;
+        $pickupLng     = null;
+        $pickupZoneId  = null;
 
         if ($arrivalType === 'pickup') {
             if ($request->boolean('pickup_manual')) {
@@ -159,10 +169,32 @@ class BookingController extends Controller
                 $pickupLat = (float) $validated['pickup_lat'];
                 $pickupLng = (float) $validated['pickup_lng'];
                 $pickupKm  = $this->routeDistance($pickupLat, $pickupLng)['km'];
-                $pickupFee = $pickupKm > self::FREE_KM ? self::FEE_PER_JEEP * $jeepQuantity : 0.00;
+
+                // Hitung biaya pickup: Tarif Zona x Jumlah Jeep
+                if ($request->filled('pickup_zone_id')) {
+                    $zone = \App\Models\PickupZone::find($request->input('pickup_zone_id'));
+                    if ($zone) {
+                        $pickupZoneId = $zone->id;
+                        $pickupFee = (float) ($zone->additional_fee * $jeepQuantity);
+                    }
+                }
+
+                if ($pickupZoneId === null) {
+                    $pickupFee = $pickupKm > self::FREE_KM ? (float) (self::FEE_PER_JEEP * $jeepQuantity) : 0.00;
+                    if ($pickupKm <= self::FREE_KM) {
+                        $pickupZoneId = 1;
+                    } elseif ($pickupKm <= 15) {
+                        $pickupZoneId = 2;
+                    } elseif ($pickupKm <= 35) {
+                        $pickupZoneId = 3;
+                    } else {
+                        $pickupZoneId = 4;
+                    }
+                }
             }
         } else {
             $address = null;
+            $pickupZoneId = 1; // Datang Sendiri ke Basecamp Wukirsari
         }
 
         if (!empty($validated['notes'])) {
@@ -224,7 +256,7 @@ class BookingController extends Controller
             'jeep_quantity' => $jeepQuantity,
             'passenger_count' => $validated['passenger_count'],
             'arrival_type' => $arrivalType,
-            'pickup_zone_id' => null,
+            'pickup_zone_id' => $pickupZoneId,
             'pickup_address' => $address,
             'pickup_lat' => $pickupLat,
             'pickup_lng' => $pickupLng,

@@ -31,6 +31,7 @@ class AdminController extends Controller
         }
 
         $totalRevenue = Booking::whereIn('booking_status', ['FULL_PAID', 'DP_PAID'])->sum('paid_amount');
+        $totalCustomersCount = Booking::distinct('customer_phone')->count('customer_phone');
 
         // Monitoring Armada Jeep Counts
         $readyJeepsCount = Jeep::where('status', 'READY')->count();
@@ -159,6 +160,7 @@ class AdminController extends Controller
 
         return view('admin.dashboard', compact(
             'totalRevenue',
+            'totalCustomersCount',
             'readyJeepsCount',
             'onTripJeepsCount',
             'maintenanceJeepsCount',
@@ -756,20 +758,33 @@ class AdminController extends Controller
         $booking = Booking::findOrFail($id);
         $remaining = (float) $booking->remaining_amount;
 
-        $booking->update([
-            'booking_status' => 'FULL_PAID',
-            'paid_amount' => $booking->total_amount,
-            'remaining_amount' => 0.00,
-        ]);
+        DB::transaction(function () use ($booking, $remaining) {
+            Payment::create([
+                'booking_id' => $booking->id,
+                'order_id' => 'CASH-' . $booking->booking_code . '-' . time(),
+                'transaction_ref' => 'CASH-BASECAMP',
+                'payment_stage' => 'SETTLEMENT',
+                'gross_amount' => $remaining,
+                'payment_type' => 'CASH_BASECAMP',
+                'payment_status' => 'SETTLED',
+                'paid_at' => now(),
+            ]);
 
-        // Notifikasi & Riwayat Aktivitas: Pembayaran Berhasil & Aksi Admin
-        ActivityLog::logPaymentSuccess($booking, $remaining, 'Loket Kasir Basecamp');
-        ActivityLog::logAdmin(
-            'Pelunasan Sisa Tagihan di Loket',
-            "Menerima pelunasan sisa tagihan Rp " . number_format($remaining, 0, ',', '.') . " untuk booking #{$booking->booking_code} ({$booking->customer_name}).",
-            'payment',
-            route('admin.dashboard', ['search' => $booking->booking_code])
-        );
+            $booking->update([
+                'booking_status' => 'FULL_PAID',
+                'paid_amount' => $booking->total_amount,
+                'remaining_amount' => 0.00,
+            ]);
+
+            // Notifikasi & Riwayat Aktivitas: Pembayaran Berhasil & Aksi Admin
+            ActivityLog::logPaymentSuccess($booking, $remaining, 'Loket Kasir Basecamp');
+            ActivityLog::logAdmin(
+                'Pelunasan Sisa Tagihan di Loket',
+                "Menerima pelunasan sisa tagihan Rp " . number_format($remaining, 0, ',', '.') . " untuk booking #{$booking->booking_code} ({$booking->customer_name}).",
+                'payment',
+                route('admin.dashboard', ['search' => $booking->booking_code])
+            );
+        });
 
         return redirect()->back()->with('success', "Pelunasan untuk booking {$booking->booking_code} berhasil diterima!");
     }

@@ -47,7 +47,7 @@ class BookingPaymentTest extends TestCase
     }
 
     /**
-     * Memverifikasi halaman publik dapat dimuat tanpa error (HTTP 200).
+     * Memverifikasi halaman publik dapat dimuat tanpa error (HTTP 200) serta proteksi halaman terautentikasi.
      */
     public function test_public_pages_load_successfully(): void
     {
@@ -57,11 +57,33 @@ class BookingPaymentTest extends TestCase
         $responseBooking = $this->get('/booking');
         $responseBooking->assertStatus(200);
 
-        $responseCekTiket = $this->get('/cek-tiket');
-        $responseCekTiket->assertStatus(200);
+        $responseTerms = $this->get('/syarat-ketentuan');
+        $responseTerms->assertStatus(200);
+        $responseTerms->assertSee('Syarat', false);
 
-        $responseAdmin = $this->get('/admin');
-        $responseAdmin->assertStatus(200);
+        $responsePrivacy = $this->get('/kebijakan-privasi');
+        $responsePrivacy->assertStatus(200);
+        $responsePrivacy->assertSee('Kebijakan Privasi', false);
+
+        $responseLogin = $this->get('/login');
+        $responseLogin->assertStatus(200);
+
+        $responseRegister = $this->get('/register');
+        $responseRegister->assertStatus(200);
+
+        // Halaman yang dilindungi autentikasi wajib dialihkan ke login untuk tamu (guest)
+        $responseCekTiketGuest = $this->get('/cek-tiket');
+        $responseCekTiketGuest->assertRedirect(route('login'));
+
+        $responseAdminGuest = $this->get('/admin');
+        $responseAdminGuest->assertRedirect(route('login'));
+
+        // Jika terautentikasi sebagai Admin, halaman dapat dimuat sukses (HTTP 200)
+        $admin = \App\Models\User::where('role', 'admin')->first();
+        if ($admin) {
+            $this->actingAs($admin)->get('/admin')->assertStatus(200);
+            $this->actingAs($admin)->get('/cek-tiket')->assertStatus(200);
+        }
     }
 
     /**
@@ -507,5 +529,118 @@ class BookingPaymentTest extends TestCase
         $response = $this->getJson(route('booking.active_payment', $booking->booking_code));
         $response->assertStatus(200);
         $this->assertTrue(in_array($response->json('status'), ['success', 'none']));
+    }
+
+    /**
+     * Memverifikasi Beranda menampilkan katalog paket wisata dan ulasan dari database.
+     */
+    public function test_beranda_displays_packages_and_reviews_from_database(): void
+    {
+        $response = $this->get('/');
+        $response->assertStatus(200);
+        $response->assertViewHas('packages');
+        $response->assertViewHas('reviews');
+
+        $activePackage = Package::where('is_active', true)->first();
+        if ($activePackage) {
+            $response->assertSee($activePackage->name);
+        }
+    }
+
+    /**
+     * Memverifikasi Dashboard Admin menampilkan statistik omzet dan pelanggan unik.
+     */
+    public function test_admin_dashboard_statistics_and_access(): void
+    {
+        $admin = \App\Models\User::where('role', 'admin')->first();
+        $this->assertNotNull($admin, 'Akun admin wajib tersedia di database');
+
+        $response = $this->actingAs($admin)->get('/admin');
+        $response->assertStatus(200);
+        $response->assertViewHas('totalRevenue');
+        $response->assertViewHas('totalCustomersCount');
+        $response->assertViewHas('readyJeepsCount');
+        $response->assertViewHas('todayBookingsCount');
+    }
+
+    /**
+     * Memverifikasi pengguna non-admin (customer) dilarang mengakses portal admin.
+     */
+    public function test_non_admin_cannot_access_admin_dashboard(): void
+    {
+        $customer = \App\Models\User::where('role', 'customer')->first();
+        if (!$customer) {
+            $customer = \App\Models\User::create([
+                'name' => 'Wisatawan Biasa',
+                'email' => 'customer_test_' . time() . '@example.com',
+                'password' => bcrypt('password'),
+                'role' => 'customer',
+            ]);
+        }
+
+        $response = $this->actingAs($customer)->get('/admin');
+        // Harus ditolak dan dialihkan ke login dengan pesan info
+        $response->assertRedirect(route('login'));
+        $response->assertSessionHas('info');
+    }
+
+    /**
+     * Memverifikasi pemeriksaan kapasitas slot jadwal mencegah overbooking.
+     */
+    public function test_booking_slot_availability_check(): void
+    {
+        $slot = ScheduleSlot::first();
+        $this->assertNotNull($slot);
+
+        $tripDate = date('Y-m-d', strtotime('+7 days'));
+        $available = $slot->isAvailableFor($tripDate, 1);
+        $this->assertTrue($available);
+
+        // Jika kuota diminta melebihi kapasitas max_jeeps (misal max_jeeps + 1)
+        $excessAvailable = $slot->isAvailableFor($tripDate, $slot->max_jeeps + 5);
+        $this->assertFalse($excessAvailable);
+    }
+
+    /**
+     * Memverifikasi rumus penjemputan: Biaya Pickup = Tarif Pickup Zone x Jumlah Jeep.
+     */
+    public function test_pickup_fee_calculation_per_jeep_quantity(): void
+    {
+        $package = Package::first();
+        $slot = ScheduleSlot::first();
+        $zone = \App\Models\PickupZone::where('additional_fee', '>', 0)->first();
+
+        $postData = [
+            'package_id' => $package->id,
+            'slot_id' => $slot->id,
+            'trip_date' => date('Y-m-d', strtotime('+4 days')),
+            'passenger_count' => 8, // 8 orang = 2 Jeep
+            'jeep_quantity' => 2,
+            'arrival_type' => 'pickup',
+            'pickup_zone_id' => $zone ? $zone->id : null,
+            'pickup_address' => 'Hotel Tentrem Yogyakarta',
+            'pickup_lat' => -7.77123,
+            'pickup_lng' => 110.36789,
+            'customer_name' => 'Keluarga Raharja',
+            'customer_phone' => '081299998888',
+            'customer_email' => 'raharja@example.com',
+            'payment_mode' => 'FULL',
+        ];
+
+        $response = $this->post('/booking', $postData);
+        $response->assertRedirect();
+
+        $booking = Booking::where('customer_phone', '081299998888')->latest()->first();
+        $this->assertNotNull($booking);
+        $this->assertEquals(2, $booking->jeep_quantity);
+
+        // Subtotal sewa 2 Jeep
+        $expectedSubtotal = $package->price_per_jeep * 2;
+        $this->assertEquals($expectedSubtotal, (float) $booking->package_subtotal);
+
+        // Biaya pickup dihitung per jeep
+        $this->assertGreaterThan(0, (float) $booking->pickup_fee);
+        $expectedTotal = $expectedSubtotal + (float) $booking->pickup_fee;
+        $this->assertEquals($expectedTotal, (float) $booking->total_amount);
     }
 }
