@@ -69,4 +69,43 @@ class Booking extends Model
     {
         return $this->hasMany(BookingAssignment::class);
     }
+
+    /**
+     * URL Bukti Transfer Pelanggan (jika ada bukti upload)
+     */
+    public function getProofUrlAttribute(): ?string
+    {
+        foreach ($this->payments as $payment) {
+            if (is_array($payment->payload_response) && !empty($payment->payload_response['proof_url'])) {
+                return asset($payment->payload_response['proof_url']);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Nama Pengirim Rekening / Struk Bukti Transfer
+     */
+    public function getSenderNameAttribute(): ?string
+    {
+        foreach ($this->payments as $payment) {
+            if (is_array($payment->payload_response) && !empty($payment->payload_response['sender_name'])) {
+                return $payment->payload_response['sender_name'];
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Bank Asal Pengirim Bukti Transfer
+     */
+    public function getSenderBankAttribute(): ?string
+    {
+        foreach ($this->payments as $payment) {
+            if (is_array($payment->payload_response) && !empty($payment->payload_response['sender_bank'])) {
+                return $payment->payload_response['sender_bank'];
+            }
+        }
+        return null;
+    }
 }

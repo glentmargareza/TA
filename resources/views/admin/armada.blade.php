@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitoring Armada Jeep (20 Unit) | Jeep Wukirsari</title>
+    <title>Monitoring Armada Jeep ({{ $totalJeepsCount }} Unit) | Jeep Wukirsari</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -39,13 +39,20 @@
             <div>
                 <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
                     <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                    Monitoring Armada Jeep (20 Unit)
+                    Monitoring Armada Jeep & Driver Paguyuban
                 </h1>
-                <p class="text-xs text-slate-500 mt-0.5">Admin memantau operasional armada, ketersediaan pangkalan, dan jadwal sesi harian.</p>
+                <p class="text-xs text-slate-500 mt-0.5">Admin memantau kesiapan armada Jeep, ketersediaan pangkalan, serta status operasional driver Paguyuban.</p>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2.5 flex-wrap">
+                <button type="button" onclick="openAddJeepModal()" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-700 via-[#183c21] to-[#102b17] hover:from-emerald-600 hover:to-[#183c21] text-white text-xs font-bold shadow-sm hover:shadow transition-all cursor-pointer active:scale-95">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    <span>Tambah Kendaraan</span>
+                </button>
                 <span class="px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                    Total: {{ $totalJeepsCount }} Unit Armada (Maks 4 Pax/Jeep)
+                    {{ $totalJeepsCount }} Kendaraan
+                </span>
+                <span class="px-3 py-1.5 rounded-full text-xs font-bold bg-blue-50 text-blue-800 border border-blue-200">
+                    {{ $activeDriversCount }} Driver Aktif &bull; {{ $inactiveDriversCount }} Nonaktif
                 </span>
                 <a href="{{ route('admin.dashboard') }}" class="px-3.5 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all">
                     &larr; Dashboard
@@ -53,7 +60,7 @@
             </div>
         </header>
 
-        <main class="p-6 sm:p-8 space-y-6 flex-1">
+        <main class="p-6 sm:p-8 space-y-7 flex-1">
 
             @if(session('success'))
             <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-2xl text-sm font-semibold shadow-xs flex items-center justify-between">
@@ -65,18 +72,28 @@
             </div>
             @endif
 
-            <!-- 3 KARTU STATUS UTAMA ARMADA -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                <!-- 1. Total Armada -->
+            @if($errors->any())
+            <div class="p-4 bg-rose-50 border border-rose-200 text-rose-900 rounded-2xl text-sm font-semibold shadow-xs flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="text-rose-600 text-lg">⚠</span>
+                    <span>{{ $errors->first() }}</span>
+                </div>
+                <button type="button" onclick="this.parentElement.remove()" class="text-rose-700 hover:text-rose-950 font-bold text-sm cursor-pointer">&times;</button>
+            </div>
+            @endif
+
+            <!-- 3 KARTU RINGKASAN: JUMLAH KENDARAAN, DRIVER AKTIF, DRIVER NONAKTIF -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
+                <!-- 1. Jumlah Kendaraan -->
                 <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden flex items-center justify-between">
                     <div>
-                        <span class="text-xs font-semibold text-slate-500 block">Total Armada Paguyuban</span>
-                        <span class="text-3xl font-extrabold text-slate-900 block mt-1 tracking-tight">
-                            {{ $totalJeepsCount }} <span class="text-xs font-normal text-slate-400">Armada</span>
+                        <span class="text-xs font-semibold text-slate-500 block">Jumlah Kendaraan</span>
+                        <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 block mt-1 tracking-tight">
+                            {{ $totalJeepsCount }} <span class="text-xs font-normal text-slate-400">Unit</span>
                         </span>
                         <span class="inline-flex items-center gap-1.5 text-[11px] text-slate-600 font-semibold mt-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-                            Terdaftar di Paguyuban
+                            Total Armada Paguyuban
                         </span>
                     </div>
                     <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
@@ -84,215 +101,357 @@
                     </div>
                 </div>
 
-                <!-- 2. Jeep Aktif / Tersedia -->
+                <!-- 2. Driver Aktif -->
                 <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden flex items-center justify-between">
                     <div>
-                        <span class="text-xs font-semibold text-slate-500 block">Jumlah Jeep Aktif (Ready)</span>
-                        <span class="text-3xl font-extrabold text-emerald-800 block mt-1 tracking-tight">
-                            {{ $readyJeepsCount }} <span class="text-xs font-normal text-slate-400">Armada</span>
+                        <span class="text-xs font-semibold text-slate-500 block">Driver Aktif</span>
+                        <span class="text-2xl sm:text-3xl font-extrabold text-emerald-800 block mt-1 tracking-tight">
+                            {{ $activeDriversCount }} <span class="text-xs font-normal text-slate-400">Driver</span>
                         </span>
                         <span class="inline-flex items-center gap-1.5 text-[11px] text-emerald-700 font-semibold mt-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                            Siap di basecamp / standby
+                            Siap ditugaskan trip
                         </span>
                     </div>
-                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                     </div>
                 </div>
 
-                <!-- 3. Jeep Sedang Digunakan -->
+                <!-- 3. Driver Tidak Aktif / Nonaktif -->
                 <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden flex items-center justify-between">
                     <div>
-                        <span class="text-xs font-semibold text-slate-500 block">Jeep Sedang Digunakan</span>
-                        <span class="text-3xl font-extrabold text-blue-700 block mt-1 tracking-tight">
-                            {{ $onTripJeepsCount }} <span class="text-xs font-normal text-slate-400">Armada</span>
+                        <span class="text-xs font-semibold text-slate-500 block">Driver Nonaktif</span>
+                        <span class="text-2xl sm:text-3xl font-extrabold text-amber-700 block mt-1 tracking-tight">
+                            {{ $inactiveDriversCount }} <span class="text-xs font-normal text-slate-400">Driver</span>
                         </span>
-                        <span class="inline-flex items-center gap-1.5 text-[11px] text-blue-700 font-semibold mt-2">
-                            <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                            Sedang melayani trip wisatawan
+                        <span class="inline-flex items-center gap-1.5 text-[11px] text-amber-700 font-semibold mt-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                            Libur / Izin / Nonaktif
                         </span>
                     </div>
-                    <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
                     </div>
                 </div>
             </div>
 
-            <!-- PANEL: 20 UNIT ARMADA JEEP & JADWAL SESI -->
+            <!-- PANEL: MONITORING DRIVER PAGUYUBAN (AKTIF & TIDAK AKTIF) -->
             <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-                <div class="p-5 sm:p-6 border-b border-slate-200 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div class="p-5 sm:p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-slate-50 to-white">
                     <div>
-                        <h3 class="text-base font-bold text-slate-800">Daftar Status & Jadwal Penggunaan 20 Armada</h3>
-                        <p class="text-xs text-slate-500 mt-0.5">Ubah status armada secara live pada menu dropdown di setiap kartu armada.</p>
-                    </div>
-
-                    <!-- Filter Kategori Status Jeep & Tombol Aksi Cepat -->
-                    <div class="flex items-center gap-2 flex-wrap">
-                        <div class="flex items-center gap-1.5 flex-wrap">
-                            <button type="button" onclick="filterJeeps('ALL', this)" class="jeep-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-emerald-800 text-white shadow-xs cursor-pointer">
-                                Semua ({{ $totalJeepsCount }})
-                            </button>
-                            <button type="button" onclick="filterJeeps('READY', this)" class="jeep-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-white text-slate-600 hover:text-emerald-800 border border-slate-200 cursor-pointer">
-                                Tersedia ({{ $readyJeepsCount }})
-                            </button>
-                            <button type="button" onclick="filterJeeps('ON_TRIP', this)" class="jeep-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-white text-slate-600 hover:text-blue-800 border border-slate-200 cursor-pointer">
-                                On Trip ({{ $onTripJeepsCount }})
-                            </button>
-                            <button type="button" onclick="filterJeeps('MAINTENANCE', this)" class="jeep-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-white text-slate-600 hover:text-amber-800 border border-slate-200 cursor-pointer">
-                                Off / Servis ({{ $maintenanceJeepsCount }})
-                            </button>
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                            <h3 class="text-base font-bold text-slate-800">Status & Kesiapan Driver Paguyuban ({{ $totalDriversCount }} Driver)</h3>
                         </div>
-
-                        @if($readyJeepsCount < $totalJeepsCount)
-                        <form action="{{ route('admin.jeeps.activateAll') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin mengaktifkan seluruh {{ $totalJeepsCount }} unit armada Jeep menjadi status TERSEDIA (Ready)?')" class="inline ml-auto">
-                            @csrf
-                            <button type="submit" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white shadow-xs hover:shadow transition-all flex items-center gap-1.5 cursor-pointer">
-                                <svg class="w-3.5 h-3.5 text-emerald-200" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/></svg>
-                                <span>Aktifkan Semua ({{ $totalJeepsCount }} Unit)</span>
-                            </button>
-                        </form>
-                        @endif
+                        <p class="text-xs text-slate-500 mt-0.5">Daftar driver yang siap ditugaskan melayani wisatawan dan driver yang sedang libur/tidak aktif.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-800">
+                            {{ $activeDriversCount }} Driver Aktif
+                        </span>
+                        <span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-700">
+                            {{ $inactiveDriversCount }} Driver Nonaktif
+                        </span>
                     </div>
                 </div>
 
-                <!-- Grid 20 Unit Jeep -->
-                <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                    @forelse($jeepsMonitoring as $j)
-                    @php
-                        $activeAssign = $j->assignments->first();
-                        $upcomingAssign = $j->assignments->slice(1, 3);
-                        $status = $j->status;
-                    @endphp
-                    <div class="jeep-row bg-slate-50/70 rounded-2xl border border-slate-200 p-4 flex flex-col justify-between hover:shadow-md hover:border-emerald-300 transition-all" data-status="{{ $status }}">
+                <div class="p-5 sm:p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- KOLOM 1: DAFTAR SEMENTARA DRIVER YANG AKTIF -->
+                    <div class="bg-[#F8FAF9] rounded-2xl border border-emerald-200/80 p-5 flex flex-col justify-between">
                         <div>
-                            <!-- Header Jeep Card -->
-                            <div class="flex items-start justify-between gap-2 pb-3 border-b border-slate-200/80">
-                                <div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="font-bold text-slate-900 text-sm">{{ $j->model_name }}</span>
-                                        <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-white text-slate-700 border border-slate-200">
-                                            {{ $j->plate_number }}
-                                        </span>
-                                    </div>
-                                    <span class="text-[11px] text-slate-500 block mt-0.5">Kapasitas Maks: {{ $j->capacity }} Penumpang</span>
+                            <div class="flex items-center justify-between pb-3 mb-4 border-b border-emerald-200/70">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-3 h-3 rounded-full bg-emerald-500 flex items-center justify-center">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+                                    </span>
+                                    <h4 class="text-sm font-extrabold text-slate-800 tracking-tight">Daftar Driver yang Aktif</h4>
                                 </div>
-                                
-                                <!-- Dropdown Update Status Cepat -->
-                                <form action="{{ route('admin.jeeps.status', $j->id) }}" method="POST" class="inline">
-                                    @csrf
-                                    <select name="status" onchange="this.form.submit()" class="text-[10px] font-extrabold rounded-lg px-2 py-1 border focus:outline-none cursor-pointer
-                                        {{ $status === 'READY' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : '' }}
-                                        {{ $status === 'ON_TRIP' ? 'bg-blue-100 text-blue-800 border-blue-300' : '' }}
-                                        {{ $status === 'MAINTENANCE' ? 'bg-amber-100 text-amber-800 border-amber-300' : '' }}">
-                                        <option value="READY" {{ $status === 'READY' ? 'selected' : '' }}>● TERSEDIA</option>
-                                        <option value="ON_TRIP" {{ $status === 'ON_TRIP' ? 'selected' : '' }}>● ON TRIP</option>
-                                        <option value="MAINTENANCE" {{ $status === 'MAINTENANCE' ? 'selected' : '' }}>● TIDAK TERSEDIA</option>
-                                    </select>
-                                </form>
+                                <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                    {{ $activeDriversCount }} Personel
+                                </span>
                             </div>
 
-                            <!-- Detail Operasional & Jadwal Penggunaan -->
-                            <div class="py-3 space-y-2">
-                                @if($activeAssign)
-                                <div class="p-2.5 rounded-xl bg-blue-50/80 border border-blue-200 text-xs space-y-1">
-                                    <div class="flex items-center justify-between text-blue-900 font-bold">
-                                        <span class="flex items-center gap-1.5">
-                                            <span class="w-2 h-2 rounded-full bg-blue-600 animate-ping"></span>
-                                            Trip Berlangsung Sekarang
+                            <div class="space-y-2">
+                                @forelse($activeDrivers as $index => $d)
+                                <div class="flex items-center justify-between p-3 rounded-xl bg-white border border-slate-200/90 hover:border-emerald-300 hover:shadow-xs transition-all">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-xs flex items-center justify-center shrink-0">
+                                            {{ $index + 1 }}
                                         </span>
-                                        <span class="font-mono text-[11px]">#{{ $activeAssign->booking?->booking_code }}</span>
-                                    </div>
-                                    <div class="text-blue-800 text-[11px]">
-                                        <span>Paket: <strong>{{ $activeAssign->booking?->package?->name ?? 'Trip' }}</strong></span>
-                                        <span class="mx-1">&bull;</span>
-                                        <span>Sesi: <strong>{{ $activeAssign->booking?->slot?->start_time }} WIB</strong></span>
-                                    </div>
-                                    <div class="text-blue-700 text-[11px] pt-1 border-t border-blue-200/60">
-                                        Driver: <strong>{{ $activeAssign->driver?->full_name ?? 'Auto Paguyuban' }}</strong> ({{ $activeAssign->booking?->passenger_count }} Wisatawan)
-                                    </div>
-                                </div>
-                                @elseif($status === 'MAINTENANCE')
-                                <div class="p-2.5 rounded-xl bg-amber-50/80 border border-amber-200 text-xs text-amber-900 space-y-0.5">
-                                    <span class="font-bold flex items-center gap-1.5">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                                        Armada Sedang Istirahat / Servis
-                                    </span>
-                                    <p class="text-[11px] text-amber-700">Tidak dialokasikan untuk pemesanan baru sampai status diubah ke Tersedia.</p>
-                                </div>
-                                @else
-                                <div class="p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200 text-xs text-emerald-900 flex items-center justify-between">
-                                    <span class="font-semibold flex items-center gap-1.5">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                        Standby di Basecamp Wukirsari
-                                    </span>
-                                    <span class="text-[10px] text-emerald-700 font-bold">Siap Ditugaskan</span>
-                                </div>
-                                @endif
-
-                                <!-- Jadwal Penggunaan Hari Ini -->
-                                <div class="pt-2">
-                                    <span class="text-[11px] font-bold text-slate-600 uppercase tracking-wider block mb-1.5">Jadwal Sesi Hari Ini:</span>
-                                    @if(count($upcomingAssign) > 0)
-                                    <div class="space-y-1">
-                                        @foreach($upcomingAssign as $ua)
-                                        <div class="flex items-center justify-between text-[11px] p-1.5 rounded-lg bg-white border border-slate-200/80">
-                                            <div class="flex items-center gap-1.5">
-                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                                <span class="font-bold text-slate-800">{{ $ua->booking?->slot?->start_time ?? '09:00' }} WIB</span>
-                                                <span class="text-slate-500">({{ $ua->booking?->package?->name ?? 'Trip' }})</span>
-                                            </div>
-                                            <span class="font-mono text-slate-600 text-[10px]">#{{ $ua->booking?->booking_code }}</span>
+                                        <div class="min-w-0">
+                                            <span class="font-bold text-slate-900 text-xs sm:text-sm block capitalize truncate">
+                                                {{ $d->full_name }}
+                                            </span>
+                                            <span class="text-[11px] text-slate-400 block font-mono">
+                                                ID: #DRV-{{ str_pad($d->id, 2, '0', STR_PAD_LEFT) }} &bull; {{ $d->license_number ?? 'SIM-B1' }}
+                                            </span>
                                         </div>
-                                        @endforeach
                                     </div>
-                                    @else
-                                    <p class="text-[11px] text-slate-400 italic">Belum ada antrean jadwal berikutnya hari ini.</p>
-                                    @endif
+                                    <div class="flex items-center gap-1.5 shrink-0">
+                                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#DCFCE7] text-[#16A34A] border border-emerald-200/60 inline-flex items-center gap-1">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                            Siap Jalan
+                                        </span>
+                                        <form action="{{ route('admin.drivers.status', $d->id) }}" method="POST" class="inline"
+                                              data-confirm-title="Nonaktifkan Driver"
+                                              data-confirm-message="Ubah status driver <strong class='text-slate-800 font-bold'>{{ $d->full_name }}</strong> menjadi <strong class='text-amber-700 font-bold'>TIDAK AKTIF</strong>? Driver sementara tidak akan dialokasikan ke booking."
+                                              data-confirm-type="warning"
+                                              data-confirm-text="Ya, Nonaktifkan"
+                                              data-confirm-cancel="Batal">
+                                            @csrf
+                                            <button type="submit" class="px-2 py-1 rounded-lg border border-slate-200 hover:border-amber-300 bg-white hover:bg-amber-50 text-[10px] font-bold text-slate-600 hover:text-amber-800 transition-all cursor-pointer" title="Nonaktifkan Driver">
+                                                Nonaktifkan
+                                            </button>
+                                        </form>
+                                        <form action="{{ route('admin.drivers.destroy', $d->id) }}" method="POST" class="inline"
+                                              data-confirm-title="Hapus Driver"
+                                              data-confirm-message="Apakah Anda yakin ingin menghapus data driver <strong class='text-slate-800 font-bold'>{{ $d->full_name }}</strong> secara permanen dari sistem?"
+                                              data-confirm-type="danger"
+                                              data-confirm-text="Ya, Hapus Driver"
+                                              data-confirm-cancel="Batal">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="p-1 rounded-lg border border-slate-200 hover:border-rose-300 bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-all cursor-pointer" title="Hapus Driver">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </div>
+                                @empty
+                                <div class="p-6 text-center text-slate-400 text-xs italic">
+                                    Tidak ada driver aktif saat ini.
+                                </div>
+                                @endforelse
                             </div>
                         </div>
-
-                        <!-- Footer Info Driver -->
-                        <div class="pt-2.5 border-t border-slate-200/80 flex items-center justify-between text-[11px] text-slate-500">
-                            <span>Sistem Driver:</span>
-                            <span class="font-semibold text-emerald-800">
-                                🎲 Alokasi Otomatis Paguyuban
-                            </span>
+                        <div class="mt-4 pt-3 border-t border-emerald-100 flex items-center justify-between text-[11px] text-emerald-800 font-medium">
+                            <span>Status: Muncul dalam penugasan order booking</span>
+                            <span>✓ Terintegrasi Rotasi</span>
                         </div>
                     </div>
-                    @empty
-                    <div class="col-span-3 text-center py-8 text-slate-400 text-xs">
-                        Tidak ada data armada jeep.
+
+                    <!-- KOLOM 2: DAFTAR DRIVER YANG TIDAK AKTIF -->
+                    <div class="bg-slate-50 rounded-2xl border border-slate-200 p-5 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-200">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-3 h-3 rounded-full bg-slate-400 flex items-center justify-center">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+                                    </span>
+                                    <h4 class="text-sm font-extrabold text-slate-800 tracking-tight">Daftar Driver yang Tidak Aktif</h4>
+                                </div>
+                                <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-200 text-slate-700">
+                                    {{ $inactiveDriversCount }} Personel
+                                </span>
+                            </div>
+
+                            <div class="space-y-2">
+                                @forelse($inactiveDrivers as $index => $d)
+                                <div class="flex items-center justify-between p-3 rounded-xl bg-white border border-slate-200/90 hover:border-slate-300 transition-all">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <span class="w-6 h-6 rounded-full bg-slate-100 text-slate-600 font-extrabold text-xs flex items-center justify-center shrink-0">
+                                            {{ $index + 1 }}
+                                        </span>
+                                        <div class="min-w-0">
+                                            <span class="font-bold text-slate-700 text-xs sm:text-sm block capitalize truncate">
+                                                {{ $d->full_name }}
+                                            </span>
+                                            <span class="text-[11px] text-slate-400 block font-mono">
+                                                ID: #DRV-{{ str_pad($d->id, 2, '0', STR_PAD_LEFT) }} &bull; {{ $d->license_number ?? 'SIM-B1' }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 shrink-0">
+                                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200/60 inline-flex items-center gap-1">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                            Libur / Izin
+                                        </span>
+                                        <form action="{{ route('admin.drivers.status', $d->id) }}" method="POST" class="inline"
+                                              data-confirm-title="Aktifkan Kembali Driver"
+                                              data-confirm-message="Aktifkan kembali driver <strong class='text-slate-800 font-bold'>{{ $d->full_name }}</strong> untuk jadwal rotasi penugasan armada?"
+                                              data-confirm-type="success"
+                                              data-confirm-text="Ya, Aktifkan"
+                                              data-confirm-cancel="Batal">
+                                            @csrf
+                                            <button type="submit" class="px-2.5 py-1 rounded-lg border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-[10px] font-bold text-emerald-800 transition-all cursor-pointer" title="Aktifkan Driver">
+                                                Aktifkan
+                                            </button>
+                                        </form>
+                                        <form action="{{ route('admin.drivers.destroy', $d->id) }}" method="POST" class="inline"
+                                              data-confirm-title="Hapus Driver"
+                                              data-confirm-message="Apakah Anda yakin ingin menghapus data driver <strong class='text-slate-800 font-bold'>{{ $d->full_name }}</strong> secara permanen dari sistem?"
+                                              data-confirm-type="danger"
+                                              data-confirm-text="Ya, Hapus Driver"
+                                              data-confirm-cancel="Batal">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="p-1 rounded-lg border border-slate-200 hover:border-rose-300 bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-all cursor-pointer" title="Hapus Driver">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                                @empty
+                                <div class="p-6 text-center text-slate-400 text-xs italic">
+                                    Semua driver saat ini berstatus aktif.
+                                </div>
+                                @endforelse
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-500 font-medium">
+                            <span>Status: Tidak dialokasikan untuk order baru</span>
+                            <span>⏸ Standby Off</span>
+                        </div>
                     </div>
-                    @endforelse
                 </div>
             </div>
-
-            <!-- JAVASCRIPT UNTUK FILTER JEEP CARDS -->
-            <script>
-                function filterJeeps(status, btn) {
-                    document.querySelectorAll('.jeep-filter-btn').forEach(b => {
-                        b.classList.remove('bg-emerald-800', 'text-white', 'shadow-xs');
-                        b.classList.add('bg-white', 'text-slate-600');
-                    });
-                    btn.classList.add('bg-emerald-800', 'text-white', 'shadow-xs');
-                    btn.classList.remove('bg-white', 'text-slate-600');
-                    
-                    const rows = document.querySelectorAll('.jeep-row');
-                    rows.forEach(row => {
-                        if (status === 'ALL' || row.getAttribute('data-status') === status) {
-                            row.style.display = '';
-                        } else {
-                            row.style.display = 'none';
-                        }
-                    });
-                }
-            </script>
 
         </main>
     </div>
 
+    <!-- MODAL: TAMBAH KENDARAAN / ARMADA JEEP BARU -->
+    @php
+        $nextJeepNo = $totalJeepsCount + 1;
+    @endphp
+    <div id="modalAddJeep" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden transition-opacity duration-200 select-none">
+        <div id="modalAddJeepCard" class="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95 opacity-0">
+            <form action="{{ route('admin.jeeps.store') }}" method="POST">
+                @csrf
+                <!-- Modal Header -->
+                <div class="p-5 sm:p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold shadow-xs">
+                            <svg class="w-5 h-5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 17a2 2 0 100-4 2 2 0 000 4zm8 0a2 2 0 100-4 2 2 0 000 4zM4 11h16M4 11l2-6h12l2 6M4 11v6a1 1 0 001 1h1m10 0h1a1 1 0 001-1v-6"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-extrabold text-slate-900 text-base">Tambah Kendaraan Baru</h3>
+                            <p class="text-xs text-slate-500">Nomor plat / unit diurutkan otomatis dari 1</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="closeAddJeepModal()" class="w-8 h-8 rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-700 flex items-center justify-center font-bold text-lg cursor-pointer transition-colors">&times;</button>
+                </div>
+
+                <!-- Modal Body Form -->
+                <div class="p-6 space-y-4 text-xs">
+                    <!-- 1. Nomor Armada / Plat -->
+                    <div>
+                        <label for="jeep_plate_number" class="block font-bold text-slate-700 mb-1.5 text-xs">
+                            Nomor Armada / Plat (Urut dari 1) <span class="text-rose-500">*</span>
+                        </label>
+                        <input type="text" name="plate_number" id="jeep_plate_number" value="{{ $nextJeepNo }}" oninput="syncJeepName()" placeholder="Contoh: {{ $nextJeepNo }}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 font-mono font-bold tracking-wider focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <span class="text-[10px] text-slate-400 mt-1 block">Otomatis urut mulai dari nomor 1.</span>
+                    </div>
+
+                    <!-- 2. Nama Driver Baru (Ketik Manual) -->
+                    <div>
+                        <label for="jeep_driver_name" class="block font-bold text-slate-700 mb-1.5 text-xs">
+                            Nama Lengkap Driver Baru <span class="text-rose-500">*</span>
+                        </label>
+                        <input type="text" name="driver_name" id="jeep_driver_name" required oninput="syncJeepName()" placeholder="Contoh: Budi Santoso" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <span class="text-[10px] text-slate-400 mt-1 block">Nama driver yang diketik akan otomatis ditambahkan ke daftar driver paguyuban.</span>
+                    </div>
+
+                    <!-- 3. Nomor Telepon / WhatsApp Driver -->
+                    <div>
+                        <label for="jeep_driver_phone" class="block font-bold text-slate-700 mb-1.5 text-xs">
+                            Nomor Telepon / WhatsApp Driver <span class="text-slate-400 font-normal">(Opsional)</span>
+                        </label>
+                        <input type="text" name="driver_phone" id="jeep_driver_phone" placeholder="Contoh: 081234567890" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+
+                    <!-- 4. Format Nama / Identitas Kendaraan -->
+                    <div>
+                        <label for="jeep_model_name" class="block font-bold text-slate-700 mb-1.5 text-xs">
+                            Format Nama / Identitas Armada
+                        </label>
+                        <input type="text" name="model_name" id="jeep_model_name" value="Jeep #{{ $nextJeepNo }}" required placeholder="Contoh: Jeep #{{ $nextJeepNo }} (Nama Driver)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <span class="text-[10px] text-slate-400 mt-1 block">Otomatis terformat menjadi Jeep #{{ $nextJeepNo }} (Nama Driver).</span>
+                    </div>
+
+                    <!-- 5. Status Awal -->
+                    <div>
+                        <label for="jeep_status" class="block font-bold text-slate-700 mb-1.5 text-xs">
+                            Status Awal Operasional <span class="text-rose-500">*</span>
+                        </label>
+                        <select name="status" id="jeep_status" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer">
+                            <option value="READY" selected>● TERSEDIA (Armada & Driver Langsung Siap Jalan)</option>
+                            <option value="MAINTENANCE">● TIDAK TERSEDIA (Sedang Servis / Libur)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="p-5 sm:p-6 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-2.5">
+                    <button type="button" onclick="closeAddJeepModal()" class="px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs transition-colors cursor-pointer">
+                        Batal
+                    </button>
+                    <button type="submit" class="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs hover:shadow transition-all cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        <span>Simpan Kendaraan</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SCRIPT MODAL ADD JEEP -->
+    <script>
+        function syncJeepName() {
+            const numInput = document.getElementById('jeep_plate_number');
+            const driverInput = document.getElementById('jeep_driver_name');
+            const modelInput = document.getElementById('jeep_model_name');
+
+            const num = numInput ? (numInput.value.trim() || '{{ $nextJeepNo }}') : '{{ $nextJeepNo }}';
+            const driver = driverInput ? driverInput.value.trim() : '';
+
+            if (driver) {
+                modelInput.value = 'Jeep #' + num + ' (' + driver + ')';
+            } else {
+                modelInput.value = 'Jeep #' + num;
+            }
+        }
+
+        function openAddJeepModal() {
+            const modal = document.getElementById('modalAddJeep');
+            const card = document.getElementById('modalAddJeepCard');
+            if (!modal) return;
+            modal.classList.remove('hidden');
+            requestAnimationFrame(() => {
+                card.classList.remove('scale-95', 'opacity-0');
+                card.classList.add('scale-100', 'opacity-100');
+                document.getElementById('jeep_driver_name')?.focus();
+            });
+        }
+
+        function closeAddJeepModal() {
+            const modal = document.getElementById('modalAddJeep');
+            const card = document.getElementById('modalAddJeepCard');
+            if (!modal) return;
+            card.classList.remove('scale-100', 'opacity-100');
+            card.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 150);
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeAddJeepModal();
+            }
+        });
+
+        const modalAddJeep = document.getElementById('modalAddJeep');
+        if (modalAddJeep) {
+            modalAddJeep.addEventListener('click', function(e) {
+                if (e.target === modalAddJeep) {
+                    closeAddJeepModal();
+                }
+            });
+        }
+    </script>
 </body>
 </html>
 

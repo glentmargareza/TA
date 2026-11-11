@@ -134,6 +134,18 @@
                         <tbody class="divide-y divide-slate-100">
                             @forelse($bookings as $b)
                             @php
+                                $proofUrl = null;
+                                $senderName = null;
+                                $senderBank = null;
+                                foreach ($b->payments as $p) {
+                                    if (is_array($p->payload_response) && !empty($p->payload_response['proof_url'])) {
+                                        $proofUrl = asset($p->payload_response['proof_url']);
+                                        $senderName = $p->payload_response['sender_name'] ?? null;
+                                        $senderBank = $p->payload_response['sender_bank'] ?? null;
+                                        break;
+                                    }
+                                }
+
                                 $detailData = [
                                     'id' => $b->id,
                                     'booking_code' => $b->booking_code,
@@ -148,7 +160,7 @@
                                     'arrival_type' => $b->arrival_type === 'PICKUP' ? 'Jemput di Hotel/Stasiun' : 'Datang Sendiri ke Basecamp',
                                     'pickup_zone' => $b->pickupZone?->name ?? 'Basecamp',
                                     'pickup_address' => $b->pickup_address ?? '-',
-                                    'payment_mode' => $b->payment_mode === 'DP' ? 'Uang Muka (DP 50%)' : 'Pembayaran Penuh (100%)',
+                                    'payment_mode' => $b->payment_mode === 'DP' ? 'Uang Muka (DP 30%)' : 'Pembayaran Penuh (100%)',
                                     'package_subtotal' => number_format($b->package_subtotal, 0, ',', '.'),
                                     'pickup_fee' => number_format($b->pickup_fee, 0, ',', '.'),
                                     'total_amount' => number_format($b->total_amount, 0, ',', '.'),
@@ -159,6 +171,9 @@
                                     'jeep_name' => $b->assignments->first()?->jeep?->model_name ?? 'Belum Ditugaskan',
                                     'driver_name' => $b->assignments->first()?->driver?->full_name ?? 'Dialokasikan Otomatis',
                                     'customer_notes' => $b->customer_notes ?? '',
+                                    'proof_url' => $proofUrl,
+                                    'sender_name' => $senderName,
+                                    'sender_bank' => $senderBank,
                                 ];
                             @endphp
                             <tr class="hover:bg-slate-50/70 transition-colors">
@@ -267,8 +282,27 @@
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                         </button>
 
+                                        @if(!empty($detailData['proof_url']))
+                                        <!-- Tombol Akses Bukti Transfer Cepat (1 Tab / In-Page Modal) -->
+                                        <button type="button" 
+                                            data-proof-url="{{ $detailData['proof_url'] }}" 
+                                            data-booking-code="{{ $b->booking_code }}" 
+                                            data-sender-name="{{ $detailData['sender_name'] ?? 'Wisatawan' }}" 
+                                            data-sender-bank="{{ $detailData['sender_bank'] ?? 'Bank BPD DIY' }}" 
+                                            onclick="openProofFromBtn(this)" 
+                                            class="p-1.5 rounded-lg border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold shadow-2xs transition-all cursor-pointer" 
+                                            title="Lihat Bukti Transfer Pelanggan (Dalam Halaman)">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                        </button>
+                                        @endif
+
                                         @if($b->booking_status === 'DP_PAID')
-                                        <form action="{{ route('admin.settle', $b->id) }}" method="POST" onsubmit="return confirm('Konfirmasi terima pelunasan sisa tagihan untuk booking ini?')">
+                                        <form action="{{ route('admin.settle', $b->id) }}" method="POST"
+                                              data-confirm-title="Konfirmasi Pelunasan Loket"
+                                              data-confirm-message="Terima pelunasan sisa tagihan untuk booking <strong class='font-bold text-emerald-800'>#{{ $b->booking_code }}</strong> atas nama <strong class='text-slate-800'>{{ $b->customer_name }}</strong> sebesar <strong class='text-emerald-700 font-bold'>Rp {{ number_format($b->remaining_amount ?? 0, 0, ',', '.') }}</strong>?"
+                                              data-confirm-type="success"
+                                              data-confirm-text="Ya, Terima Pelunasan"
+                                              data-confirm-cancel="Batal">
                                             @csrf
                                             <button type="submit" class="px-2.5 py-1 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-[10px] shadow-xs cursor-pointer">
                                                 Pelunasan
@@ -277,7 +311,12 @@
                                         @endif
 
                                         @if($b->booking_status !== 'CANCELLED' && $b->booking_status !== 'COMPLETED')
-                                        <form action="{{ route('admin.cancel', $b->id) }}" method="POST" onsubmit="return confirm('Batalkan booking #{{ $b->booking_code }}?')">
+                                        <form action="{{ route('admin.cancel', $b->id) }}" method="POST"
+                                              data-confirm-title="Batalkan Booking"
+                                              data-confirm-message="Apakah Anda yakin ingin membatalkan booking <strong class='font-bold text-rose-700'>#{{ $b->booking_code }}</strong> atas nama <strong class='text-slate-800'>{{ $b->customer_name }}</strong>? Tindakan ini tidak dapat dibatalkan."
+                                              data-confirm-type="danger"
+                                              data-confirm-text="Ya, Batalkan Booking"
+                                              data-confirm-cancel="Kembali">
                                             @csrf
                                             <button type="submit" class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-rose-50 hover:border-rose-300 text-slate-400 hover:text-rose-600 text-xs shadow-2xs transition-all cursor-pointer" title="Batalkan booking">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -455,13 +494,46 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- 5. Bukti Transfer Pelanggan (Jika Ada) -->
+                        <div id="detail_proof_box" class="bg-blue-50/70 p-4 sm:p-5 rounded-2xl border border-blue-200/80 space-y-3 hidden">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-bold text-blue-900 flex items-center gap-2 text-xs uppercase tracking-wider">
+                                    <svg class="w-4 h-4 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                    Bukti Transfer Pelanggan (Bank BPD DIY)
+                                </h4>
+                                <span id="detail_proof_bank_badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800"></span>
+                            </div>
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-blue-100">
+                                <div class="flex items-center gap-3">
+                                    <img id="detail_proof_thumb" src="" alt="Thumbnail Bukti" onclick="showCurrentProofLightbox()" class="w-12 h-12 sm:w-14 sm:h-14 object-cover rounded-xl border border-slate-200 cursor-pointer hover:opacity-80 transition-opacity shrink-0 shadow-xs" title="Klik untuk memperbesar bukti transfer" />
+                                    <div>
+                                        <span class="text-slate-400 text-xs block">Nama Pengirim (Sesuai Rekening / Struk):</span>
+                                        <span id="detail_proof_sender" class="font-bold text-slate-800 text-xs sm:text-sm block"></span>
+                                        <span class="text-[11px] text-blue-600 block mt-0.5">Transfer Resmi Bank BPD DIY &bull; <button type="button" onclick="showCurrentProofLightbox()" class="underline font-semibold hover:text-blue-800 cursor-pointer">Klik gambar untuk perbesar</button></span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" id="btnDetailViewProof" onclick="showCurrentProofLightbox()" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs hover:shadow transition-all cursor-pointer">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                        <span>Lihat Bukti Transfer</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Modal Footer -->
-                    <div class="p-5 sm:p-6 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
-                        <a id="btnWhatsappCustomer" href="#" target="_blank" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm hover:shadow transition-all cursor-pointer">
-                            <span>Hubungi Pemesan (WhatsApp)</span>
-                        </a>
+                    <div class="p-5 sm:p-6 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-2 flex-wrap">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <a id="btnWhatsappCustomer" href="#" target="_blank" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm hover:shadow transition-all cursor-pointer">
+                                <span>Hubungi Pemesan (WhatsApp)</span>
+                            </a>
+                            <button type="button" id="btnFooterViewProof" onclick="showCurrentProofLightbox()" class="hidden inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm hover:shadow transition-all cursor-pointer">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                <span>Lihat Bukti Transfer</span>
+                            </button>
+                        </div>
                         <button type="button" onclick="closeBookingDetailModal()" class="px-5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs transition-colors cursor-pointer">
                             Tutup
                         </button>
@@ -530,7 +602,7 @@
                                 <select name="jeep_id" id="assign_jeep_select" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-semibold cursor-pointer">
                                     <option value="random">🎲 Auto-Pilih Jeep Tersedia (Ready)</option>
                                     @foreach($jeeps as $j)
-                                    <option value="{{ $j->id }}">🚙 {{ $j->model_name }} [{{ $j->plate_number }}] &mdash; {{ $j->status === 'READY' ? '🟢 TERSEDIA' : ($j->status === 'ON_TRIP' ? '🔵 ON TRIP' : '🟡 OFF/SERVIS') }}</option>
+                                    <option value="{{ $j->id }}">🚙 {{ $j->model_name }} [No. {{ $j->plate_number }}] &mdash; {{ $j->status === 'READY' ? '🟢 TERSEDIA' : ($j->status === 'ON_TRIP' ? '🔵 ON TRIP' : '🟡 OFF/SERVIS') }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -549,8 +621,81 @@
                 </div>
             </div>
 
+            <!-- MODAL POPUP LIGHTBOX BUKTI TRANSFER (1 TAB / IN-PAGE PREVIEW) -->
+            <div id="modalProofLightbox" onclick="if(event.target === this) closeProofLightbox()" class="fixed inset-0 z-[60] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 hidden transition-all duration-200">
+                <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[92vh] flex flex-col overflow-hidden shadow-2xl border border-slate-100 transform transition-all animate-in fade-in zoom-in-95">
+                    <!-- Lightbox Header -->
+                    <div class="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold shrink-0">
+                                <svg class="w-5 h-5 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h3 class="font-bold text-slate-800 text-sm sm:text-base">Bukti Transfer Pelanggan</h3>
+                                    <span id="proofLightboxCode" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800"></span>
+                                </div>
+                                <p id="proofLightboxSender" class="text-xs text-slate-500 font-medium mt-0.5"></p>
+                            </div>
+                        </div>
+                        <button type="button" onclick="closeProofLightbox()" class="w-8 h-8 rounded-lg hover:bg-slate-200 text-slate-400 hover:text-slate-700 flex items-center justify-center font-bold text-xl cursor-pointer" title="Tutup Bukti">&times;</button>
+                    </div>
+
+                    <!-- Lightbox Body Image -->
+                    <div class="p-4 sm:p-6 bg-slate-900/5 flex items-center justify-center overflow-auto flex-1 min-h-[280px]">
+                        <img id="proofLightboxImg" src="" alt="Bukti Transfer Pelanggan" class="max-h-[65vh] w-auto max-w-full object-contain rounded-2xl shadow-md border border-slate-200 bg-white" />
+                    </div>
+
+                    <!-- Lightbox Footer -->
+                    <div class="p-3.5 sm:p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-2">
+                        <span id="proofLightboxBank" class="text-xs font-semibold text-slate-600 px-3 py-1 bg-white border border-slate-200 rounded-lg"></span>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="closeProofLightbox()" class="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs transition-colors cursor-pointer">
+                                Tutup Preview
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- JAVASCRIPT UNTUK MODAL DETAIL PEMESAN & MODAL PENUGASAN DRIVER -->
             <script>
+                // State bukti transfer aktif untuk modal detail
+                let currentDetailProof = { url: '', code: '', sender: '', bank: '' };
+
+                // Lightbox Modal Bukti Transfer (1 Tab)
+                function openProofLightbox(url, code, sender, bank) {
+                    if (!url) return;
+                    document.getElementById('proofLightboxImg').src = url;
+                    document.getElementById('proofLightboxCode').textContent = code ? ('#' + code) : '';
+                    document.getElementById('proofLightboxSender').textContent = sender ? ('Pengirim: ' + sender) : 'Pengirim: Wisatawan';
+                    document.getElementById('proofLightboxBank').textContent = bank || 'Transfer Bank BPD DIY';
+                    document.getElementById('modalProofLightbox').classList.remove('hidden');
+                }
+
+                function closeProofLightbox() {
+                    const lightbox = document.getElementById('modalProofLightbox');
+                    if (lightbox) lightbox.classList.add('hidden');
+                    const img = document.getElementById('proofLightboxImg');
+                    if (img) img.src = '';
+                }
+
+                function showCurrentProofLightbox() {
+                    if (currentDetailProof.url) {
+                        openProofLightbox(currentDetailProof.url, currentDetailProof.code, currentDetailProof.sender, currentDetailProof.bank);
+                    }
+                }
+
+                function openProofFromBtn(btn) {
+                    if (!btn) return;
+                    openProofLightbox(
+                        btn.getAttribute('data-proof-url'),
+                        btn.getAttribute('data-booking-code'),
+                        btn.getAttribute('data-sender-name'),
+                        btn.getAttribute('data-sender-bank')
+                    );
+                }
+
                 // 1. Modal Booking Detail
                 function openBookingDetailModal(source) {
                     let data;
@@ -632,6 +777,34 @@
                         waBtn.classList.add('hidden');
                     }
 
+                    // Handle Bukti Transfer Pelanggan
+                    currentDetailProof = {
+                        url: data.proof_url || '',
+                        code: data.booking_code || '',
+                        sender: (data.sender_name || 'Wisatawan') + (data.sender_bank ? ' (' + data.sender_bank + ')' : ''),
+                        bank: data.sender_bank || 'Transfer Bank BPD DIY'
+                    };
+
+                    const proofBox = document.getElementById('detail_proof_box');
+                    const btnFooterViewProof = document.getElementById('btnFooterViewProof');
+                    const thumbImg = document.getElementById('detail_proof_thumb');
+
+                    if (data.proof_url) {
+                        if (proofBox) proofBox.classList.remove('hidden');
+                        if (thumbImg) thumbImg.src = data.proof_url;
+                        if (document.getElementById('detail_proof_sender')) {
+                            document.getElementById('detail_proof_sender').textContent = currentDetailProof.sender;
+                        }
+                        if (document.getElementById('detail_proof_bank_badge')) {
+                            document.getElementById('detail_proof_bank_badge').textContent = data.sender_bank || 'Transfer Bank BPD DIY';
+                        }
+                        if (btnFooterViewProof) btnFooterViewProof.classList.remove('hidden');
+                    } else {
+                        if (proofBox) proofBox.classList.add('hidden');
+                        if (thumbImg) thumbImg.src = '';
+                        if (btnFooterViewProof) btnFooterViewProof.classList.add('hidden');
+                    }
+
                     document.getElementById('modalBookingDetail').classList.remove('hidden');
                 }
 
@@ -698,6 +871,11 @@
 
                 document.addEventListener('keydown', function(e) {
                     if (e.key === 'Escape') {
+                        const lightbox = document.getElementById('modalProofLightbox');
+                        if (lightbox && !lightbox.classList.contains('hidden')) {
+                            closeProofLightbox();
+                            return;
+                        }
                         closeBookingDetailModal();
                         closeAssignModal();
                     }

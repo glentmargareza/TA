@@ -36,16 +36,31 @@ class AdminController extends Controller
         $maintenanceJeepsCount = Jeep::where('status', 'MAINTENANCE')->count();
         $totalJeepsCount = Jeep::count();
 
-        // Statistik Operasional Booking
+        // Statistik Operasional Booking Riil
         $today = now()->toDateString();
+        $yesterday = now()->subDay()->toDateString();
+
+        // 1. Total Booking Hari Ini & Perbandingan Kemarin
         $todayBookingsCount = Booking::where(function ($q) use ($today) {
             $q->whereDate('trip_date', $today)->orWhereDate('created_at', $today);
         })->where('booking_status', '!=', 'CANCELLED')->count();
 
+        $yesterdayBookingsCount = Booking::where(function ($q) use ($yesterday) {
+            $q->whereDate('trip_date', $yesterday)->orWhereDate('created_at', $yesterday);
+        })->where('booking_status', '!=', 'CANCELLED')->count();
+
+        if ($yesterdayBookingsCount > 0) {
+            $todayPercentChange = (int) round((($todayBookingsCount - $yesterdayBookingsCount) / $yesterdayBookingsCount) * 100);
+        } else {
+            $todayPercentChange = $todayBookingsCount > 0 ? 100 : 0;
+        }
+
+        // 2. Booking Mendatang (Jadwal trip setelah hari ini)
         $upcomingBookingsCount = Booking::whereDate('trip_date', '>', $today)
             ->whereIn('booking_status', ['PENDING', 'DP_PAID', 'FULL_PAID'])
             ->count();
 
+        // 3. Booking Selesai (Trip telah lewat atau status selesai)
         $completedBookingsCount = Booking::where('booking_status', 'COMPLETED')
             ->orWhere(function ($q) use ($today) {
                 $q->whereDate('trip_date', '<', $today)
@@ -53,57 +68,69 @@ class AdminController extends Controller
             })
             ->count();
 
+        // 4. Booking Dibatalkan
         $cancelledBookingsCount = Booking::where('booking_status', 'CANCELLED')->count();
 
-        // Data Grafik Omzet & Booking (7 Hari Terakhir)
-        $chartDays = [];
-        $chartRevenue = [];
-        $chartBookings = [];
-
-        for ($i = 6; $i >= 0; $i--) {
-            $dt = now()->subDays($i);
-            $dateStr = $dt->toDateString();
-            $chartDays[] = $dt->translatedFormat('d M');
-
-            $rev = Booking::whereIn('booking_status', ['FULL_PAID', 'DP_PAID'])
-                ->where(function ($q) use ($dateStr) {
-                    $q->whereDate('created_at', $dateStr)
-                        ->orWhereDate('trip_date', $dateStr);
-                })
-                ->sum('paid_amount');
-            $chartRevenue[] = (int) $rev;
-
-            $bCount = Booking::where(function ($q) use ($dateStr) {
-                $q->whereDate('created_at', $dateStr)
-                    ->orWhereDate('trip_date', $dateStr);
-            })
-                ->count();
-            $chartBookings[] = (int) $bCount;
-        }
-
-        if (array_sum($chartRevenue) === 0 && $totalRevenue > 0) {
-            $chartRevenue = [1800000, 1500000, 1400000, 1900000, 2100000, 2200000, (int) $totalRevenue];
-            $chartBookings = [4, 3, 3, 5, 5, 6, max(3, $todayBookingsCount)];
-        }
-
-        // Status Pembayaran (%)
+        // Status Distribusi Pembayaran
         $allBookingsCount = Booking::count();
         $paidCount = Booking::whereIn('booking_status', ['FULL_PAID', 'DP_PAID', 'COMPLETED'])->count();
         $pendingCount = Booking::where('booking_status', 'PENDING')->count();
-        $cancelCount = Booking::where('booking_status', 'CANCELLED')->count();
+        $cancelCount = $cancelledBookingsCount;
 
         if ($allBookingsCount > 0) {
             $paidPercentage = (int) round(($paidCount / $allBookingsCount) * 100);
             $pendingPercentage = (int) round(($pendingCount / $allBookingsCount) * 100);
             $cancelPercentage = max(0, 100 - $paidPercentage - $pendingPercentage);
+
+            $upcomingPercentage = (int) round(($upcomingBookingsCount / $allBookingsCount) * 100);
+            $completedPercentage = (int) round(($completedBookingsCount / $allBookingsCount) * 100);
         } else {
-            $paidPercentage = 95;
-            $pendingPercentage = 3;
-            $cancelPercentage = 2;
+            $paidPercentage = 0;
+            $pendingPercentage = 0;
+            $cancelPercentage = 0;
+            $upcomingPercentage = 0;
+            $completedPercentage = 0;
         }
 
+        // Data Grafik Omzet & Booking (Dukungan Rentang 7, 14, dan 30 Hari Terakhir)
+        $chartData = [
+            '7' => ['days' => [], 'revenue' => [], 'bookings' => []],
+            '14' => ['days' => [], 'revenue' => [], 'bookings' => []],
+            '30' => ['days' => [], 'revenue' => [], 'bookings' => []],
+        ];
+
+        for ($i = 29; $i >= 0; $i--) {
+            $dt = now()->subDays($i);
+            $dateStr = $dt->toDateString();
+            $dayLabel = $dt->translatedFormat('d M');
+
+            $rev = (int) Booking::whereIn('booking_status', ['FULL_PAID', 'DP_PAID'])
+                ->whereDate('created_at', $dateStr)
+                ->sum('paid_amount');
+
+            $bCount = (int) Booking::whereDate('created_at', $dateStr)->count();
+
+            if ($i < 7) {
+                $chartData['7']['days'][] = $dayLabel;
+                $chartData['7']['revenue'][] = $rev;
+                $chartData['7']['bookings'][] = $bCount;
+            }
+            if ($i < 14) {
+                $chartData['14']['days'][] = $dayLabel;
+                $chartData['14']['revenue'][] = $rev;
+                $chartData['14']['bookings'][] = $bCount;
+            }
+            $chartData['30']['days'][] = $dayLabel;
+            $chartData['30']['revenue'][] = $rev;
+            $chartData['30']['bookings'][] = $bCount;
+        }
+
+        $chartDays = $chartData['7']['days'];
+        $chartRevenue = $chartData['7']['revenue'];
+        $chartBookings = $chartData['7']['bookings'];
+
         // 5 Booking Terkini untuk Tampilan Widget Cepat
-        $recentBookings = Booking::with(['package', 'slot', 'assignments.jeep', 'assignments.driver'])
+        $recentBookings = Booking::with(['package', 'slot', 'assignments.jeep', 'assignments.driver', 'payments'])
             ->orderBy('id', 'desc')
             ->take(5)
             ->get();
@@ -113,6 +140,21 @@ class AdminController extends Controller
         $unreadNotificationsCount = ActivityLog::unread()->count();
         $notifications = ActivityLog::orderBy('id', 'desc')->take(10)->get();
 
+        // Foto Background Beranda untuk Scenic Header Banner
+        $settingsFile = storage_path('app/basecamp_settings.json');
+        $heroBg = null;
+        if (file_exists($settingsFile)) {
+            $basecampSettings = json_decode(file_get_contents($settingsFile), true);
+            if (!empty($basecampSettings['hero_background'])) {
+                $heroBg = str_starts_with($basecampSettings['hero_background'], 'http')
+                    ? $basecampSettings['hero_background']
+                    : asset($basecampSettings['hero_background']);
+            }
+        }
+        if (!$heroBg) {
+            $heroBg = asset('img/beranda.jpeg');
+        }
+
         return view('admin.dashboard', compact(
             'totalRevenue',
             'readyJeepsCount',
@@ -120,19 +162,29 @@ class AdminController extends Controller
             'maintenanceJeepsCount',
             'totalJeepsCount',
             'todayBookingsCount',
+            'yesterdayBookingsCount',
+            'todayPercentChange',
             'upcomingBookingsCount',
+            'upcomingPercentage',
             'completedBookingsCount',
+            'completedPercentage',
             'cancelledBookingsCount',
+            'paidCount',
+            'pendingCount',
+            'cancelCount',
+            'allBookingsCount',
             'recentBookings',
             'chartDays',
             'chartRevenue',
             'chartBookings',
+            'chartData',
             'paidPercentage',
             'pendingPercentage',
             'cancelPercentage',
             'recentActivities',
             'unreadNotificationsCount',
-            'notifications'
+            'notifications',
+            'heroBg'
         ));
     }
 
@@ -153,7 +205,7 @@ class AdminController extends Controller
         $packageId = $request->query('package_id');
         $status = $request->query('status', 'ALL');
 
-        $query = Booking::with(['package', 'slot', 'pickupZone', 'assignments.jeep', 'assignments.driver']);
+        $query = Booking::with(['package', 'slot', 'pickupZone', 'assignments.jeep', 'assignments.driver', 'payments']);
 
         if (!empty($search)) {
             $query->where(function ($q) use ($search) {
@@ -219,6 +271,13 @@ class AdminController extends Controller
             })->with(['booking.package', 'booking.slot'])->latest();
         }])->get();
 
+        // Data Driver Paguyuban (Aktif & Nonaktif)
+        $activeDrivers = Driver::where('is_active', true)->orderBy('id')->get();
+        $inactiveDrivers = Driver::where('is_active', false)->orderBy('id')->get();
+        $totalDriversCount = Driver::count();
+        $activeDriversCount = $activeDrivers->count();
+        $inactiveDriversCount = $inactiveDrivers->count();
+
         $unreadNotificationsCount = ActivityLog::unread()->count();
 
         return view('admin.armada', compact(
@@ -227,6 +286,11 @@ class AdminController extends Controller
             'maintenanceJeepsCount',
             'totalJeepsCount',
             'jeepsMonitoring',
+            'activeDrivers',
+            'inactiveDrivers',
+            'totalDriversCount',
+            'activeDriversCount',
+            'inactiveDriversCount',
             'unreadNotificationsCount'
         ));
     }
@@ -252,11 +316,15 @@ class AdminController extends Controller
 
         $activities = $query->paginate(20)->withQueryString();
         $unreadNotificationsCount = ActivityLog::unread()->count();
+        $totalActivities = ActivityLog::count();
+        $typeCounts = ActivityLog::selectRaw('type, count(*) as total')->groupBy('type')->pluck('total', 'type')->toArray();
 
         return view('admin.notifications', compact(
             'activities',
             'type',
-            'unreadNotificationsCount'
+            'unreadNotificationsCount',
+            'totalActivities',
+            'typeCounts'
         ));
     }
 
@@ -421,7 +489,8 @@ class AdminController extends Controller
             'duration_minutes' => 'required|integer|min:10',
             'duration_text' => 'nullable|string|max:100',
             'category_badge' => 'nullable|string|max:50',
-            'cover_image' => 'nullable|url|max:500',
+            'cover_image' => 'nullable|string|max:500',
+            'cover_image_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,avif|max:5120',
             'description' => 'required|string',
             'routes_raw' => 'nullable|string',
         ]);
@@ -433,6 +502,19 @@ class AdminController extends Controller
 
         $slug = !empty($validated['slug']) ? Str::slug($validated['slug']) : Str::slug($validated['name']);
 
+        // Handle cover image upload or URL fallback
+        $coverImage = $validated['cover_image'] ?? 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1000&q=80';
+        if ($request->hasFile('cover_image_file')) {
+            $file = $request->file('cover_image_file');
+            $fileName = 'package_' . time() . '_' . Str::random(8) . '.' . $file->getClientOriginalExtension();
+            $destinationPath = public_path('uploads/packages');
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+            $file->move($destinationPath, $fileName);
+            $coverImage = 'uploads/packages/' . $fileName;
+        }
+
         Package::create([
             'name' => $validated['name'],
             'slug' => $slug,
@@ -442,7 +524,7 @@ class AdminController extends Controller
             'destinations_count' => count($routesList),
             'routes_list' => $routesList,
             'category_badge' => $validated['category_badge'] ?? 'Paket Pilihan',
-            'cover_image' => $validated['cover_image'] ?? 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1000&q=80',
+            'cover_image' => $coverImage,
             'description' => $validated['description'],
             'is_active' => true,
         ]);
@@ -461,7 +543,8 @@ class AdminController extends Controller
             'duration_minutes' => 'required|integer|min:10',
             'duration_text' => 'nullable|string|max:100',
             'category_badge' => 'nullable|string|max:50',
-            'cover_image' => 'nullable|url|max:500',
+            'cover_image' => 'nullable|string|max:500',
+            'cover_image_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,avif|max:5120',
             'description' => 'required|string',
             'routes_raw' => 'nullable|string',
         ]);
@@ -473,6 +556,32 @@ class AdminController extends Controller
 
         $slug = !empty($validated['slug']) ? Str::slug($validated['slug']) : Str::slug($validated['name']);
 
+        // Determine cover image (file upload takes precedence over text input)
+        $coverImage = $package->getRawOriginal('cover_image');
+        if ($request->hasFile('cover_image_file')) {
+            $file = $request->file('cover_image_file');
+            $fileName = 'package_' . time() . '_' . Str::random(8) . '.' . $file->getClientOriginalExtension();
+            $destinationPath = public_path('uploads/packages');
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+            $file->move($destinationPath, $fileName);
+            $coverImage = 'uploads/packages/' . $fileName;
+
+            // Remove previous uploaded image if not default asset
+            $oldRaw = $package->getRawOriginal('cover_image');
+            if ($oldRaw && str_starts_with($oldRaw, 'uploads/packages/')) {
+                $oldFile = public_path($oldRaw);
+                if (file_exists($oldFile)) {
+                    @unlink($oldFile);
+                }
+            }
+        } elseif ($request->filled('cover_image')) {
+            $coverImage = $validated['cover_image'];
+        } elseif ($request->has('cover_image') && empty($request->input('cover_image'))) {
+            $coverImage = null;
+        }
+
         $package->update([
             'name' => $validated['name'],
             'slug' => $slug,
@@ -482,7 +591,7 @@ class AdminController extends Controller
             'destinations_count' => count($routesList) > 0 ? count($routesList) : $package->destinations_count,
             'routes_list' => count($routesList) > 0 ? $routesList : $package->routes_list,
             'category_badge' => $validated['category_badge'] ?? $package->category_badge,
-            'cover_image' => $validated['cover_image'] ?? $package->cover_image,
+            'cover_image' => $coverImage,
             'description' => $validated['description'],
         ]);
 
@@ -529,14 +638,14 @@ class AdminController extends Controller
             'slot_label' => 'required|string|max:100',
             'start_time' => 'required',
             'end_time' => 'required',
-            'max_jeeps' => 'required|integer|min:1|max:50',
+            'max_jeeps' => 'nullable|integer|min:1|max:50',
         ]);
 
         ScheduleSlot::create([
             'slot_label' => $validated['slot_label'],
             'start_time' => $validated['start_time'],
             'end_time' => $validated['end_time'],
-            'max_jeeps' => $validated['max_jeeps'],
+            'max_jeeps' => $validated['max_jeeps'] ?? 20,
             'is_active' => true,
         ]);
 
@@ -551,27 +660,38 @@ class AdminController extends Controller
             'slot_label' => 'required|string|max:100',
             'start_time' => 'required',
             'end_time' => 'required',
-            'max_jeeps' => 'required|integer|min:1|max:50',
+            'max_jeeps' => 'nullable|integer|min:1|max:50',
         ]);
 
         $slot->update([
             'slot_label' => $validated['slot_label'],
             'start_time' => $validated['start_time'],
             'end_time' => $validated['end_time'],
-            'max_jeeps' => $validated['max_jeeps'],
+            'max_jeeps' => $validated['max_jeeps'] ?? $slot->max_jeeps ?? 20,
         ]);
 
         return redirect()->back()->with('success', "Jadwal sesi {$slot->slot_label} berhasil diperbarui!");
     }
 
-    public function toggleSchedule(int $id)
+    public function toggleSchedule(Request $request, int $id)
     {
         $slot = ScheduleSlot::findOrFail($id);
         $slot->is_active = !$slot->is_active;
         $slot->save();
 
         $status = $slot->is_active ? 'Diaktifkan (Siaga)' : 'Dinonaktifkan (Libur)';
-        return redirect()->back()->with('success', "Status sesi {$slot->slot_label} berhasil {$status}!");
+        $message = "Status sesi {$slot->slot_label} berhasil {$status}!";
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'is_active' => (bool) $slot->is_active,
+                'status_label' => $slot->is_active ? 'Buka (Aktif)' : 'Tutup (Libur)',
+                'message' => $message,
+            ]);
+        }
+
+        return redirect()->back()->with('success', $message);
     }
 
     public function destroySchedule(int $id)
@@ -704,6 +824,72 @@ class AdminController extends Controller
     }
 
     /**
+     * Daftarkan unit kendaraan / armada Jeep dan Driver baru ke dalam sistem
+     */
+    /**
+     * Daftarkan unit kendaraan / armada Jeep dan Driver baru ke dalam sistem
+     */
+    public function storeJeep(Request $request)
+    {
+        // 1. Jika nomor plat kosong, otomatis gunakan nomor urut berikutnya mulai dari 1
+        $numericPlates = Jeep::pluck('plate_number')->filter(fn($p) => is_numeric($p))->map(fn($p) => (int)$p);
+        $nextNumber = $numericPlates->isNotEmpty() ? $numericPlates->max() + 1 : (Jeep::count() + 1);
+
+        if (!$request->filled('plate_number')) {
+            $request->merge(['plate_number' => (string) $nextNumber]);
+        }
+
+        $validated = $request->validate([
+            'plate_number' => 'required|string|max:20|unique:jeeps,plate_number',
+            'driver_name' => 'required|string|max:100',
+            'driver_phone' => 'nullable|string|max:20',
+            'model_name' => 'nullable|string|max:100',
+            'status' => 'required|in:READY,MAINTENANCE',
+        ], [
+            'plate_number.unique' => 'Nomor unit / plat tersebut sudah terdaftar pada armada lain.',
+            'driver_name.required' => 'Nama driver wajib diisi.',
+            'status.required' => 'Status awal armada wajib dipilih.',
+        ]);
+
+        $driverName = trim($validated['driver_name']);
+        $plateNumber = trim($validated['plate_number']);
+        $status = $validated['status'];
+        $isActive = ($status === 'READY');
+
+        // 2. Tambahkan driver baru ke tabel drivers (selalu sinkron 1:1)
+        $phone = !empty($validated['driver_phone']) 
+            ? trim($validated['driver_phone']) 
+            : '0812' . str_pad((string) (Driver::count() + 1), 8, '0', STR_PAD_LEFT);
+
+        $driver = Driver::create([
+            'full_name' => $driverName,
+            'phone_number' => $phone,
+            'license_number' => 'SIM-B1-' . (1000 + Driver::count() + 1),
+            'is_active' => $isActive,
+        ]);
+
+        // 3. Susun model_name armada: Jeep #<No> (<Nama Driver>)
+        $modelName = !empty($validated['model_name']) 
+            ? trim($validated['model_name']) 
+            : "Jeep #{$plateNumber} ({$driverName})";
+
+        $jeep = Jeep::create([
+            'plate_number' => $plateNumber,
+            'model_name' => $modelName,
+            'status' => $status,
+        ]);
+
+        ActivityLog::logAdmin(
+            'Penambahan Armada & Driver',
+            "Menambahkan unit armada baru: {$jeep->model_name} (No: {$jeep->plate_number}) bersama driver {$driverName}.",
+            'admin',
+            route('admin.armada')
+        );
+
+        return redirect()->back()->with('success', "Armada {$jeep->model_name} dan Driver {$driverName} berhasil ditambahkan ke Paguyuban!");
+    }
+
+    /**
      * Update status operasional armada Jeep (READY / ON_TRIP / MAINTENANCE)
      */
     public function updateJeepStatus(Request $request, int $id)
@@ -714,6 +900,16 @@ class AdminController extends Controller
 
         $jeep = Jeep::findOrFail($id);
         $jeep->update(['status' => $validated['status']]);
+
+        // Sinkronkan status driver pasangannya
+        preg_match('/\((.*?)\)/', $jeep->model_name, $m);
+        $driverName = $m[1] ?? null;
+        if ($driverName) {
+            $driver = Driver::where('full_name', 'like', "%{$driverName}%")->first();
+            if ($driver) {
+                $driver->update(['is_active' => in_array($validated['status'], ['READY', 'ON_TRIP'])]);
+            }
+        }
 
         $statusLabel = [
             'READY' => 'Tersedia (Ready Pangkalan)',
@@ -738,15 +934,151 @@ class AdminController extends Controller
     public function activateAllJeeps()
     {
         Jeep::query()->update(['status' => 'READY']);
+        Driver::query()->update(['is_active' => true]);
 
         ActivityLog::logAdmin(
-            'Aktivasi Seluruh Armada',
-            'Mengaktifkan seluruh armada Jeep menjadi status TERSEDIA (Ready).',
+            'Aktivasi Seluruh Armada & Driver',
+            'Mengaktifkan seluruh armada Jeep dan personel Driver Paguyuban menjadi status TERSEDIA (Ready).',
             'admin',
             route('admin.armada')
         );
 
-        return redirect()->back()->with('success', 'Seluruh unit armada Jeep berhasil diaktifkan menjadi TERSEDIA (Ready)!');
+        return redirect()->back()->with('success', 'Seluruh unit armada Jeep dan personel Driver Paguyuban berhasil diaktifkan menjadi TERSEDIA (Ready)!');
+    }
+
+    /**
+     * Ubah status driver (Aktif / Nonaktif) - Selalu sinkron dengan status unit Jeep
+     */
+    public function toggleDriverStatus(Request $request, int $id)
+    {
+        $driver = Driver::findOrFail($id);
+        $newStatus = !$driver->is_active;
+        $driver->update(['is_active' => $newStatus]);
+
+        // Sinkronkan status unit Jeep pasangannya
+        $newJeepStatus = $newStatus ? 'READY' : 'MAINTENANCE';
+        $jeep = Jeep::where('model_name', 'like', "%({$driver->full_name})%")->first()
+            ?? Jeep::where('model_name', 'like', "%{$driver->full_name}%")->first();
+
+        if (!$jeep) {
+            $allDrivers = Driver::orderBy('id')->pluck('id')->toArray();
+            $idx = array_search($id, $allDrivers);
+            if ($idx !== false) {
+                $allJeeps = Jeep::orderBy('id')->get();
+                if (isset($allJeeps[$idx])) {
+                    $jeep = $allJeeps[$idx];
+                }
+            }
+        }
+
+        if ($jeep && $jeep->status !== 'ON_TRIP') {
+            $jeep->update(['status' => $newJeepStatus]);
+        }
+
+        $statusText = $newStatus ? 'AKTIF (Siap Jalan & Unit Ready)' : 'NONAKTIF (Libur / Izin & Unit Servis)';
+
+        ActivityLog::logAdmin(
+            'Pembaruan Status Driver & Armada',
+            "Mengubah status driver {$driver->full_name} beserta armada Jeep pasangannya menjadi {$statusText}.",
+            'admin',
+            route('admin.armada')
+        );
+
+        return redirect()->back()->with('success', "Status driver {$driver->full_name} dan armada Jeep pasangannya berhasil diubah menjadi {$statusText}!");
+    }
+
+    /**
+     * Hapus data driver dari sistem paguyuban - Selalu sinkron menghapus armada Jeep pasangannya
+     */
+    public function destroyDriver(int $id)
+    {
+        $driver = Driver::findOrFail($id);
+        $name = $driver->full_name;
+
+        // Cek apakah driver memiliki riwayat penugasan booking
+        if ($driver->assignments()->exists()) {
+            return redirect()->back()->withErrors([
+                "Driver {$name} tidak dapat dihapus karena memiliki riwayat penugasan transaksi booking. Silakan gunakan tombol 'Nonaktifkan' agar driver tidak lagi ditugaskan pada trip baru."
+            ]);
+        }
+
+        // Cari armada Jeep yang berpasangan dengan driver ini
+        $jeep = Jeep::where('model_name', 'like', "%({$name})%")->first()
+            ?? Jeep::where('model_name', 'like', "%{$name}%")->first();
+
+        if (!$jeep && Jeep::count() > 0) {
+            $allDrivers = Driver::orderBy('id')->pluck('id')->toArray();
+            $driverIdx = array_search($id, $allDrivers);
+            if ($driverIdx !== false) {
+                $allJeeps = Jeep::orderBy('id')->get();
+                if (isset($allJeeps[$driverIdx])) {
+                    $candidateJeep = $allJeeps[$driverIdx];
+                    if (!$candidateJeep->assignments()->exists()) {
+                        $jeep = $candidateJeep;
+                    }
+                }
+            }
+        }
+
+        if ($jeep && $jeep->assignments()->exists()) {
+            return redirect()->back()->withErrors([
+                "Armada {$jeep->model_name} memiliki riwayat penugasan transaksi booking sehingga tidak dapat dihapus."
+            ]);
+        }
+
+        $driver->delete();
+        if ($jeep) {
+            $jeep->delete();
+        }
+
+        ActivityLog::logAdmin(
+            'Penghapusan Driver & Armada',
+            "Menghapus data driver {$name} beserta unit armada Jeep pasangannya dari daftar paguyuban.",
+            'admin',
+            route('admin.armada')
+        );
+
+        return redirect()->back()->with('success', "Driver {$name} beserta unit armada Jeep pasangannya berhasil dihapus dari sistem!");
+    }
+
+    /**
+     * Hapus unit armada Jeep dari sistem - Selalu sinkron menghapus driver pasangannya
+     */
+    public function destroyJeep(int $id)
+    {
+        $jeep = Jeep::findOrFail($id);
+        $name = $jeep->model_name;
+
+        if ($jeep->assignments()->exists()) {
+            return redirect()->back()->withErrors([
+                "Armada {$name} tidak dapat dihapus karena memiliki riwayat penugasan transaksi booking."
+            ]);
+        }
+
+        preg_match('/\((.*?)\)/', $name, $matches);
+        $driverName = $matches[1] ?? null;
+        $driver = null;
+        if ($driverName) {
+            $driver = Driver::where('full_name', 'like', "%{$driverName}%")->first();
+        }
+
+        if ($driver && $driver->assignments()->exists()) {
+            return redirect()->back()->withErrors([
+                "Driver {$driver->full_name} memiliki riwayat transaksi booking sehingga tidak dapat dihapus."
+            ]);
+        }
+
+        $jeep->delete();
+        $driver?->delete();
+
+        ActivityLog::logAdmin(
+            'Penghapusan Armada & Driver',
+            "Menghapus unit armada: {$name} beserta driver pasangannya dari daftar paguyuban.",
+            'admin',
+            route('admin.armada')
+        );
+
+        return redirect()->back()->with('success', "Armada {$name} berhasil dihapus dari sistem!");
     }
 
     /**
@@ -804,6 +1136,24 @@ class AdminController extends Controller
             'hero_badge' => 'Offroad Lereng Merapi',
             'hero_headline' => 'Jelajahi Keindahan Alam Merapi Bersama Jeep Wukirsari',
             'hero_subtitle' => 'Rasakan petualangan seru menyusuri jalur lava, menikmati panorama Merapi, dan menciptakan cerita perjalanan yang tak terlupakan.',
+            'cancellation_terms' => 'Pembatalan maksimal H-1 sebelum jam keberangkatan dengan pengembalian dana DP 50% atau perubahan jadwal gratis 1x.',
+            'payment_channel' => 'Midtrans Payment Gateway (QRIS, VA, E-Wallet)',
+            'qris_info' => 'QRIS Dinamis Otomatis via Midtrans / QRIS Statis Loket Pangkalan',
+            'bank_account_info' => 'Bank Mandiri: 137-00-1234567-8 a/n Paguyuban Jeep Wukirsari',
+            'hero_background' => null,
+            'hero_location_0' => 'Susur Kali Gendol',
+            'hero_slide_1' => null,
+            'hero_location_1' => 'Spot Sunrise',
+            'hero_slide_2' => null,
+            'hero_location_2' => 'Jalur Offroad',
+            'hero_slide_3' => null,
+            'hero_location_3' => 'Museum Kampung Hilang',
+            'hero_slide_4' => null,
+            'hero_location_4' => 'Manuver Air',
+            'notify_booking_new' => true,
+            'notify_payment_success' => true,
+            'notify_cancellation' => true,
+            'notify_wa' => true,
         ];
 
         if (file_exists($settingsFile)) {
@@ -828,8 +1178,8 @@ class AdminController extends Controller
         }
 
         $validated = $request->validate([
-            'name' => 'required|string|max:100',
-            'email' => 'required|email|max:100|unique:users,email,' . $user->id,
+            'name' => 'nullable|string|max:100',
+            'email' => 'nullable|email|max:100|unique:users,email,' . $user->id,
             'phone' => 'nullable|string|max:25',
             'current_password' => 'nullable|string',
             'new_password' => 'nullable|string|min:6|confirmed',
@@ -842,8 +1192,12 @@ class AdminController extends Controller
             $user->password = Hash::make($validated['new_password']);
         }
 
-        $user->name = $validated['name'];
-        $user->email = $validated['email'];
+        if (!empty($validated['name'])) {
+            $user->name = $validated['name'];
+        }
+        if (!empty($validated['email'])) {
+            $user->email = $validated['email'];
+        }
         if (isset($validated['phone'])) {
             $user->phone = $validated['phone'];
         }
@@ -871,29 +1225,117 @@ class AdminController extends Controller
         }
 
         $validated = $request->validate([
-            'name' => 'required|string|max:150',
-            'basecamp_address' => 'required|string|max:255',
-            'cs_phone' => 'required|string|max:30',
-            'operational_hours' => 'required|string|max:100',
-            'dp_percentage' => 'required|numeric|min:10|max:100',
-            'max_pax_per_jeep' => 'required|integer|min:1|max:6',
-            'checkin_lead_minutes' => 'required|integer|min:10|max:120',
+            'name' => 'nullable|string|max:150',
+            'basecamp_address' => 'nullable|string|max:255',
+            'cs_phone' => 'nullable|string|max:30',
+            'operational_hours' => 'nullable|string|max:100',
+            'dp_percentage' => 'nullable|numeric|min:10|max:100',
+            'max_pax_per_jeep' => 'nullable|integer|min:1|max:6',
+            'checkin_lead_minutes' => 'nullable|integer|min:10|max:120',
             'google_maps_url' => 'nullable|url|max:255',
             'hero_badge' => 'nullable|string|max:100',
             'hero_headline' => 'nullable|string|max:200',
             'hero_subtitle' => 'nullable|string|max:500',
+            'cancellation_terms' => 'nullable|string|max:1000',
+            'payment_channel' => 'nullable|string|max:150',
+            'qris_info' => 'nullable|string|max:255',
+            'bank_account_info' => 'nullable|string|max:255',
+            'notify_booking_new' => 'nullable',
+            'notify_payment_success' => 'nullable',
+            'notify_cancellation' => 'nullable',
+            'notify_wa' => 'nullable',
+            // Hero Background fields
+            'hero_background' => 'nullable|string|max:500',
+            'hero_background_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,avif|max:5120',
+            'reset_hero_background' => 'nullable',
+            'hero_location_0' => 'nullable|string|max:100',
+            'hero_slide_1' => 'nullable|string|max:500',
+            'hero_slide_1_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,avif|max:5120',
+            'reset_hero_slide_1' => 'nullable',
+            'hero_location_1' => 'nullable|string|max:100',
+            'hero_slide_2' => 'nullable|string|max:500',
+            'hero_slide_2_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,avif|max:5120',
+            'reset_hero_slide_2' => 'nullable',
+            'hero_location_2' => 'nullable|string|max:100',
+            'hero_slide_3' => 'nullable|string|max:500',
+            'hero_slide_3_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,avif|max:5120',
+            'reset_hero_slide_3' => 'nullable',
+            'hero_location_3' => 'nullable|string|max:100',
+            'hero_slide_4' => 'nullable|string|max:500',
+            'hero_slide_4_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,avif|max:5120',
+            'reset_hero_slide_4' => 'nullable',
+            'hero_location_4' => 'nullable|string|max:100',
         ]);
 
         $settingsFile = storage_path('app/basecamp_settings.json');
-        file_put_contents($settingsFile, json_encode($validated, JSON_PRETTY_PRINT));
+        $existing = [];
+        if (file_exists($settingsFile)) {
+            $existing = json_decode(file_get_contents($settingsFile), true) ?: [];
+        }
+
+        // Folder upload background
+        $destinationPath = public_path('uploads/hero');
+        if (!file_exists($destinationPath)) {
+            mkdir($destinationPath, 0755, true);
+        }
+
+        // 1. Hero Background Utama (Slide 0)
+        if ($request->boolean('reset_hero_background')) {
+            unset($existing['hero_background']);
+        } elseif ($request->hasFile('hero_background_file')) {
+            $file = $request->file('hero_background_file');
+            $fileName = 'hero_bg_' . time() . '_' . Str::random(6) . '.' . $file->getClientOriginalExtension();
+            $file->move($destinationPath, $fileName);
+            $existing['hero_background'] = 'uploads/hero/' . $fileName;
+        } elseif ($request->filled('hero_background')) {
+            $existing['hero_background'] = $request->input('hero_background');
+        }
+
+        // 2. Extra Slides (1 sampai 4)
+        for ($i = 1; $i <= 4; $i++) {
+            $resetKey = "reset_hero_slide_{$i}";
+            $fileKey = "hero_slide_{$i}_file";
+            $textKey = "hero_slide_{$i}";
+            if ($request->boolean($resetKey)) {
+                unset($existing[$textKey]);
+            } elseif ($request->hasFile($fileKey)) {
+                $file = $request->file($fileKey);
+                $fileName = "hero_slide_{$i}_" . time() . '_' . Str::random(6) . '.' . $file->getClientOriginalExtension();
+                $file->move($destinationPath, $fileName);
+                $existing[$textKey] = 'uploads/hero/' . $fileName;
+            } elseif ($request->filled($textKey)) {
+                $existing[$textKey] = $request->input($textKey);
+            }
+        }
+
+        // Tangani boolean checkbox bila form notifikasi dikirimkan
+        if ($request->has('is_notification_form')) {
+            $validated['notify_booking_new'] = $request->boolean('notify_booking_new');
+            $validated['notify_payment_success'] = $request->boolean('notify_payment_success');
+            $validated['notify_cancellation'] = $request->boolean('notify_cancellation');
+            $validated['notify_wa'] = $request->boolean('notify_wa');
+        }
+
+        // Bersihkan objek UploadedFile dari $validated sebelum simpan
+        $cleanValidated = array_filter($validated, fn($val) => !($val instanceof \Illuminate\Http\UploadedFile));
+        unset(
+            $cleanValidated['hero_background_file'],
+            $cleanValidated['hero_slide_1_file'],
+            $cleanValidated['hero_slide_2_file'],
+            $cleanValidated['hero_slide_3_file'],
+            $cleanValidated['hero_slide_4_file']
+        );
+
+        $merged = array_merge($existing, array_filter($cleanValidated, fn($val) => $val !== null));
+        file_put_contents($settingsFile, json_encode($merged, JSON_PRETTY_PRINT));
 
         ActivityLog::logAdmin(
             'Pembaruan Pengaturan Basecamp',
-            "Admin memperbarui informasi operasional, kontak CS loket, dan kebijakan pemesanan trip.",
+            "Admin memperbarui konfigurasi sistem, operasional, atau kebijakan pangkalan.",
             'admin',
             route('admin.settings')
         );
 
-        return redirect()->back()->with('success', 'Pengaturan operasional basecamp & kebijakan trip berhasil disimpan!');
+        return redirect()->back()->with('success', 'Pengaturan berhasil diperbarui!');
     }
 }
