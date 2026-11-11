@@ -145,12 +145,14 @@
                                     'slot_label' => ($b->slot?->start_time ?? '09:00') . ' - ' . ($b->slot?->end_time ?? '11:00') . ' WIB',
                                     'jeep_quantity' => $b->jeep_quantity,
                                     'passenger_count' => $b->passenger_count,
-                                    'arrival_type' => $b->arrival_type === 'PICKUP' ? 'Jemput di Hotel/Stasiun' : 'Datang Sendiri ke Basecamp',
-                                    'pickup_zone' => $b->pickupZone?->name ?? 'Basecamp',
+                                    'is_pickup' => strtolower((string)$b->arrival_type) === 'pickup',
+                                    'arrival_type' => strtolower((string)$b->arrival_type) === 'pickup' ? 'Jemput di Hotel / Alamat' : 'Datang Sendiri ke Basecamp',
+                                    'pickup_zone' => $b->pickupZone?->name ?? ($b->pickup_distance_km ? 'Antar-Jemput (' . number_format($b->pickup_distance_km, 1) . ' km)' : 'Layanan Antar-Jemput'),
                                     'pickup_address' => $b->pickup_address ?? '-',
                                     'payment_mode' => $b->payment_mode === 'DP' ? 'Uang Muka (DP 50%)' : 'Pembayaran Penuh (100%)',
                                     'package_subtotal' => number_format($b->package_subtotal, 0, ',', '.'),
                                     'pickup_fee' => number_format($b->pickup_fee, 0, ',', '.'),
+                                    'maps_link' => ($b->pickup_address && $b->pickup_address !== '-') ? 'https://www.google.com/maps/search/?api=1&query=' . urlencode($b->pickup_address) : null,
                                     'total_amount' => number_format($b->total_amount, 0, ',', '.'),
                                     'paid_amount' => number_format($b->paid_amount, 0, ',', '.'),
                                     'remaining_amount' => number_format($b->remaining_amount, 0, ',', '.'),
@@ -169,8 +171,16 @@
                                     </button>
                                 </td>
                                 <td class="py-3 px-4">
-                                    <span class="font-bold text-slate-800 block">{{ $b->customer_name }}</span>
-                                    <span class="text-slate-500 text-[11px]">{{ $b->customer_phone }}</span>
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span class="font-bold text-slate-800">{{ $b->customer_name }}</span>
+                                        @if(strtolower((string)$b->arrival_type) === 'pickup')
+                                        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200" title="{{ $b->pickup_address }}">
+                                            <svg class="w-2.5 h-2.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                            Pickup
+                                        </span>
+                                        @endif
+                                    </div>
+                                    <span class="text-slate-500 text-[11px] block">{{ $b->customer_phone }}</span>
                                 </td>
                                 <td class="py-3 px-4">
                                     <span class="font-semibold text-slate-800 block">{{ $b->package?->name ?? 'Paket' }}</span>
@@ -413,7 +423,13 @@
                                     <span id="detail_arrival_type" class="font-bold text-slate-800 block"></span>
                                 </div>
                                 <div id="detail_pickup_container" class="hidden">
-                                    <span class="text-slate-400 text-xs block">Zona & Alamat Lengkap Penjemputan</span>
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-slate-400 text-xs block">Zona & Alamat Lengkap Penjemputan</span>
+                                        <a id="detail_pickup_maps_btn" href="#" target="_blank" rel="noopener noreferrer" class="hidden inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 transition">
+                                            <svg class="w-3 h-3 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path></svg>
+                                            Buka Maps
+                                        </a>
+                                    </div>
                                     <div class="bg-white p-3 rounded-xl border border-slate-200 text-slate-700 mt-1 leading-relaxed">
                                         <span id="detail_pickup_zone" class="font-semibold text-emerald-800 block mb-0.5"></span>
                                         <span id="detail_pickup_address"></span>
@@ -592,10 +608,19 @@
                     }
 
                     const pickupContainer = document.getElementById('detail_pickup_container');
-                    if (data.pickup_address && data.pickup_address !== '-') {
+                    const mapsBtn = document.getElementById('detail_pickup_maps_btn');
+                    if (data.is_pickup || (data.pickup_address && data.pickup_address !== '-')) {
                         pickupContainer.classList.remove('hidden');
-                        document.getElementById('detail_pickup_zone').textContent = 'Zona Jemput: ' + data.pickup_zone;
+                        document.getElementById('detail_pickup_zone').textContent = 'Lokasi Jemput: ' + data.pickup_zone;
                         document.getElementById('detail_pickup_address').textContent = data.pickup_address;
+                        if (mapsBtn) {
+                            if (data.maps_link) {
+                                mapsBtn.href = data.maps_link;
+                                mapsBtn.classList.remove('hidden');
+                            } else {
+                                mapsBtn.classList.add('hidden');
+                            }
+                        }
                     } else {
                         pickupContainer.classList.add('hidden');
                     }
