@@ -61,16 +61,6 @@ class BookingController extends Controller
         $slots = ScheduleSlot::where('is_active', true)->get();
 
         $bookingData = [
-            'basecamp'     => ['lat' => $this->baseLat(), 'lng' => $this->baseLng()],
-            'freeKm'       => self::FREE_KM,
-            'feePerJeep'   => self::FEE_PER_JEEP,
-            'gmapsKey'     => $this->browserKey(),
-            'hasGoogleKey' => !empty($this->apiKey()),
-            'distanceUrl'  => route('booking.distance'),
-            'resolveUrl'   => route('places.resolve_place'),
-            'searchUrl'    => route('places.autocomplete'),
-            'detailUrl'    => route('places.details'),
-            'reverseUrl'   => route('booking.reverse'),
             'selectedId'   => $selectedPackage?->id,
             'packages'    => $packages->map(fn ($p) => [
                 'id'    => $p->id,
@@ -101,6 +91,9 @@ class BookingController extends Controller
         if (!$request->has('payment_mode') || empty($request->input('payment_mode'))) {
             $request->merge(['payment_mode' => 'FULL']);
         }
+
+        // Antar-jemput dinonaktifkan: semua booking datang sendiri ke basecamp
+        $request->merge(['arrival_type' => 'self_drive']);
 
         $needsCoords = $request->input('arrival_type') === 'pickup' && !$request->boolean('pickup_manual');
 
