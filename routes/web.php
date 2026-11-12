@@ -15,6 +15,8 @@ Route::redirect('/packages', '/#paket')->name('packages.index');
 Route::redirect('/paket-wisata', '/#paket')->name('packages.alias');
 Route::get('/packages/{slug}', [HomeController::class, 'showPackage'])->name('packages.show');
 Route::get('/paket-wisata/{slug}', [HomeController::class, 'showPackage'])->name('packages.show.alias');
+Route::get('/syarat-ketentuan', [HomeController::class, 'terms'])->name('terms');
+Route::get('/kebijakan-privasi', [HomeController::class, 'privacy'])->name('privacy');
 
 // 2. Alur Pemesanan (Booking)
 Route::get('/booking', [BookingController::class, 'create'])->name('booking.create');

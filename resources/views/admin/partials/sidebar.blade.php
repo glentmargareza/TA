@@ -1,9 +1,35 @@
-<!-- Sidebar Admin -->
-<aside class="w-full md:w-64 bg-gradient-to-b from-[#143B1E] via-[#0E2C15] to-[#07180B] text-white p-5 flex flex-col justify-between shrink-0 shadow-2xl border-r border-[#1e4e2a]/80 relative overflow-hidden select-none">
-    <!-- Ambient subtle background lighting -->
-    <div class="absolute -top-24 -left-24 w-56 h-56 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none"></div>
-    <div class="absolute top-1/2 -right-24 w-56 h-56 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none"></div>
-    <div class="absolute -bottom-24 left-10 w-48 h-48 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none"></div>
+<!-- Topbar Mobile (hanya tampil di HP) -->
+<header class="md:hidden sticky top-0 z-40 flex items-center gap-3 h-14 px-4 bg-[#0E2C15] text-white border-b border-white/10 shadow-lg">
+    <button id="adminMenuOpen" type="button" aria-label="Buka menu" aria-controls="adminSidebar" aria-expanded="false"
+            class="p-2 -ml-2 rounded-lg hover:bg-white/10 active:bg-white/15 transition">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+    <img src="{{ asset('img/logo.png') }}" alt="Logo" class="w-7 h-7 object-contain">
+    <span class="font-black text-sm tracking-widest">JEEP WUKIRSARI</span>
+</header>
+
+<!-- Overlay gelap di belakang drawer -->
+<div id="adminSidebarOverlay"
+     class="fixed inset-0 z-[45] bg-black/60 opacity-0 pointer-events-none transition-opacity duration-300 md:hidden"></div>
+
+<!-- Sidebar Admin: drawer di HP, sidebar tetap di desktop -->
+<aside id="adminSidebar"
+       class="fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] h-[100dvh] -translate-x-full transition-transform duration-300 ease-out overflow-y-auto overflow-x-hidden
+              md:relative md:inset-auto md:z-auto md:h-auto md:w-64 md:max-w-none md:translate-x-0 md:overflow-hidden
+              bg-gradient-to-b from-[#143B1E] via-[#0E2C15] to-[#07180B] text-white p-5 flex flex-col justify-between shrink-0 shadow-2xl border-r border-[#1e4e2a]/80 select-none">
+
+    <!-- Tombol tutup (hanya di HP) -->
+    <button id="adminMenuClose" type="button" aria-label="Tutup menu"
+            class="md:hidden absolute top-3 right-3 z-20 p-2 rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+    </button>
+
+    <!-- Ambient subtle background lighting (dibungkus agar tidak menambah area scroll) -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute -top-24 -left-24 w-56 h-56 bg-emerald-500/15 rounded-full blur-3xl"></div>
+        <div class="absolute top-1/2 -right-24 w-56 h-56 bg-emerald-400/10 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-24 left-10 w-48 h-48 bg-emerald-600/10 rounded-full blur-3xl"></div>
+    </div>
 
     <div class="relative z-10">
         <!-- Logo & Brand Header -->
@@ -153,5 +179,32 @@
         </a>
     </div>
 </aside>
+
+<script>
+(function () {
+    const sidebar = document.getElementById('adminSidebar');
+    const overlay = document.getElementById('adminSidebarOverlay');
+    const openBtn = document.getElementById('adminMenuOpen');
+    const closeBtn = document.getElementById('adminMenuClose');
+    if (!sidebar || !overlay || !openBtn) return;
+
+    function setOpen(open) {
+        sidebar.classList.toggle('-translate-x-full', !open);
+        sidebar.classList.toggle('translate-x-0', open);
+        overlay.classList.toggle('opacity-0', !open);
+        overlay.classList.toggle('pointer-events-none', !open);
+        overlay.classList.toggle('opacity-100', open);
+        document.body.classList.toggle('overflow-hidden', open);
+        openBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+
+    openBtn.addEventListener('click', () => setOpen(true));
+    if (closeBtn) closeBtn.addEventListener('click', () => setOpen(false));
+    overlay.addEventListener('click', () => setOpen(false));
+    sidebar.querySelectorAll('a').forEach(a => a.addEventListener('click', () => setOpen(false)));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') setOpen(false); });
+    window.matchMedia('(min-width: 768px)').addEventListener('change', e => { if (e.matches) setOpen(false); });
+})();
+</script>
 
 @include('admin.partials.confirm-modal')

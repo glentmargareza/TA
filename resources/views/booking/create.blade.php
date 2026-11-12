@@ -4,7 +4,7 @@
  
 @section('content')
 
-<div class="bg-wukirsari-cream min-h-screen py-8 sm:py-12">
+<div class="bg-wukirsari-cream min-h-screen pt-6 pb-28 sm:py-12 lg:pb-12">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
         
         <!-- Breadcrumb / Tombol Kembali -->
@@ -51,7 +51,7 @@
             <div class="lg:col-span-8 space-y-6">
                 
                 <!-- Stepper Progress Bar -->
-                <div class="bg-white border border-wukirsari-border rounded-2xl p-2 shadow-xs flex items-center justify-between gap-1 sm:gap-2 overflow-x-auto scrollbar-none sticky top-20 z-30 backdrop-blur-md bg-white/95" id="stepper">
+                <div class="bg-white border border-wukirsari-border rounded-2xl p-2 shadow-xs flex items-center justify-between gap-1 sm:gap-2 overflow-x-auto scrollbar-none sticky top-16 sm:top-20 z-30 backdrop-blur-md bg-white/95" id="stepper">
                     <button type="button" class="st on flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-merapiText-secondary hover:text-merapiText-primary transition-all shrink-0 cursor-pointer" data-s="1">
                         <i class="w-6 h-6 rounded-lg bg-wukirsari-sage text-wukirsari-primary flex items-center justify-center text-xs font-bold not-italic">1</i>
                         <span>1. Paket</span>
@@ -74,7 +74,7 @@
                 </div>
  
                 <!-- 1. PILIH PAKET -->
-                <section class="bg-white rounded-3xl border border-wukirsari-border shadow-xs p-6 sm:p-7 space-y-5" data-sec="1">
+                <section class="bg-white rounded-3xl border border-wukirsari-border shadow-xs p-4 sm:p-7 space-y-5" data-sec="1">
                     <div class="flex items-center gap-3 pb-3 border-b border-wukirsari-border/70">
                         <span class="w-8 h-8 rounded-xl bg-wukirsari-primary text-white text-sm font-bold flex items-center justify-center font-display shadow-xs shrink-0">1</span>
                         <div>
@@ -89,7 +89,7 @@
                 </section>
  
                 <!-- 2. JADWAL & SESI TRIP -->
-                <section class="bg-white rounded-3xl border border-wukirsari-border shadow-xs p-6 sm:p-7 space-y-5" data-sec="2">
+                <section class="bg-white rounded-3xl border border-wukirsari-border shadow-xs p-4 sm:p-7 space-y-5" data-sec="2">
                     <div class="flex items-center gap-3 pb-3 border-b border-wukirsari-border/70">
                         <span class="w-8 h-8 rounded-xl bg-wukirsari-primary text-white text-sm font-bold flex items-center justify-center font-display shadow-xs shrink-0">2</span>
                         <div>
@@ -112,7 +112,7 @@
                 </section>
  
                 <!-- 3. KAPASITAS & JUMLAH JEEP -->
-                <section class="bg-white rounded-3xl border border-wukirsari-border shadow-xs p-6 sm:p-7 space-y-5" data-sec="3">
+                <section class="bg-white rounded-3xl border border-wukirsari-border shadow-xs p-4 sm:p-7 space-y-5" data-sec="3">
                     <div class="flex items-center gap-3 pb-3 border-b border-wukirsari-border/70">
                         <span class="w-8 h-8 rounded-xl bg-wukirsari-primary text-white text-sm font-bold flex items-center justify-center font-display shadow-xs shrink-0">3</span>
                         <div>
@@ -147,7 +147,7 @@
                 </section>
  
                 <!-- 4. KONTAK PEMESAN -->
-                <section class="bg-white rounded-3xl border border-wukirsari-border shadow-xs p-6 sm:p-7 space-y-6" data-sec="4">
+                <section class="bg-white rounded-3xl border border-wukirsari-border shadow-xs p-4 sm:p-7 space-y-6" data-sec="4">
                     <div class="flex items-center gap-3 pb-3 border-b border-wukirsari-border/70">
                         <span class="w-8 h-8 rounded-xl bg-wukirsari-primary text-white text-sm font-bold flex items-center justify-center font-display shadow-xs shrink-0">4</span>
                         <div>
@@ -182,7 +182,7 @@
  
             <!-- Kolom Kanan: Sticky Sidebar Tagihan (lg:col-span-4) -->
             <div class="lg:col-span-4 lg:sticky lg:top-24 space-y-6" id="pay">
-                <div class="bg-white rounded-3xl border border-wukirsari-border shadow-sm p-6 sm:p-7 space-y-5">
+                <div class="bg-white rounded-3xl border border-wukirsari-border shadow-sm p-4 sm:p-7 space-y-5">
                     <h3 class="text-base sm:text-lg font-bold text-merapiText-primary font-display pb-3 border-b border-wukirsari-border/70">
                         Ringkasan Pemesanan
                     </h3>
@@ -242,7 +242,7 @@
                     </button>
  
                     <!-- Trust Badges -->
-                    <div class="flex items-center justify-center gap-3 text-[11px] text-merapiText-muted font-medium pt-1">
+                    <div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] text-merapiText-muted font-medium pt-1">
                         <span>🛡️ Pembayaran Resmi</span>
                         <span>•</span>
                         <span>🔄 Reschedule H-2</span>
@@ -257,18 +257,18 @@
 </div>
  
 <!-- Mobile Bottom Floating Bar -->
-<div class="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-wukirsari-border px-5 py-3.5 flex items-center justify-between z-40 shadow-2xl">
+<div class="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-wukirsari-border px-4 pt-3 flex items-center justify-between gap-3 z-40 shadow-2xl mbar">
     <div>
         <span class="block text-[10px] font-bold uppercase tracking-wider text-merapiText-muted">Total Tagihan</span>
         <strong class="text-lg font-extrabold text-wukirsari-primary font-display" id="mTotal">Rp 0</strong>
     </div>
-    <a href="#pay" class="px-5 py-2.5 rounded-full bg-wukirsari-primary text-white text-xs font-bold shadow-md">
+    <a href="#pay" class="px-5 py-3 rounded-full bg-wukirsari-primary text-white text-xs font-bold shadow-md whitespace-nowrap">
         Rincian Pembayaran
     </a>
 </div>
  
 <!-- Toast Popup Notification -->
-<div id="toast" class="fixed left-1/2 bottom-20 -translate-x-1/2 bg-merapiText-primary text-white text-xs font-semibold px-5 py-3 rounded-2xl shadow-2xl z-50 transition-all duration-300 opacity-0 pointer-events-none translate-y-6"></div>
+<div id="toast" class="fixed left-1/2 bottom-24 lg:bottom-8 w-max max-w-[90vw] text-center -translate-x-1/2 bg-merapiText-primary text-white text-xs font-semibold px-5 py-3 rounded-2xl shadow-2xl z-50 transition-all duration-300 opacity-0 pointer-events-none translate-y-6"></div>
  
 <style>
 /* Active State Helpers for Stepper & Selectors */
@@ -306,12 +306,31 @@
     transform: translate(-50%, 0) !important;
 }
  
-/* ===== PENJEMPUTAN ===== */
-.ar.sel{border-color:#1E3F20!important;background-color:#E8EFE9!important;box-shadow:0 0 0 2px rgba(30,63,32,.2)!important}
-.dist.over{background-color:#fffbeb!important;border-color:#fcd34d!important}
-.dist.over .k{color:#b45309!important}
-.dist.over .tag{background-color:#f59e0b!important}
-#rowExtra.show{display:flex}
+
+/* ===== RESPONSIF HP ===== */
+html{-webkit-text-size-adjust:100%}
+body{overflow-x:hidden}
+.mbar{padding-bottom:calc(.75rem + env(safe-area-inset-bottom))}
+#stepper{-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}
+#stepper .st{scroll-snap-align:center}
+@media (max-width:640px){
+  /* 16px mencegah iOS/Android zoom otomatis saat mengetuk input */
+  input,select,textarea{font-size:16px!important}
+  /* target sentuh minimal 44px */
+  #paxMinus,#paxPlus,#minus,#plus{width:44px!important;height:44px!important;font-size:1.25rem!important}
+  .po,.pkg{min-height:56px}
+  #submit{min-height:52px}
+  input[type=date]{min-height:48px;-webkit-appearance:none;appearance:none}
+  #name,#wa,#session,#date{min-height:48px}
+  h1{line-height:1.2}
+}
+@media (max-width:380px){
+  .grid.pay{grid-template-columns:1fr!important}
+  #vTotal{font-size:1.5rem!important}
+}
+@media (hover:none){
+  .pkg:hover,.po:hover{transform:none}
+}
 </style>
  
 <script type="application/json" id="booking-data">@json($bookingData)</script>
