@@ -23,8 +23,9 @@
         }
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap');
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Poppins', 'Inter', sans-serif; }
     </style>
 </head>
 <body class="bg-[#F4F6F8] text-slate-800 min-h-screen flex flex-col md:flex-row antialiased">
@@ -35,15 +36,14 @@
     <div class="flex-1 flex flex-col min-w-0 min-h-screen overflow-x-hidden">
         
         <!-- Header Banner -->
-        <header class="bg-white border-b border-slate-200 px-6 sm:px-8 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-0 z-20 shadow-2xs">
+        <header class="bg-white border-b border-slate-200 px-4 sm:px-8 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-0 z-20 shadow-2xs">
             <div>
-                <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
                     Monitoring Armada Jeep & Driver Paguyuban
                 </h1>
                 <p class="text-xs text-slate-500 mt-0.5">Admin memantau kesiapan armada Jeep, ketersediaan pangkalan, serta status operasional driver Paguyuban.</p>
             </div>
-            <div class="flex items-center gap-2.5 flex-wrap">
+            <div class="flex items-center gap-2 sm:gap-2.5 flex-wrap">
                 <button type="button" onclick="openAddJeepModal()" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-700 via-[#183c21] to-[#102b17] hover:from-emerald-600 hover:to-[#183c21] text-white text-xs font-bold shadow-sm hover:shadow transition-all cursor-pointer active:scale-95">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                     <span>Tambah Kendaraan</span>
@@ -60,7 +60,7 @@
             </div>
         </header>
 
-        <main class="p-6 sm:p-8 space-y-7 flex-1">
+        <main class="p-4 sm:p-8 space-y-5 sm:space-y-7 flex-1">
 
             @if(session('success'))
             <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-2xl text-sm font-semibold shadow-xs flex items-center justify-between">
@@ -140,10 +140,7 @@
             <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
                 <div class="p-5 sm:p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-slate-50 to-white">
                     <div>
-                        <div class="flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                            <h3 class="text-base font-bold text-slate-800">Status & Kesiapan Driver Paguyuban ({{ $totalDriversCount }} Driver)</h3>
-                        </div>
+                        <h3 class="text-base font-bold text-slate-800">Status & Kesiapan Driver Paguyuban ({{ $totalDriversCount }} Driver)</h3>
                         <p class="text-xs text-slate-500 mt-0.5">Daftar driver yang siap ditugaskan melayani wisatawan dan driver yang sedang libur/tidak aktif.</p>
                     </div>
                     <div class="flex items-center gap-2">

@@ -125,6 +125,9 @@ class PaymentWebhookController extends Controller
                         'lock_expires_at' => null,
                     ]);
 
+                    // Otomatis alokasikan Driver dan Armada Jeep saat pembayaran terkonfirmasi sah (DP atau Lunas)
+                    \App\Services\BookingAssignmentService::autoAssign($lockedBooking);
+
                     // Perbarui atau catat payment record
                     if ($payment) {
                         $paymentUpdate = [

@@ -92,6 +92,16 @@
                             {{ $booking->arrival_type === 'self_drive' ? 'Datang Sendiri' : 'Jemputan Shuttle' }}
                         </span>
                     </div>
+
+                    @php $assignment = $booking->assignments->first(); @endphp
+                    @if($assignment)
+                    <div class="sm:col-span-2 p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200/80">
+                        <span class="text-emerald-800 text-xs font-semibold block">Armada & Driver Paguyuban:</span>
+                        <span class="font-bold text-emerald-950 text-xs sm:text-sm flex items-center gap-1.5 mt-0.5">
+                            🚙 {{ $assignment->jeep?->model_name ?? 'Jeep Armada' }} &bull; Driver: {{ $assignment->driver?->full_name ?? 'Driver Paguyuban' }}
+                        </span>
+                    </div>
+                    @endif
                 </div>
 
                 <!-- Box Finansial -->

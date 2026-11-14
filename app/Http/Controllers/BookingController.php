@@ -58,28 +58,132 @@ class BookingController extends Controller
         $packages = Package::where('is_active', true)->get();
         $selectedPackage = Package::where('slug', $selectedSlug)->first() ?? $packages->first();
 
-        $slots = ScheduleSlot::where('is_active', true)->get();
+        $slots = ScheduleSlot::where('is_active', true)->orderBy('start_time')->get();
+
+        $now = now();
+        $isSunriseSelected = str_contains(strtolower($selectedPackage?->slug . ' ' . $selectedPackage?->name), 'sunrise');
+
+        // Otomatis tentukan tanggal kunjungan awal yang cerdas & tersedia
+        $requestedDate = old('trip_date', $request->query('date', $request->query('trip_date')));
+
+        if (!$requestedDate) {
+            $startDate = $now->copy();
+            // Jika paket sunrise dan waktu saat ini >= 04:30 WIB, hari ini sudah tidak bisa -> mulai besok
+            if ($isSunriseSelected && $now->format('H:i') >= '04:30') {
+                $startDate = $startDate->addDay();
+            } else if (!$isSunriseSelected && $now->format('H:i') >= '13:30') {
+                // Jika paket reguler dan waktu saat ini >= 13:30 WIB, semua sesi hari ini sudah selesai -> mulai besok
+                $startDate = $startDate->addDay();
+            }
+
+            // Cari tanggal yang masih memiliki sisa kuota armada (hingga 14 hari ke depan)
+            $foundDate = null;
+            $testDate = $startDate->copy();
+            for ($i = 0; $i < 14; $i++) {
+                $dateStr = $testDate->format('Y-m-d');
+                $isToday = $dateStr === $now->format('Y-m-d');
+
+                $candidateSlots = $slots->filter(function ($s) use ($isSunriseSelected, $isToday, $now) {
+                    $time = substr((string) $s->start_time, 0, 5);
+                    $isSunrise = str_contains(strtolower($s->slot_label), 'sunrise') || $time === '04:30';
+                    if ($isSunriseSelected !== $isSunrise) {
+                        return false;
+                    }
+                    if ($isToday && $time <= $now->format('H:i')) {
+                        return false;
+                    }
+                    return true;
+                });
+
+                foreach ($candidateSlots as $cSlot) {
+                    if ($cSlot->remainingJeepsFor($dateStr) > 0) {
+                        $foundDate = $dateStr;
+                        break 2;
+                    }
+                }
+
+                $testDate->addDay();
+            }
+
+            $defaultDate = $foundDate ?? $startDate->format('Y-m-d');
+        } else {
+            $defaultDate = $requestedDate;
+        }
 
         $bookingData = [
             'selectedId'   => $selectedPackage?->id,
+            'defaultDate'  => $defaultDate,
             'packages'    => $packages->map(fn ($p) => [
-                'id'    => $p->id,
-                'name'  => $p->name,
-                'price' => (int) $p->price_per_jeep,
-                'dur'   => $p->duration ?? '',
+                'id'         => $p->id,
+                'name'       => $p->name,
+                'slug'       => $p->slug,
+                'is_sunrise' => str_contains(strtolower($p->slug . ' ' . $p->name), 'sunrise'),
+                'price'      => (int) $p->price_per_jeep,
+                'dur'        => $p->duration ?? '',
             ])->values(),
             'slots'       => $slots->map(function ($s) {
                 $time  = substr((string) $s->start_time, 0, 5);
-                $label = $s->slot_label ?: ('Sesi ' . $s->id);
+                $label = trim((string) $s->slot_label) ?: ('Sesi ' . $s->id);
+                // Cegah teks duplikat jam jika label database sudah memuat format (HH:MM WIB)
+                $cleanLabel = preg_match('/\(\d{2}:\d{2}\s*WIB\)/i', $label) ? $label : ($label . ' (' . $time . ' WIB)');
+                $isSunrise = str_contains(strtolower($s->slot_label), 'sunrise') || $time === '04:30';
                 return [
-                    'id'    => $s->id,
-                    'label' => $label . ' (' . $time . ' WIB)',
-                    'time'  => $time,
+                    'id'         => $s->id,
+                    'label'      => $cleanLabel,
+                    'time'       => $time,
+                    'is_sunrise' => $isSunrise,
                 ];
             })->values(),
         ];
 
-        return view('booking.create', compact('packages', 'selectedPackage', 'slots', 'bookingData'));
+        return view('booking.create', compact('packages', 'selectedPackage', 'slots', 'bookingData', 'defaultDate'));
+    }
+
+    /**
+     * Cek ketersediaan kuota slot jadwal secara real-time via AJAX.
+     */
+    public function checkSlotAvailability(Request $request)
+    {
+        $date = $request->query('trip_date');
+        $jeeps = max(1, (int) $request->query('jeep_quantity', 1));
+
+        if (!$date) {
+            return response()->json(['error' => 'Tanggal wajib disertakan'], 422);
+        }
+
+        $now = now();
+        $isToday = $date === $now->format('Y-m-d');
+        $nowTime = $now->format('H:i');
+
+        $slots = ScheduleSlot::where('is_active', true)->orderBy('start_time')->get();
+
+        $data = $slots->map(function ($s) use ($date, $isToday, $nowTime, $jeeps) {
+            $time = substr((string) $s->start_time, 0, 5);
+            $label = trim((string) $s->slot_label) ?: ('Sesi ' . $s->id);
+            $cleanLabel = preg_match('/\(\d{2}:\d{2}\s*WIB\)/i', $label) ? $label : ($label . ' (' . $time . ' WIB)');
+            $isSunrise = str_contains(strtolower($s->slot_label), 'sunrise') || $time === '04:30';
+
+            $remaining = $s->remainingJeepsFor($date);
+            $passed = $isToday && ($time <= $nowTime);
+            $available = !$passed && ($remaining >= $jeeps);
+
+            return [
+                'id'         => $s->id,
+                'label'      => $cleanLabel,
+                'time'       => $time,
+                'is_sunrise' => $isSunrise,
+                'remaining'  => $remaining,
+                'max_jeeps'  => $s->max_jeeps,
+                'passed'     => $passed,
+                'available'  => $available,
+            ];
+        });
+
+        return response()->json([
+            'date'     => $date,
+            'is_today' => $isToday,
+            'slots'    => $data,
+        ]);
     }
 
     public function store(Request $request)
@@ -130,6 +234,34 @@ class BookingController extends Controller
 
         $package = Package::findOrFail($validated['package_id']);
         $slot = ScheduleSlot::findOrFail($validated['slot_id']);
+
+        // Validasi Aturan Khusus Paket Sunrise vs Sesi Jam Keberangkatan
+        $isSunrisePackage = str_contains(strtolower($package->slug . ' ' . $package->name), 'sunrise');
+        $isSunriseSlot = str_contains(strtolower($slot->slot_label), 'sunrise') || substr((string) $slot->start_time, 0, 5) === '04:30';
+
+        if ($isSunrisePackage && !$isSunriseSlot) {
+            return back()->withInput()->withErrors([
+                'slot_id' => 'Paket Sunrise Trip khusus beroperasi pada sesi Sunrise (04:30 WIB).'
+            ]);
+        }
+
+        if (!$isSunrisePackage && $isSunriseSlot) {
+            return back()->withInput()->withErrors([
+                'slot_id' => 'Sesi 04:30 WIB (Sunrise) khusus berlaku untuk Paket Sunrise Trip. Silakan pilih sesi reguler (08:00, 10:30, atau 13:30 WIB).'
+            ]);
+        }
+
+        // Validasi jam sesi tidak boleh di waktu yang sudah lewat jika memesan untuk hari ini
+        $today = now()->format('Y-m-d');
+        if ($validated['trip_date'] === $today) {
+            $slotTime = substr((string) $slot->start_time, 0, 5);
+            $nowTime = now()->format('H:i');
+            if ($slotTime <= $nowTime) {
+                return back()->withInput()->withErrors([
+                    'slot_id' => "Sesi {$slot->slot_label} untuk hari ini sudah lewat. Silakan pilih sesi jadwal lain atau tanggal besok."
+                ]);
+            }
+        }
 
         $pax = (int) $validated['passenger_count'];
         $childCount = (int) ($validated['child_count'] ?? 0);
@@ -265,15 +397,6 @@ class BookingController extends Controller
             'snap_token' => $snapToken,
         ]);
 
-        // Pencatatan otomatis kandidat hotel baru jika antar-jemput dan belum ada di hotels.json (> 100 m)
-        if ($arrivalType === 'pickup' && $pickupLat !== null && $pickupLng !== null && !empty($validated['pickup_address'])) {
-            try {
-                $this->recordCandidateHotel($validated['pickup_address'], $pickupLat, $pickupLng);
-            } catch (\Throwable $e) {
-                Log::warning('Gagal mencatat kandidat hotel: ' . $e->getMessage());
-            }
-        }
-
         return redirect()->route('booking.payment', $booking->booking_code);
     }
 
@@ -361,6 +484,9 @@ class BookingController extends Controller
         $booking->booking_status = $booking->payment_mode === 'DP' ? 'DP_PAID' : 'FULL_PAID';
         $booking->save();
 
+        // Otomatis alokasikan Driver dan Armada Jeep saat bukti transfer diterima
+        \App\Services\BookingAssignmentService::autoAssign($booking);
+
         // 4. Catat notifikasi aktivitas admin
         ActivityLog::logPaymentSuccess(
             $booking,
@@ -400,6 +526,9 @@ class BookingController extends Controller
 
         $booking->booking_status = $booking->payment_mode === 'DP' ? 'DP_PAID' : 'FULL_PAID';
         $booking->save();
+
+        // Otomatis alokasikan Driver dan Armada Jeep untuk pembayaran kasir loket
+        \App\Services\BookingAssignmentService::autoAssign($booking);
 
         ActivityLog::create([
             'user_id' => Auth::id() ?? $booking->user_id,
@@ -1180,82 +1309,6 @@ class BookingController extends Controller
         }
 
         return $results;
-    }
-
-    /**
-     * Pencatatan otomatis hotel baru:
-     * Jika nama hotel + koordinat belum ada di hotels.json (jarak > 100 m dari semua hotel terdaftar),
-     * simpan sebagai kandidat baru ke database/hotel_kandidat.json.
-     */
-    private function recordCandidateHotel(string $name, float $lat, float $lng): void
-    {
-        $name = trim($name);
-        if (empty($name) || !$lat || !$lng) {
-            return;
-        }
-
-        $hotelsFile = database_path('hotels.json');
-        $hotels = file_exists($hotelsFile) ? (json_decode(file_get_contents($hotelsFile), true) ?: []) : [];
-
-        // 1. Cek apakah titik koordinat sudah terdaftar di hotels.json (jarak <= 100 meter atau nama identik)
-        foreach ($hotels as $h) {
-            $hLat = isset($h['lat']) ? (float) $h['lat'] : null;
-            $hLng = isset($h['lng']) ? (float) $h['lng'] : null;
-            if ($hLat !== null && $hLng !== null) {
-                $distKm = $this->haversineKm($lat, $lng, $hLat, $hLng);
-                if ($distKm <= 0.100) { // <= 100 meter
-                    return; // Sudah terdaftar di hotels.json
-                }
-            }
-
-            // Cek nama sama persis (case-insensitive)
-            if (mb_strtolower(trim($h['nama'] ?? '')) === mb_strtolower($name)) {
-                return;
-            }
-        }
-
-        // 2. Cek apakah sudah pernah masuk ke database/hotel_kandidat.json
-        $candFile = database_path('hotel_kandidat.json');
-        $candidates = file_exists($candFile) ? (json_decode(file_get_contents($candFile), true) ?: []) : [];
-
-        $foundIndex = null;
-        foreach ($candidates as $idx => $c) {
-            $cLat = isset($c['lat']) ? (float) $c['lat'] : null;
-            $cLng = isset($c['lng']) ? (float) $c['lng'] : null;
-            if ($cLat !== null && $cLng !== null) {
-                $distKm = $this->haversineKm($lat, $lng, $cLat, $cLng);
-                if ($distKm <= 0.100) {
-                    $foundIndex = $idx;
-                    break;
-                }
-            }
-            if (mb_strtolower(trim($c['name'] ?? '')) === mb_strtolower($name)) {
-                $foundIndex = $idx;
-                break;
-            }
-        }
-
-        if ($foundIndex !== null) {
-            // Kandidat sudah ada, naikkan jumlah kali dipakai
-            $candidates[$foundIndex]['jumlah_pakai'] = ($candidates[$foundIndex]['jumlah_pakai'] ?? 1) + 1;
-            $candidates[$foundIndex]['updated_at'] = now()->toDateTimeString();
-            if (mb_strlen($name) > mb_strlen($candidates[$foundIndex]['name'] ?? '')) {
-                $candidates[$foundIndex]['name'] = $name;
-            }
-        } else {
-            // Tambah kandidat baru
-            $candidates[] = [
-                'id'           => 'cand_' . substr(md5($name . '_' . $lat . '_' . $lng . '_' . microtime()), 0, 10),
-                'name'         => $name,
-                'lat'          => round($lat, 7),
-                'lng'          => round($lng, 7),
-                'jumlah_pakai' => 1,
-                'created_at'   => now()->toDateTimeString(),
-                'updated_at'   => now()->toDateTimeString(),
-            ];
-        }
-
-        @file_put_contents($candFile, json_encode($candidates, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
     }
 
     /**

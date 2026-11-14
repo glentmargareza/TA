@@ -23,8 +23,9 @@
         }
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap');
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Poppins', 'Inter', sans-serif; }
     </style>
 </head>
 <body class="bg-[#F4F6F8] text-slate-800 min-h-screen flex flex-col md:flex-row antialiased">
@@ -35,15 +36,14 @@
     <div class="flex-1 flex flex-col min-w-0 min-h-screen overflow-x-hidden">
         
         <!-- Header Banner -->
-        <header class="bg-white border-b border-slate-200 px-6 sm:px-8 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-0 z-20 shadow-2xs">
+        <header class="bg-white border-b border-slate-200 px-4 sm:px-8 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-0 z-20 shadow-2xs">
             <div>
-                <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
                     Manajemen Booking Wisatawan
                 </h1>
                 <p class="text-xs text-slate-500 mt-0.5">Kelola reservasi, verifikasi pembayaran loket, penugasan armada & driver, serta detail pemesan.</p>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2.5 sm:gap-3 flex-wrap">
                 <span class="px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
                     Total: {{ $bookings->total() }} Booking Terdaftar
                 </span>
@@ -53,7 +53,7 @@
             </div>
         </header>
 
-        <main class="p-6 sm:p-8 space-y-6 flex-1">
+        <main class="p-4 sm:p-8 space-y-5 sm:space-y-6 flex-1">
 
             @if(session('success'))
             <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-2xl text-sm font-semibold shadow-xs flex items-center justify-between">
@@ -119,7 +119,7 @@
             <!-- TABEL DATA LENGKAP BOOKING -->
             <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs">
+                    <table class="w-full text-left text-xs min-w-[760px]">
                         <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider text-[10px] border-b border-slate-200">
                             <tr>
                                 <th class="py-3 px-4">Kode Booking</th>
@@ -127,7 +127,7 @@
                                 <th class="py-3 px-4">Paket & Trip</th>
                                 <th class="py-3 px-4">Armada/Pax</th>
                                 <th class="py-3 px-4">Status & Sisa</th>
-                                <th class="py-3 px-4">Penugasan Jeep</th>
+                                <th class="py-3 px-4">Penugasan Driver</th>
                                 <th class="py-3 px-4 text-center">Aksi Loket</th>
                             </tr>
                         </thead>
@@ -173,9 +173,25 @@
                                     'jeep_name' => $b->assignments->first()?->jeep?->model_name ?? 'Belum Ditugaskan',
                                     'driver_name' => $b->assignments->first()?->driver?->full_name ?? 'Dialokasikan Otomatis',
                                     'customer_notes' => $b->customer_notes ?? '',
+                                    'raw_trip_date' => $b->trip_date ? $b->trip_date->format('Y-m-d') : date('Y-m-d'),
+                                    'slot_id' => $b->slot_id,
                                     'proof_url' => $proofUrl,
                                     'sender_name' => $senderName,
                                     'sender_bank' => $senderBank,
+                                ];
+
+                                $rescheduleData = [
+                                    'id' => $b->id,
+                                    'booking_code' => $b->booking_code,
+                                    'customer_name' => $b->customer_name,
+                                    'customer_phone' => $b->customer_phone,
+                                    'package_name' => $b->package?->name ?? 'Paket',
+                                    'jeep_quantity' => $b->jeep_quantity,
+                                    'passenger_count' => $b->passenger_count,
+                                    'trip_date' => $b->trip_date ? $b->trip_date->format('Y-m-d') : date('Y-m-d'),
+                                    'trip_date_formatted' => $b->trip_date ? $b->trip_date->translatedFormat('d F Y') : '-',
+                                    'slot_id' => $b->slot_id,
+                                    'slot_label' => ($b->slot?->start_time ?? '09:00') . ' - ' . ($b->slot?->end_time ?? '11:00') . ' WIB (' . ($b->slot?->slot_label ?? 'Sesi') . ')',
                                 ];
                             @endphp
                             <tr class="hover:bg-slate-50/70 transition-colors">
@@ -199,7 +215,15 @@
                                 </td>
                                 <td class="py-3 px-4">
                                     <span class="font-semibold text-slate-800 block">{{ $b->package?->name ?? 'Paket' }}</span>
-                                    <span class="text-slate-500 text-[11px]">{{ $b->trip_date ? $b->trip_date->translatedFormat('d/m/Y') : '-' }}</span>
+                                    <div class="flex items-center gap-1.5 flex-wrap mt-0.5">
+                                        <span class="text-slate-500 text-[11px]">{{ $b->trip_date ? $b->trip_date->translatedFormat('d/m/Y') : '-' }} &bull; {{ $b->slot?->start_time ?? '09:00' }}</span>
+                                        @if($b->booking_status !== 'CANCELLED')
+                                        <button type="button" data-reschedule='@json($rescheduleData)' onclick="openRescheduleModal(this)" class="text-[10px] font-bold text-amber-800 hover:text-amber-950 px-1.5 py-0.5 rounded-md bg-amber-50 hover:bg-amber-100 border border-amber-200 cursor-pointer inline-flex items-center gap-0.5 transition-colors" title="Ubah tanggal atau jam jika bentrok jadwal">
+                                            <svg class="w-3 h-3 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                            <span>Ganti Jadwal</span>
+                                        </button>
+                                        @endif
+                                    </div>
                                 </td>
                                 <td class="py-3 px-4">
                                     <span class="font-medium text-slate-700">{{ $b->jeep_quantity }} Jeep ({{ $b->passenger_count }} Org)</span>
@@ -253,16 +277,18 @@
                                     <div class="space-y-1">
                                         <div class="flex items-center justify-between gap-1.5">
                                             <span class="font-bold text-slate-800 text-xs flex items-center gap-1.5 truncate">
-                                                <svg class="w-3.5 h-3.5 text-emerald-700 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
-                                                {{ $assign->jeep?->model_name ?? 'Jeep Armada' }}
+                                                <svg class="w-3.5 h-3.5 text-emerald-700 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                                {{ $assign->driver?->full_name ?? 'Auto Paguyuban' }}
                                             </span>
-                                            <button type="button" data-assign='@json($assignData)' onclick="openAssignModal(this)" class="text-[10px] font-bold text-emerald-800 hover:text-emerald-950 px-2 py-0.5 rounded-md bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 cursor-pointer inline-flex items-center gap-0.5 shrink-0" title="Ubah driver atau jeep">
+                                            <button type="button" data-assign='@json($assignData)' onclick="openAssignModal(this)" class="text-[10px] font-bold text-emerald-800 hover:text-emerald-950 px-2 py-0.5 rounded-md bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 cursor-pointer inline-flex items-center gap-0.5 shrink-0" title="Ubah driver">
                                                 <span>✏️ Ganti</span>
                                             </button>
                                         </div>
+                                        @if($assign->driver?->phone_number)
                                         <div class="text-[11px] text-slate-500">
-                                            Driver: <strong class="text-slate-800">{{ $assign->driver?->full_name ?? 'Auto Paguyuban' }}</strong>
+                                            HP: {{ $assign->driver->phone_number }}
                                         </div>
+                                        @endif
                                         @if($b->customer_notes)
                                         <div class="p-1 px-1.5 rounded-lg bg-amber-50 border border-amber-200/90 text-[10px] text-amber-900 flex items-start gap-1 mt-1">
                                             <span class="shrink-0 font-bold">💬 Req:</span>
@@ -272,10 +298,23 @@
                                     </div>
                                     @else
                                     <div class="space-y-1">
+                                        @if($b->booking_status === 'CANCELLED')
+                                        <span class="text-slate-400 text-xs italic">-</span>
+                                        @elseif($b->booking_status === 'PENDING')
+                                        <div class="flex items-center gap-1.5 text-[11px] text-slate-500 font-medium">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                                            <span>Auto saat bayar</span>
+                                        </div>
+                                        <button type="button" data-assign='@json($assignData)' onclick="openAssignModal(this)" class="px-2 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                                            <span>Pilih Manual</span>
+                                        </button>
+                                        @else
                                         <button type="button" data-assign='@json($assignData)' onclick="openAssignModal(this)" class="px-2.5 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg text-[10px] font-bold shadow-xs transition-all flex items-center gap-1 cursor-pointer">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-                                            <span>Pilih Driver & Jeep</span>
+                                            <span>Pilih Driver</span>
                                         </button>
+                                        @endif
                                         @if($b->customer_notes)
                                         <div class="p-1 px-1.5 rounded-lg bg-amber-50 border border-amber-200/90 text-[10px] text-amber-900 flex items-start gap-1 mt-1">
                                             <span class="shrink-0 font-bold">💬 Req:</span>
@@ -545,6 +584,10 @@
                             <a id="btnWhatsappCustomer" href="#" target="_blank" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm hover:shadow transition-all cursor-pointer">
                                 <span>Hubungi Pemesan (WhatsApp)</span>
                             </a>
+                            <button type="button" id="btnDetailReschedule" onclick="openRescheduleFromDetail()" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-sm hover:shadow transition-all cursor-pointer">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                <span>Ubah Jadwal Trip</span>
+                            </button>
                             <button type="button" id="btnFooterViewProof" onclick="showCurrentProofLightbox()" class="hidden inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm hover:shadow transition-all cursor-pointer">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                                 <span>Lihat Bukti Transfer</span>
@@ -569,8 +612,8 @@
                                     <svg class="w-5 h-5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                                 </div>
                                 <div>
-                                    <h3 class="font-bold text-slate-800 text-base">Atur / Ganti Driver & Armada</h3>
-                                    <p class="text-xs text-slate-500">Pilih driver manual sesuai permintaan pelanggan loket/online.</p>
+                                    <h3 class="font-bold text-slate-800 text-base">Atur / Ganti Driver Paguyuban</h3>
+                                    <p class="text-xs text-slate-500">Sistem otomatis menugaskan driver secara bergiliran. Pilih manual jika ada permintaan khusus wisatawan.</p>
                                 </div>
                             </div>
                             <button type="button" onclick="closeAssignModal()" class="w-8 h-8 rounded-lg hover:bg-slate-200 text-slate-400 hover:text-slate-700 flex items-center justify-center font-bold text-lg cursor-pointer">&times;</button>
@@ -609,19 +652,6 @@
                                 </select>
                                 <span class="text-[10px] text-slate-400 block mt-1">*Jika pemesan me-request driver tertentu, pilih langsung namanya dari daftar di atas.</span>
                             </div>
-
-                            <!-- 2. Dropdown Pilih Unit Jeep Manual -->
-                            <div>
-                                <label class="block font-bold text-slate-700 mb-1.5 text-xs">
-                                    Pilih Armada Jeep:
-                                </label>
-                                <select name="jeep_id" id="assign_jeep_select" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-semibold cursor-pointer">
-                                    <option value="random">🎲 Auto-Pilih Jeep Tersedia (Ready)</option>
-                                    @foreach($jeeps as $j)
-                                    <option value="{{ $j->id }}">🚙 {{ $j->model_name }} [No. {{ $j->plate_number }}] &mdash; {{ $j->status === 'READY' ? '🟢 TERSEDIA' : ($j->status === 'ON_TRIP' ? '🔵 ON TRIP' : '🟡 OFF/SERVIS') }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
                         </div>
 
                         <!-- Modal Footer -->
@@ -631,6 +661,111 @@
                             </button>
                             <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs shadow-sm hover:shadow transition-all cursor-pointer">
                                 Simpan & Tetapkan Driver
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- MODAL UBAH JADWAL BOOKING (RESCHEDULE / SELESAIKAN BENTROK) -->
+            <div id="modalRescheduleBooking" onclick="if(event.target === this) closeRescheduleModal()" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden transition-opacity duration-200">
+                <div class="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-slate-100 transform transition-all animate-in fade-in zoom-in-95">
+                    <form id="formRescheduleBooking" action="" method="POST">
+                        @csrf
+                        <!-- Modal Header -->
+                        <div class="p-5 sm:p-6 border-b border-slate-100 flex items-center justify-between bg-amber-50/70">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold">
+                                    <svg class="w-5 h-5 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-800 text-base">Ubah Jadwal Booking (Reschedule)</h3>
+                                    <p class="text-xs text-slate-500">Pindahkan sesi tanggal & jam untuk menyelesaikan bentrok jadwal.</p>
+                                </div>
+                            </div>
+                            <button type="button" onclick="closeRescheduleModal()" class="w-8 h-8 rounded-lg hover:bg-slate-200 text-slate-400 hover:text-slate-700 flex items-center justify-center font-bold text-lg cursor-pointer">&times;</button>
+                        </div>
+
+                        <!-- Modal Body -->
+                        <div class="p-6 space-y-4 text-xs">
+                            <!-- Info Booking & Jadwal Saat Ini -->
+                            <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <span class="text-[11px] text-slate-400 block">Kode Booking & Pemesan</span>
+                                        <span id="reschedule_booking_title" class="font-bold text-slate-800 text-xs block"></span>
+                                    </div>
+                                    <span id="reschedule_pax_badge" class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-200 text-slate-800"></span>
+                                </div>
+                                <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between text-slate-600">
+                                    <span class="text-[11px]">Jadwal Saat Ini:</span>
+                                    <span id="reschedule_current_schedule" class="font-bold text-slate-800 text-[11px]"></span>
+                                </div>
+                            </div>
+
+                            <!-- Pilih Tanggal Baru -->
+                            <div>
+                                <label class="block font-bold text-slate-700 mb-1.5 text-xs">
+                                    Pilih Tanggal Keberangkatan Baru:
+                                </label>
+                                <input type="date" name="trip_date" id="reschedule_date_input" required min="{{ date('Y-m-d') }}" onchange="onRescheduleDateChange(this.value)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500 font-semibold cursor-pointer">
+                            </div>
+
+                            <!-- Pilih Sesi Jam Baru -->
+                            <div>
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <label class="block font-bold text-slate-700 text-xs">
+                                        Pilih Sesi Jam Baru:
+                                    </label>
+                                    <span id="reschedule_slot_loading" class="text-[10px] text-amber-700 font-semibold hidden">Memeriksa kuota...</span>
+                                </div>
+                                <select name="slot_id" id="reschedule_slot_select" required onchange="onRescheduleSlotChange()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500 font-semibold cursor-pointer">
+                                    @foreach($slots as $s)
+                                    <option value="{{ $s->id }}" data-remaining="{{ $s->max_jeeps }}" data-label="{{ $s->slot_label }}" data-time="{{ $s->start_time }} - {{ $s->end_time }} WIB">
+                                        🕒 {{ $s->start_time }} - {{ $s->end_time }} WIB ({{ $s->slot_label }})
+                                    </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Warning Box jika Slot Bentrok / Penuh -->
+                            <div id="reschedule_clash_box" class="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl space-y-2 hidden">
+                                <div class="flex items-start gap-2">
+                                    <span class="text-rose-600 text-base leading-none">⚠️</span>
+                                    <div class="text-[11px] text-rose-900 leading-relaxed">
+                                        <strong class="font-bold block text-rose-800">Peringatan Bentrok Kuota:</strong>
+                                        <span id="reschedule_clash_text">Sesi jam ini sudah penuh atau sisa kuota tidak mencukupi untuk jumlah armada booking ini.</span>
+                                    </div>
+                                </div>
+                                <label class="flex items-center gap-2 cursor-pointer pt-1 border-t border-rose-200/80">
+                                    <input type="checkbox" name="force" value="1" id="reschedule_force_checkbox" class="w-4 h-4 rounded text-rose-600 focus:ring-rose-500 cursor-pointer">
+                                    <span class="text-[11px] font-bold text-rose-900">Tetap Jadwalkan (Override Kuota Paguyuban)</span>
+                                </label>
+                            </div>
+
+                            <!-- Alasan Perubahan Jadwal -->
+                            <div>
+                                <label class="block font-bold text-slate-700 mb-1.5 text-xs">
+                                    Alasan Perubahan Jadwal:
+                                </label>
+                                <select name="reason" id="reschedule_reason_select" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500 font-semibold cursor-pointer mb-2">
+                                    <option value="Bentrok Jadwal / Overbooking Sesi">⚡ Bentrok Jadwal / Overbooking Sesi</option>
+                                    <option value="Kondisi Cuaca / Jalur Wisata Ditutup Sementara">🌧️ Kondisi Cuaca / Jalur Wisata Ditutup Sementara</option>
+                                    <option value="Permintaan Reschedule dari Wisatawan">🙋 Permintaan Reschedule dari Wisatawan</option>
+                                    <option value="Penyesuaian Operasional Armada Loket">🚙 Penyesuaian Operasional Armada Loket</option>
+                                    <option value="Lainnya">📝 Alasan Lainnya</option>
+                                </select>
+                                <input type="text" name="admin_note" id="reschedule_admin_note" placeholder="Catatan tambahan (opsional, misal: 'Pindah karena hujan lebat di bunker')" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                            </div>
+                        </div>
+
+                        <!-- Modal Footer -->
+                        <div class="p-5 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-2.5">
+                            <button type="button" onclick="closeRescheduleModal()" class="px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 font-semibold text-xs cursor-pointer">
+                                Batal
+                            </button>
+                            <button type="submit" id="btnSubmitReschedule" class="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-sm hover:shadow transition-all cursor-pointer">
+                                Simpan Jadwal Baru
                             </button>
                         </div>
                     </form>
@@ -678,6 +813,7 @@
             <script>
                 // State bukti transfer aktif untuk modal detail
                 let currentDetailProof = { url: '', code: '', sender: '', bank: '' };
+                let currentDetailBookingRawData = null;
 
                 // Lightbox Modal Bukti Transfer (1 Tab)
                 function openProofLightbox(url, code, sender, bank) {
@@ -727,6 +863,8 @@
                         console.error('Error parsing booking detail data:', e);
                         return;
                     }
+
+                    currentDetailBookingRawData = data;
 
                     document.getElementById('detail_booking_code').textContent = data.booking_code;
                     document.getElementById('detail_customer_name').textContent = data.customer_name;
@@ -859,7 +997,7 @@
                     }
 
                     const form = document.getElementById('formAssignDriver');
-                    form.action = '/admin/bookings/' + data.id + '/assign';
+                    form.action = "{{ url('admin/bookings') }}/" + data.id + "/assign";
 
                     document.getElementById('assign_booking_title').textContent = '#' + data.booking_code + ' - ' + data.customer_name;
 
@@ -867,9 +1005,13 @@
                     const reqText = document.getElementById('assign_request_text');
                     if (data.customer_notes && String(data.customer_notes).trim() !== '' && data.customer_notes !== 'null') {
                         reqBox.classList.remove('hidden');
+                        reqBox.className = "p-3.5 bg-amber-50 rounded-2xl border border-amber-200 space-y-1";
+                        reqText.className = "text-amber-950 text-xs font-semibold italic leading-relaxed";
                         reqText.textContent = '"' + data.customer_notes + '"';
                     } else {
                         reqBox.classList.remove('hidden');
+                        reqBox.className = "p-3 bg-slate-50 rounded-2xl border border-slate-200 space-y-0.5";
+                        reqText.className = "text-slate-500 text-xs";
                         reqText.textContent = 'Tidak ada catatan atau permintaan khusus dari pelanggan.';
                     }
 
@@ -880,18 +1022,157 @@
                         driverSelect.value = 'random';
                     }
 
-                    const jeepSelect = document.getElementById('assign_jeep_select');
-                    if (data.jeep_id) {
-                        jeepSelect.value = data.jeep_id;
-                    } else {
-                        jeepSelect.value = 'random';
-                    }
-
                     document.getElementById('modalAssignDriver').classList.remove('hidden');
                 }
 
                 function closeAssignModal() {
                     document.getElementById('modalAssignDriver').classList.add('hidden');
+                }
+
+                // 3. Modal Reschedule / Ubah Jadwal Bentrok
+                let currentRescheduleData = {};
+
+                function openRescheduleModal(source) {
+                    let data = {};
+                    if (source instanceof HTMLElement) {
+                        try {
+                            data = JSON.parse(source.getAttribute('data-reschedule'));
+                        } catch (e) {
+                            console.error('Error parsing reschedule data:', e);
+                            return;
+                        }
+                    } else if (typeof source === 'object' && source !== null) {
+                        data = {
+                            id: source.id,
+                            booking_code: source.booking_code,
+                            customer_name: source.customer_name,
+                            customer_phone: source.customer_phone,
+                            jeep_quantity: source.jeep_quantity || 1,
+                            passenger_count: source.passenger_count || 4,
+                            trip_date: source.raw_trip_date || source.trip_date || '',
+                            trip_date_formatted: source.trip_date || '',
+                            slot_id: source.slot_id || '',
+                            slot_label: source.slot_label || 'Sesi Jam'
+                        };
+                    } else {
+                        return;
+                    }
+
+                    currentRescheduleData = data;
+
+                    const form = document.getElementById('formRescheduleBooking');
+                    form.action = "{{ url('admin/bookings') }}/" + data.id + "/reschedule";
+
+                    document.getElementById('reschedule_booking_title').textContent = '#' + data.booking_code + ' - ' + data.customer_name;
+                    document.getElementById('reschedule_pax_badge').textContent = (data.jeep_quantity || 1) + ' Jeep (' + (data.passenger_count || 4) + ' Org)';
+                    document.getElementById('reschedule_current_schedule').textContent = (data.trip_date_formatted || data.trip_date) + ' • ' + (data.slot_label || '');
+
+                    const dateInput = document.getElementById('reschedule_date_input');
+                    if (data.trip_date) {
+                        const d = new Date(data.trip_date);
+                        if (!isNaN(d.getTime())) {
+                            dateInput.value = data.trip_date.length === 10 ? data.trip_date : d.toISOString().split('T')[0];
+                        } else {
+                            dateInput.value = data.trip_date;
+                        }
+                    }
+
+                    const slotSelect = document.getElementById('reschedule_slot_select');
+                    if (data.slot_id) {
+                        slotSelect.value = data.slot_id;
+                    }
+
+                    // Reset form & clash warning box
+                    document.getElementById('reschedule_force_checkbox').checked = false;
+                    document.getElementById('reschedule_clash_box').classList.add('hidden');
+                    document.getElementById('reschedule_admin_note').value = '';
+
+                    // Cek kuota slot realtime
+                    if (dateInput.value) {
+                        onRescheduleDateChange(dateInput.value);
+                    }
+
+                    document.getElementById('modalRescheduleBooking').classList.remove('hidden');
+                }
+
+                function closeRescheduleModal() {
+                    document.getElementById('modalRescheduleBooking').classList.add('hidden');
+                }
+
+                function openRescheduleFromDetail() {
+                    if (currentDetailBookingRawData) {
+                        closeBookingDetailModal();
+                        openRescheduleModal(currentDetailBookingRawData);
+                    }
+                }
+
+                async function onRescheduleDateChange(date) {
+                    if (!date) return;
+                    const loading = document.getElementById('reschedule_slot_loading');
+                    const select = document.getElementById('reschedule_slot_select');
+                    if (loading) loading.classList.remove('hidden');
+
+                    try {
+                        const excludeId = currentRescheduleData.id || 0;
+                        const res = await fetch("{{ route('admin.slot-availability') }}?date=" + encodeURIComponent(date) + "&exclude_booking_id=" + excludeId);
+                        const json = await res.json();
+
+                        if (json.slots && json.slots.length > 0) {
+                            const currentSelectedSlotId = select.value;
+                            select.innerHTML = '';
+                            json.slots.forEach(s => {
+                                const opt = document.createElement('option');
+                                opt.value = s.id;
+                                opt.setAttribute('data-remaining', s.remaining_jeeps);
+                                opt.setAttribute('data-label', s.slot_label);
+                                opt.setAttribute('data-time', s.time_range);
+
+                                const needed = parseInt(currentRescheduleData.jeep_quantity || 1, 10);
+                                if (s.remaining_jeeps <= 0) {
+                                    opt.textContent = `🔴 ${s.time_range} • Penuh / 0 Jeep (${s.slot_label})`;
+                                } else if (s.remaining_jeeps < needed) {
+                                    opt.textContent = `🟡 ${s.time_range} • Sisa ${s.remaining_jeeps} Jeep (Kurang) (${s.slot_label})`;
+                                } else {
+                                    opt.textContent = `🟢 ${s.time_range} • Sisa ${s.remaining_jeeps} Jeep Tersedia (${s.slot_label})`;
+                                }
+                                select.appendChild(opt);
+                            });
+
+                            if (currentSelectedSlotId) {
+                                select.value = currentSelectedSlotId;
+                            }
+                        }
+                    } catch (err) {
+                        console.error('Error saat memeriksa kuota sesi:', err);
+                    } finally {
+                        if (loading) loading.classList.add('hidden');
+                        onRescheduleSlotChange();
+                    }
+                }
+
+                function onRescheduleSlotChange() {
+                    const select = document.getElementById('reschedule_slot_select');
+                    const selectedOpt = select.options[select.selectedIndex];
+                    const clashBox = document.getElementById('reschedule_clash_box');
+                    const clashText = document.getElementById('reschedule_clash_text');
+                    const forceCheckbox = document.getElementById('reschedule_force_checkbox');
+
+                    if (!selectedOpt) return;
+
+                    const remaining = parseInt(selectedOpt.getAttribute('data-remaining') || '99', 10);
+                    const needed = parseInt(currentRescheduleData.jeep_quantity || 1, 10);
+
+                    if (remaining < needed) {
+                        clashBox.classList.remove('hidden');
+                        if (remaining <= 0) {
+                            clashText.textContent = `Sesi ini sudah penuh (tersisa 0 jeep). Booking ini membutuhkan ${needed} armada. Tetap jadwalkan jika Paguyuban menambah armada khusus.`;
+                        } else {
+                            clashText.textContent = `Sesi ini hanya tersisa ${remaining} jeep, sedangkan booking ini membutuhkan ${needed} armada.`;
+                        }
+                    } else {
+                        clashBox.classList.add('hidden');
+                        forceCheckbox.checked = false;
+                    }
                 }
 
                 document.addEventListener('keydown', function(e) {
@@ -903,6 +1184,7 @@
                         }
                         closeBookingDetailModal();
                         closeAssignModal();
+                        closeRescheduleModal();
                     }
                 });
             </script>

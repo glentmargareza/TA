@@ -21,6 +21,7 @@ Route::get('/kebijakan-privasi', [HomeController::class, 'privacy'])->name('priv
 // 2. Alur Pemesanan (Booking)
 Route::get('/booking', [BookingController::class, 'create'])->name('booking.create');
 Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
+Route::get('/booking/slot-availability', [BookingController::class, 'checkSlotAvailability'])->name('booking.slot_availability');
 Route::get('/booking/resolve-link', [BookingController::class, 'resolvePlace'])->name('booking.resolve');
 Route::match(['get', 'post'], '/api/resolve-place', [BookingController::class, 'resolvePlace'])->middleware('throttle:60,1')->name('places.resolve_place');
 Route::match(['get', 'post'], '/api/resolve-map-link', [BookingController::class, 'resolvePlace'])->middleware('throttle:60,1')->name('places.resolve_link');
@@ -52,6 +53,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     Route::post('/bookings/{id}/settle', [AdminController::class, 'settleDp'])->name('settle');
     Route::post('/bookings/{id}/assign', [AdminController::class, 'assignDriver'])->name('assign');
+    Route::post('/bookings/{id}/reschedule', [AdminController::class, 'rescheduleBooking'])->name('reschedule');
+    Route::get('/bookings/slot-availability', [AdminController::class, 'checkSlotAvailability'])->name('slot-availability');
     Route::post('/bookings/{id}/cancel', [AdminController::class, 'cancelBooking'])->name('cancel');
     Route::post('/jeep', [AdminController::class, 'storeJeep'])->name('jeeps.store');
     Route::post('/jeep/{id}/status', [AdminController::class, 'updateJeepStatus'])->name('jeeps.status');
@@ -86,11 +89,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/pengaturan', [AdminController::class, 'settings'])->name('settings');
     Route::put('/pengaturan/profile', [AdminController::class, 'updateAdminProfile'])->name('settings.profile');
     Route::post('/pengaturan/basecamp', [AdminController::class, 'updateBasecampSettings'])->name('settings.basecamp');
-
-    // Kandidat Hotel Baru
-    Route::get('/hotel-kandidat', [AdminController::class, 'hotelCandidates'])->name('hotel_candidates');
-    Route::post('/hotel-kandidat/{id}/approve', [AdminController::class, 'approveHotelCandidate'])->name('hotel_candidates.approve');
-    Route::post('/hotel-kandidat/{id}/delete', [AdminController::class, 'deleteHotelCandidate'])->name('hotel_candidates.delete');
 });
 
 // 5. Payment Gateway Webhook (Midtrans)

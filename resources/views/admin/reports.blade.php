@@ -23,9 +23,9 @@
         }
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        .font-display { font-family: 'Outfit', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800;900&display=swap');
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        .font-display, h1, h2, h3, h4, h5, h6 { font-family: 'Poppins', 'Inter', sans-serif; }
 
         @media print {
             aside, header, #filter-box, .no-print, button, nav {
@@ -64,10 +64,9 @@
     <div class="flex-1 flex flex-col min-w-0 min-h-screen overflow-x-hidden" id="print-area">
         
         <!-- Header Banner (no-print) -->
-        <header class="bg-white border-b border-slate-200 px-6 sm:px-8 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-0 z-20 shadow-2xs no-print">
+        <header class="bg-white border-b border-slate-200 px-4 sm:px-8 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-0 z-20 shadow-2xs no-print">
             <div>
-                <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2 font-display">
-                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight font-display">
                     Laporan Penjualan & Rekapitulasi Kasir
                 </h1>
                 <p class="text-xs text-slate-500 mt-0.5">Rekapitulasi pendapatan tiket tour, arus kas masuk, dan piutang pelunasan sewa Jeep.</p>
@@ -90,7 +89,7 @@
             </div>
         </header>
 
-        <main class="p-6 sm:p-8 space-y-6 flex-1 overflow-y-auto">
+        <main class="p-4 sm:p-8 space-y-5 sm:space-y-6 flex-1 overflow-y-auto">
 
             <!-- KOP SURAT RESMI (Hanya Tampil Saat Cetak / Print) -->
             <div class="hidden print-header pb-4 mb-4 border-b-2 border-slate-800 text-center space-y-1">
@@ -255,7 +254,7 @@
                 </div>
 
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs text-slate-700 print-table">
+                    <table class="w-full text-left text-xs text-slate-700 print-table min-w-[700px]">
                         <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase text-[11px] tracking-wider select-none">
                             <tr>
                                 <th class="py-4 px-3.5 w-12 text-center">No</th>

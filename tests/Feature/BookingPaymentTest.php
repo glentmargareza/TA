@@ -8,9 +8,11 @@ use App\Models\ScheduleSlot;
 use App\Models\Booking;
 use App\Models\Payment;
 use Illuminate\Support\Str;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class BookingPaymentTest extends TestCase
 {
+    use DatabaseTransactions;
     /**
      * Helper untuk membuat instance booking terisolasi dalam pengujian.
      */
@@ -92,7 +94,7 @@ class BookingPaymentTest extends TestCase
     public function test_booking_creation_and_auto_jeep_capacity(): void
     {
         $package = Package::first();
-        $slot = ScheduleSlot::first();
+        $slot = ScheduleSlot::where('slot_label', 'not like', '%Sunrise%')->first() ?? ScheduleSlot::first();
 
         $postData = [
             'package_id' => $package->id,
@@ -607,7 +609,7 @@ class BookingPaymentTest extends TestCase
     public function test_pickup_fee_calculation_per_jeep_quantity(): void
     {
         $package = Package::first();
-        $slot = ScheduleSlot::first();
+        $slot = ScheduleSlot::where('slot_label', 'not like', '%Sunrise%')->first() ?? ScheduleSlot::first();
         $zone = \App\Models\PickupZone::where('additional_fee', '>', 0)->first();
 
         $postData = [
@@ -638,9 +640,285 @@ class BookingPaymentTest extends TestCase
         $expectedSubtotal = $package->price_per_jeep * 2;
         $this->assertEquals($expectedSubtotal, (float) $booking->package_subtotal);
 
-        // Biaya pickup dihitung per jeep
-        $this->assertGreaterThan(0, (float) $booking->pickup_fee);
-        $expectedTotal = $expectedSubtotal + (float) $booking->pickup_fee;
-        $this->assertEquals($expectedTotal, (float) $booking->total_amount);
+        // Biaya pickup dihitung per jeep jika layanan antar-jemput diaktifkan
+        if ($booking->arrival_type === 'pickup') {
+            $this->assertGreaterThan(0, (float) $booking->pickup_fee);
+            $expectedTotal = $expectedSubtotal + (float) $booking->pickup_fee;
+            $this->assertEquals($expectedTotal, (float) $booking->total_amount);
+        } else {
+            // Ketika fitur antar-jemput dinonaktifkan oleh tim booking, arrival_type default ke self_drive dengan biaya 0
+            $this->assertEquals(0, (float) $booking->pickup_fee);
+            $this->assertEquals($expectedSubtotal, (float) $booking->total_amount);
+        }
+    }
+
+    /**
+     * Memverifikasi alokasi otomatis Armada Jeep & Driver saat booking lunas / terkonfirmasi.
+     */
+    public function test_auto_assignment_of_driver_and_jeep_when_booking_paid(): void
+    {
+        $booking = $this->createIsolatedBooking([
+            'payment_mode' => 'FULL',
+            'total_amount' => 500000,
+            'paid_amount' => 500000,
+            'remaining_amount' => 0,
+            'booking_status' => 'PENDING',
+        ]);
+
+        $this->assertEquals(0, $booking->assignments()->count());
+
+        $orderId = $booking->booking_code;
+        $statusCode = '200';
+        $grossAmount = '500000.00';
+        $serverKey = config('services.midtrans.server_key');
+        $validSignature = hash('sha512', $orderId . $statusCode . $grossAmount . $serverKey);
+
+        $payload = [
+            'order_id' => $orderId,
+            'status_code' => $statusCode,
+            'gross_amount' => $grossAmount,
+            'signature_key' => $validSignature,
+            'transaction_status' => 'settlement',
+            'fraud_status' => 'accept',
+            'payment_type' => 'bank_transfer',
+            'transaction_id' => 'TRX-AUTO-ASSIGN-' . time(),
+        ];
+
+        $response = $this->postJson('/webhook/midtrans', $payload);
+        $response->assertStatus(200);
+
+        $booking->refresh();
+        $this->assertEquals('FULL_PAID', $booking->booking_status);
+
+        // Verifikasi sistem otomatis menugaskan driver & jeep
+        $assignment = $booking->assignments()->first();
+        $this->assertNotNull($assignment, 'Penugasan Driver & Jeep wajib dibuat otomatis oleh sistem saat booking lunas.');
+        $this->assertNotNull($assignment->driver_id);
+        $this->assertNotNull($assignment->jeep_id);
+        $this->assertNotNull($assignment->driver);
+        $this->assertNotNull($assignment->jeep);
+    }
+
+    /**
+     * Memverifikasi admin dapat melakukan override (ganti manual) driver & jeep jika ada request khusus.
+     */
+    public function test_admin_can_override_driver_and_jeep_assignment(): void
+    {
+        $admin = \App\Models\User::where('role', 'admin')->first() ?? \App\Models\User::factory()->create(['role' => 'admin']);
+
+        $booking = $this->createIsolatedBooking([
+            'customer_notes' => 'Request driver ramah untuk lansia',
+            'booking_status' => 'FULL_PAID',
+        ]);
+
+        // Alokasikan otomatis awal
+        \App\Services\BookingAssignmentService::autoAssign($booking);
+        $this->assertEquals(1, $booking->assignments()->count());
+
+        $newDriver = \App\Models\Driver::where('is_active', true)->orderBy('id', 'desc')->first();
+
+        // Admin hanya perlu memilih driver, armada jeep otomatis dikelola sistem
+        $response = $this->actingAs($admin)->post(route('admin.assign', $booking->id), [
+            'driver_id' => $newDriver->id,
+        ]);
+
+        $response->assertRedirect();
+
+        $booking->refresh();
+        $assignment = $booking->assignments()->first();
+        $this->assertNotNull($assignment);
+        $this->assertNotNull($assignment->jeep_id);
+        $this->assertEquals($newDriver->id, $assignment->driver_id);
+    }
+
+    /**
+     * Memverifikasi admin dapat mengubah jadwal booking (reschedule) saat terjadi bentrok sesi atau cuaca.
+     */
+    public function test_admin_can_reschedule_booking_to_resolve_conflict(): void
+    {
+        $admin = \App\Models\User::where('role', 'admin')->first() ?? \App\Models\User::factory()->create(['role' => 'admin']);
+
+        $slotA = ScheduleSlot::first();
+        $slotB = ScheduleSlot::where('id', '!=', $slotA->id)->first() ?? ScheduleSlot::factory()->create([
+            'slot_label' => 'Sesi Sore',
+            'start_time' => '15:00',
+            'end_time' => '17:00',
+            'max_jeeps' => 10,
+            'is_active' => true,
+        ]);
+
+        $booking = $this->createIsolatedBooking([
+            'trip_date' => date('Y-m-d', strtotime('+3 days')),
+            'slot_id' => $slotA->id,
+            'booking_status' => 'FULL_PAID',
+        ]);
+
+        $newDate = date('Y-m-d', strtotime('+5 days'));
+
+        $response = $this->actingAs($admin)->post(route('admin.reschedule', $booking->id), [
+            'trip_date' => $newDate,
+            'slot_id' => $slotB->id,
+            'reason' => 'Bentrok Jadwal / Overbooking Sesi',
+            'admin_note' => 'Dipindahkan ke hari Jumat sesi sore',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+
+        $booking->refresh();
+        $this->assertEquals($newDate, $booking->trip_date->format('Y-m-d'));
+        $this->assertEquals($slotB->id, $booking->slot_id);
+        $this->assertStringContainsString('Reschedule:', (string) $booking->customer_notes);
+        $this->assertStringContainsString('Bentrok Jadwal', (string) $booking->customer_notes);
+    }
+
+    /**
+     * Memverifikasi endpoint pengecekan kuota sesi jadwal (AJAX) mengembalikan struktur realtime yang valid.
+     */
+    public function test_admin_slot_availability_endpoint(): void
+    {
+        $admin = \App\Models\User::where('role', 'admin')->first() ?? \App\Models\User::factory()->create(['role' => 'admin']);
+
+        $testDate = date('Y-m-d', strtotime('+2 days'));
+        $response = $this->actingAs($admin)->getJson(route('admin.slot-availability', ['date' => $testDate]));
+
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'date',
+            'slots' => [
+                '*' => ['id', 'slot_label', 'start_time', 'end_time', 'time_range', 'max_jeeps', 'booked_jeeps', 'remaining_jeeps', 'is_full']
+            ]
+        ]);
+    }
+
+    /**
+     * Memverifikasi paket Sunrise Tour DITOLAK jika memilih sesi reguler (selain 04:30 WIB).
+     */
+    public function test_sunrise_package_cannot_use_regular_slot(): void
+    {
+        $sunrisePackage = Package::where('slug', 'like', '%sunrise%')->orWhere('name', 'like', '%Sunrise%')->first();
+        $regularSlot = ScheduleSlot::where('slot_label', 'not like', '%Sunrise%')->first();
+
+        $postData = [
+            'package_id' => $sunrisePackage->id,
+            'slot_id' => $regularSlot->id,
+            'trip_date' => date('Y-m-d', strtotime('+3 days')),
+            'passenger_count' => 4,
+            'jeep_quantity' => 1,
+            'arrival_type' => 'self_drive',
+            'customer_name' => 'Sunrise Tester',
+            'customer_phone' => '081299990001',
+            'payment_mode' => 'FULL',
+        ];
+
+        $response = $this->post('/booking', $postData);
+        $response->assertSessionHasErrors('slot_id');
+    }
+
+    /**
+     * Memverifikasi paket Reguler (Non-Sunrise) DITOLAK jika memilih sesi Sunrise (04:30 WIB).
+     */
+    public function test_regular_package_cannot_use_sunrise_slot(): void
+    {
+        $regularPackage = Package::where('slug', 'not like', '%sunrise%')->where('name', 'not like', '%Sunrise%')->first();
+        $sunriseSlot = ScheduleSlot::where('slot_label', 'like', '%Sunrise%')->orWhere('start_time', 'like', '04:30%')->first();
+
+        $postData = [
+            'package_id' => $regularPackage->id,
+            'slot_id' => $sunriseSlot->id,
+            'trip_date' => date('Y-m-d', strtotime('+3 days')),
+            'passenger_count' => 4,
+            'jeep_quantity' => 1,
+            'arrival_type' => 'self_drive',
+            'customer_name' => 'Reguler Tester',
+            'customer_phone' => '081299990002',
+            'payment_mode' => 'FULL',
+        ];
+
+        $response = $this->post('/booking', $postData);
+        $response->assertSessionHasErrors('slot_id');
+    }
+
+    /**
+     * Memverifikasi paket Sunrise dengan sesi 04:30 WIB BERHASIL dipesan.
+     */
+    public function test_sunrise_package_with_sunrise_slot_succeeds(): void
+    {
+        $sunrisePackage = Package::where('slug', 'like', '%sunrise%')->orWhere('name', 'like', '%Sunrise%')->first();
+        $sunriseSlot = ScheduleSlot::where('slot_label', 'like', '%Sunrise%')->orWhere('start_time', 'like', '04:30%')->first();
+
+        $postData = [
+            'package_id' => $sunrisePackage->id,
+            'slot_id' => $sunriseSlot->id,
+            'trip_date' => date('Y-m-d', strtotime('+5 days')),
+            'passenger_count' => 4,
+            'jeep_quantity' => 1,
+            'arrival_type' => 'self_drive',
+            'customer_name' => 'Sunrise Valid Tester',
+            'customer_phone' => '081299990003',
+            'payment_mode' => 'DP',
+        ];
+
+        $response = $this->post('/booking', $postData);
+        $response->assertRedirect();
+        $response->assertSessionHasNoErrors();
+
+        $booking = Booking::where('customer_phone', '081299990003')->latest()->first();
+        $this->assertNotNull($booking);
+        $this->assertEquals($sunrisePackage->id, $booking->package_id);
+        $this->assertEquals($sunriseSlot->id, $booking->slot_id);
+    }
+
+    /**
+     * Memverifikasi endpoint publik ketersediaan slot jadwal mengembalikan data yang benar.
+     */
+    public function test_public_slot_availability_endpoint(): void
+    {
+        $testDate = date('Y-m-d', strtotime('+3 days'));
+        $response = $this->getJson(route('booking.slot_availability', ['trip_date' => $testDate, 'jeep_quantity' => 1]));
+
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'date',
+            'is_today',
+            'slots' => [
+                '*' => ['id', 'label', 'time', 'is_sunrise', 'remaining', 'max_jeeps', 'passed', 'available']
+            ]
+        ]);
+    }
+
+    /**
+     * Memverifikasi admin dapat memperbarui foto & caption galeri beranda.
+     */
+    public function test_admin_can_update_gallery_settings(): void
+    {
+        $admin = \App\Models\User::where('role', 'admin')->first() ?? \App\Models\User::factory()->create(['role' => 'admin']);
+
+        $postData = [
+            'gallery_title' => 'Momen Seru Jeep Merapi 2026',
+            'gallery_subtitle' => 'Koleksi dokumentasi petualangan wisatawan pilihan.',
+            'gallery_caption_1' => 'Aksi Menembus Kali Gendol',
+            'gallery_image_1' => 'https://example.com/gallery_test_1.jpg',
+            'gallery_caption_2' => 'Panorama Sunrise Merapi',
+        ];
+
+        $response = $this->actingAs($admin)->post(route('admin.settings.basecamp'), $postData);
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+
+        // Pastikan tersimpan di file basecamp_settings.json
+        $settingsFile = storage_path('app/basecamp_settings.json');
+        $this->assertFileExists($settingsFile);
+        $saved = json_decode(file_get_contents($settingsFile), true);
+        $this->assertEquals('Momen Seru Jeep Merapi 2026', $saved['gallery_title']);
+        $this->assertEquals('Aksi Menembus Kali Gendol', $saved['gallery_caption_1']);
+        $this->assertEquals('https://example.com/gallery_test_1.jpg', $saved['gallery_image_1']);
+
+        // Verifikasi beranda menampilkan foto & judul kustom
+        $homeResponse = $this->get('/');
+        $homeResponse->assertStatus(200);
+        $homeResponse->assertSee('Momen Seru Jeep Merapi 2026');
+        $homeResponse->assertSee('Aksi Menembus Kali Gendol');
+        $homeResponse->assertSee('https://example.com/gallery_test_1.jpg');
     }
 }

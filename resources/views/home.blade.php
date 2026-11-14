@@ -5,7 +5,7 @@
 @section('content')
 
     <!-- 1. HERO SECTION -->
-    <section class="relative min-h-[580px] sm:min-h-[640px] lg:min-h-[700px] lg:max-h-[800px] flex items-center justify-center overflow-hidden">
+    <section class="relative min-h-[520px] sm:min-h-[640px] lg:min-h-[700px] lg:max-h-[800px] flex items-center justify-center overflow-hidden">
         <!-- Hero Slider Background Images -->
         <div id="heroSliderContainer" class="absolute inset-0 z-0 overflow-hidden">
             @php
@@ -37,32 +37,30 @@
         </div>
 
         <!-- MAIN HERO CONTENT CONTAINER (Perfect Vertical Centering & No Cutoff) -->
-        <div class="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 lg:pt-14 pb-6 sm:pb-8 w-full flex flex-col justify-between min-h-[580px] sm:min-h-[640px] lg:min-h-[700px] lg:max-h-[800px]">
+        <div class="relative z-20 max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 pt-6 sm:pt-12 lg:pt-14 pb-5 sm:pb-8 w-full max-w-full flex flex-col justify-between min-h-[520px] sm:min-h-[640px] lg:min-h-[700px] lg:max-h-[800px] overflow-hidden">
             
             <!-- Headline & CTA Area -->
-            <div class="max-w-2xl mt-2 sm:mt-6 space-y-4 sm:space-y-6">
+            <div class="max-w-2xl mt-1 sm:mt-6 space-y-3.5 sm:space-y-6">
                 
                 <!-- Tagline Badge: Official Adventure Status + Script Quote -->
-                <div class="flex flex-wrap items-center gap-2.5 sm:gap-3">
-                    <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-emerald-400/30 text-emerald-300 text-xs font-bold uppercase tracking-wider shadow-lg">
-                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                    <span class="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-emerald-400/30 text-emerald-300 text-[11px] sm:text-xs font-bold uppercase tracking-wider shadow-lg">
+                        <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                         <span>Merapi Adventure Tour</span>
                     </span>
 
-                    <span class="font-script text-2xl sm:text-3xl lg:text-4xl text-emerald-100 tracking-wide drop-shadow-md">
+                    <span class="font-script text-xl sm:text-3xl lg:text-4xl text-emerald-100 tracking-wide drop-shadow-md">
                         "Petualangan di Lereng Merapi"
                     </span>
                 </div>
 
-                <!-- Main Headline: 3 Clean Lines with Glowing Emerald Nature Gradient -->
-                <h1 class="text-3xl sm:text-5xl lg:text-[54px] font-extrabold text-white font-display leading-[1.12] tracking-tight drop-shadow-[0_4px_18px_rgba(0,0,0,0.8)]">
-                    Jelajahi Keindahan<br>
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-teal-200 to-white">Alam Merapi</span> Bersama<br>
-                    <span>Jeep Wukirsari</span>
+                <!-- Main Headline: Responsive & Fluid with Glowing Emerald Nature Gradient -->
+                <h1 class="text-2xl sm:text-4xl lg:text-[52px] font-extrabold text-white font-display leading-[1.2] sm:leading-[1.12] tracking-tight drop-shadow-[0_4px_18px_rgba(0,0,0,0.8)]">
+                    Jelajahi Keindahan <br class="hidden sm:inline"><span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-teal-200 to-white">Alam Merapi</span> Bersama <br class="hidden sm:inline"><span>Jeep Wukirsari</span>
                 </h1>
 
                 <!-- Subtitle Paragraph with Enhanced Contrast & Readability -->
-                <p class="text-white/90 text-sm sm:text-base lg:text-lg leading-relaxed max-w-xl font-normal drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
+                <p class="text-white/90 text-xs sm:text-base lg:text-lg leading-relaxed max-w-xl font-normal drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
                     {{ $homeSettings['hero_subtitle'] ?? 'Rasakan petualangan seru menyusuri jalur lava, menikmati panorama Merapi, dan menciptakan cerita perjalanan yang tak terlupakan.' }}
                 </p>
 
@@ -82,14 +80,14 @@
                     @endif
                 @endauth
 
-                <!-- 2 Modern Action Buttons Side-by-Side -->
-                <div class="pt-2 sm:pt-4 flex flex-wrap items-center gap-3 sm:gap-4">
-                    <a href="{{ route('booking.create') }}" class="group inline-flex items-center gap-2.5 px-7 sm:px-8 py-3.5 sm:py-4 rounded-full bg-gradient-to-r from-emerald-600 via-emerald-700 to-[#194821] hover:from-emerald-500 hover:to-[#225d2b] text-white text-xs sm:text-sm font-bold border border-emerald-400/40 shadow-xl shadow-black/40 hover:shadow-emerald-600/30 hover:scale-[1.03] active:scale-95 transition-all">
+                <!-- 2 Modern Action Buttons Responsive Stack on Mobile -->
+                <div class="pt-1 sm:pt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-4 w-full sm:w-auto">
+                    <a href="{{ route('booking.create') }}" class="group inline-flex items-center justify-center gap-2.5 px-6 sm:px-8 py-3 sm:py-4 rounded-full bg-gradient-to-r from-emerald-600 via-emerald-700 to-[#194821] hover:from-emerald-500 hover:to-[#225d2b] text-white text-xs sm:text-sm font-bold border border-emerald-400/40 shadow-xl shadow-black/40 hover:shadow-emerald-600/30 hover:scale-[1.03] active:scale-95 transition-all text-center">
                         <span>Booking Sekarang</span>
                         <svg class="w-4 h-4 text-emerald-200 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                     </a>
 
-                    <a href="#paket" class="inline-flex items-center gap-2 px-6 sm:px-7 py-3.5 sm:py-4 rounded-full bg-black/35 hover:bg-white/20 backdrop-blur-md border border-white/30 hover:border-white/60 text-white text-xs sm:text-sm font-semibold shadow-lg transition-all hover:scale-[1.02] active:scale-95">
+                    <a href="#paket" class="inline-flex items-center justify-center gap-2 px-5 sm:px-7 py-3 sm:py-4 rounded-full bg-black/35 hover:bg-white/20 backdrop-blur-md border border-white/30 hover:border-white/60 text-white text-xs sm:text-sm font-semibold shadow-lg transition-all hover:scale-[1.02] active:scale-95 text-center">
                         <svg class="w-4 h-4 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
                         <span>Jelajahi Paket</span>
                     </a>
@@ -97,10 +95,10 @@
             </div>
 
             <!-- Bottom Floating Slider Dock (Clean, Elegant & Always in Viewport) -->
-            <div class="pt-6 sm:pt-8 pb-1 flex flex-row items-center justify-between text-white/90 gap-3 border-t border-white/20">
-                <div class="flex items-center gap-3 sm:gap-4 text-xs tracking-wider select-none z-10" id="heroSlideButtons">
+            <div class="pt-4 sm:pt-8 pb-1 flex items-center justify-between text-white/90 gap-1.5 sm:gap-3 border-t border-white/20 w-full max-w-full min-w-0">
+                <div class="flex items-center gap-1.5 sm:gap-4 text-xs tracking-wider select-none z-10 shrink-0" id="heroSlideButtons">
                     <!-- Slide Numbers Pill Dock -->
-                    <div class="relative flex items-center gap-3 sm:gap-5 px-3.5 py-1.5 rounded-full bg-black/35 backdrop-blur-md border border-white/20 shadow-md">
+                    <div class="relative flex items-center gap-1.5 sm:gap-4 px-2 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-black/35 backdrop-blur-md border border-white/20 shadow-md">
                         <button type="button" onclick="goToHeroSlide(0)" class="hero-indicator font-bold text-white border-b-2 border-emerald-400 pb-0.5 text-xs sm:text-sm transition-all cursor-pointer">01</button>
                         <button type="button" onclick="goToHeroSlide(1)" class="hero-indicator text-white/50 hover:text-white border-b-2 border-transparent pb-0.5 text-xs sm:text-sm transition-all cursor-pointer">02</button>
                         <button type="button" onclick="goToHeroSlide(2)" class="hero-indicator text-white/50 hover:text-white border-b-2 border-transparent pb-0.5 text-xs sm:text-sm transition-all cursor-pointer">03</button>
@@ -109,19 +107,19 @@
                     </div>
                     
                     <!-- Chevron Arrows Navigation -->
-                    <div class="flex items-center gap-1.5 text-sm text-white/80">
-                        <button type="button" onclick="prevHeroSlide()" aria-label="Slide Sebelumnya" class="w-8 h-8 rounded-full bg-black/35 hover:bg-emerald-600 hover:text-white border border-white/20 flex items-center justify-center transition-all cursor-pointer shadow-sm active:scale-90">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+                    <div class="flex items-center gap-1 text-sm text-white/80">
+                        <button type="button" onclick="prevHeroSlide()" aria-label="Slide Sebelumnya" class="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-black/35 hover:bg-emerald-600 hover:text-white border border-white/20 flex items-center justify-center transition-all cursor-pointer shadow-sm active:scale-90">
+                            <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
                         </button>
-                        <button type="button" onclick="nextHeroSlide()" aria-label="Slide Selanjutnya" class="w-8 h-8 rounded-full bg-black/35 hover:bg-emerald-600 hover:text-white border border-white/20 flex items-center justify-center transition-all cursor-pointer shadow-sm active:scale-90">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                        <button type="button" onclick="nextHeroSlide()" aria-label="Slide Selanjutnya" class="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-black/35 hover:bg-emerald-600 hover:text-white border border-white/20 flex items-center justify-center transition-all cursor-pointer shadow-sm active:scale-90">
+                            <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                         </button>
                     </div>
                 </div>
 
                 <!-- Destination & Location Beacon Badge -->
-                <div class="inline-flex items-center gap-2 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-[11px] sm:text-xs text-white max-w-[240px] sm:max-w-none truncate shadow-lg">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                <div class="inline-flex items-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-[10px] sm:text-xs text-white max-w-[125px] sm:max-w-none truncate shadow-lg shrink min-w-0">
+                    <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-400 animate-ping shrink-0"></span>
                     <span id="heroSlideLocationText" class="truncate font-semibold text-emerald-200">{{ $homeSettings['hero_location_0'] ?? 'Susur Kali Gendol' }}</span>
                     <span class="text-white/40 hidden sm:inline">•</span>
                     <span class="text-white/80 hidden sm:inline font-normal">Wukirsari, Sleman, Yogyakarta</span>
@@ -131,14 +129,21 @@
     </section>
 
     <!-- Script Hero Slider dengan Data Lokasi Dinamis -->
+    <script type="application/json" id="heroLocationsData">
+        {!! json_encode([
+            $homeSettings['hero_location_0'] ?? 'Susur Kali Gendol',
+            $homeSettings['hero_location_1'] ?? 'Spot Sunrise',
+            $homeSettings['hero_location_2'] ?? 'Jalur Offroad',
+            $homeSettings['hero_location_3'] ?? 'Museum Kampung Hilang',
+            $homeSettings['hero_location_4'] ?? 'Manuver Air'
+        ]) !!}
+    </script>
     <script>
-        window.customHeroLocations = [
-            @json($homeSettings['hero_location_0'] ?? 'Susur Kali Gendol'),
-            @json($homeSettings['hero_location_1'] ?? 'Spot Sunrise'),
-            @json($homeSettings['hero_location_2'] ?? 'Jalur Offroad'),
-            @json($homeSettings['hero_location_3'] ?? 'Museum Kampung Hilang'),
-            @json($homeSettings['hero_location_4'] ?? 'Manuver Air')
-        ];
+        try {
+            window.customHeroLocations = JSON.parse(document.getElementById('heroLocationsData').textContent);
+        } catch (e) {
+            window.customHeroLocations = null;
+        }
     </script>
     <script src="{{ asset('js/hero-slider.js') }}"></script>
 
@@ -146,8 +151,8 @@
     <section class="bg-[#F8F9F5] py-8 sm:py-10 border-b border-[#E3EBE4] relative overflow-hidden select-none">
         
         <!-- Botanical Mountain Fern Illustration - Left Edge (Bentuk Khas Pakis Merapi Rimbun, Rapi & Elegan) -->
-        <div class="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 lg:translate-x-0 pointer-events-none opacity-55 lg:opacity-65 z-0">
-            <svg class="w-32 sm:w-40 lg:w-48 h-auto text-[#3D6B49]" viewBox="-5 0 175 125" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <div class="block absolute left-0 top-0 sm:top-1/2 -translate-y-2 sm:-translate-y-1/2 -translate-x-3 lg:translate-x-0 pointer-events-none opacity-40 sm:opacity-55 lg:opacity-65 z-0">
+            <svg class="w-24 sm:w-40 lg:w-48 h-auto text-[#3D6B49]" viewBox="-5 0 175 125" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                     <linearGradient id="vbFernFillLeft" x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop offset="0%" stop-color="#4E785B" stop-opacity="0.14" />
@@ -215,8 +220,8 @@
         </div>
 
         <!-- Botanical Mountain Fern Illustration - Right Edge (Mirrored, Rimbun & Elegan) -->
-        <div class="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 lg:translate-x-0 pointer-events-none opacity-55 lg:opacity-65 z-0 transform scale-x-[-1]">
-            <svg class="w-32 sm:w-40 lg:w-48 h-auto text-[#3D6B49]" viewBox="-5 0 175 125" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <div class="block absolute right-0 bottom-0 sm:top-1/2 translate-y-2 sm:-translate-y-1/2 translate-x-3 lg:translate-x-0 pointer-events-none opacity-40 sm:opacity-55 lg:opacity-65 z-0 transform scale-x-[-1]">
+            <svg class="w-24 sm:w-40 lg:w-48 h-auto text-[#3D6B49]" viewBox="-5 0 175 125" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                     <linearGradient id="vbFernFillRight" x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop offset="0%" stop-color="#4E785B" stop-opacity="0.14" />
@@ -895,27 +900,46 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="mb-8 sm:mb-12">
                 <span class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#1E3F20] font-display block mb-1">GALERI</span>
-                <h2 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-merapiText-primary font-display">Jelajahi Momen Indah Bersama Kami</h2>
-                <p class="text-merapiText-secondary text-xs sm:text-base mt-1.5 max-w-xl">Kumpulan foto perjalanan seru di berbagai rute wisata.</p>
+                <h2 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-merapiText-primary font-display">{{ $homeSettings['gallery_title'] ?? 'Jelajahi Momen Indah Bersama Kami' }}</h2>
+                <p class="text-merapiText-secondary text-xs sm:text-base mt-1.5 max-w-xl">{{ $homeSettings['gallery_subtitle'] ?? 'Kumpulan foto perjalanan seru di berbagai rute wisata.' }}</p>
             </div>
 
             <!-- 5 Photos in 1 Row on Desktop Matching Mockup -->
+            @php
+                $galleryPhotos = [
+                    1 => [
+                        'src' => !empty($homeSettings['gallery_image_1']) ? (str_starts_with($homeSettings['gallery_image_1'], 'http') ? $homeSettings['gallery_image_1'] : asset($homeSettings['gallery_image_1'])) : asset('img/1.jpeg'),
+                        'caption' => $homeSettings['gallery_caption_1'] ?? 'Petualangan Jeep Merapi',
+                    ],
+                    2 => [
+                        'src' => !empty($homeSettings['gallery_image_2']) ? (str_starts_with($homeSettings['gallery_image_2'], 'http') ? $homeSettings['gallery_image_2'] : asset($homeSettings['gallery_image_2'])) : asset('img/2.jpeg'),
+                        'caption' => $homeSettings['gallery_caption_2'] ?? 'Sunrise Tour Merapi',
+                    ],
+                    3 => [
+                        'src' => !empty($homeSettings['gallery_image_3']) ? (str_starts_with($homeSettings['gallery_image_3'], 'http') ? $homeSettings['gallery_image_3'] : asset($homeSettings['gallery_image_3'])) : asset('img/3.jpeg'),
+                        'caption' => $homeSettings['gallery_caption_3'] ?? 'Bunker Kaliadem Merapi',
+                    ],
+                    4 => [
+                        'src' => !empty($homeSettings['gallery_image_4']) ? (str_starts_with($homeSettings['gallery_image_4'], 'http') ? $homeSettings['gallery_image_4'] : asset($homeSettings['gallery_image_4'])) : asset('img/4.jpeg'),
+                        'caption' => $homeSettings['gallery_caption_4'] ?? 'Rute Kali Kuning Offroad',
+                    ],
+                    5 => [
+                        'src' => !empty($homeSettings['gallery_image_5']) ? (str_starts_with($homeSettings['gallery_image_5'], 'http') ? $homeSettings['gallery_image_5'] : asset($homeSettings['gallery_image_5'])) : asset('img/5.jpeg'),
+                        'caption' => $homeSettings['gallery_caption_5'] ?? 'Lembah Panorama Merapi',
+                    ],
+                ];
+            @endphp
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 sm:gap-4">
-                <div class="rounded-2xl overflow-hidden shadow-xs border border-wukirsari-border group relative aspect-[16/11]">
-                    <img src="{{ asset('img/1.jpeg') }}" alt="Petualangan Jeep Merapi" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                @foreach($galleryPhotos as $gPhoto)
+                <div class="rounded-2xl overflow-hidden shadow-xs border border-wukirsari-border group relative aspect-[16/11] bg-slate-100">
+                    <img src="{{ $gPhoto['src'] }}" alt="{{ $gPhoto['caption'] }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    @if(!empty($gPhoto['caption']))
+                    <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent p-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                        <p class="text-white text-[11px] font-semibold truncate">{{ $gPhoto['caption'] }}</p>
+                    </div>
+                    @endif
                 </div>
-                <div class="rounded-2xl overflow-hidden shadow-xs border border-wukirsari-border group relative aspect-[16/11]">
-                    <img src="{{ asset('img/2.jpeg') }}" alt="Sunrise Tour Merapi" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                </div>
-                <div class="rounded-2xl overflow-hidden shadow-xs border border-wukirsari-border group relative aspect-[16/11]">
-                    <img src="{{ asset('img/3.jpeg') }}" alt="Bunker Kaliadem Merapi" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                </div>
-                <div class="rounded-2xl overflow-hidden shadow-xs border border-wukirsari-border group relative aspect-[16/11]">
-                    <img src="{{ asset('img/4.jpeg') }}" alt="Rute Kali Kuning Offroad" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                </div>
-                <div class="rounded-2xl overflow-hidden shadow-xs border border-wukirsari-border group relative aspect-[16/11]">
-                    <img src="{{ asset('img/5.jpeg') }}" alt="Lembah Panorama Merapi" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                </div>
+                @endforeach
             </div>
         </div>
     </section>

@@ -209,6 +209,9 @@ class AdminController extends Controller
         $packageId = $request->query('package_id');
         $status = $request->query('status', 'ALL');
 
+        // Pastikan seluruh booking berstatus terbayar (DP/Lunas) telah otomatis dialokasikan driver & armada jeep
+        \App\Services\BookingAssignmentService::autoAssignUnassignedPaidBookings();
+
         $query = Booking::with(['package', 'slot', 'pickupZone', 'assignments.jeep', 'assignments.driver', 'payments']);
 
         if (!empty($search)) {
@@ -237,6 +240,7 @@ class AdminController extends Controller
         $packages = Package::all();
         $jeeps = Jeep::all();
         $drivers = Driver::where('is_active', true)->get();
+        $slots = ScheduleSlot::where('is_active', true)->orderBy('start_time')->get();
         $unreadNotificationsCount = ActivityLog::unread()->count();
 
         return view('admin.bookings', compact(
@@ -244,6 +248,7 @@ class AdminController extends Controller
             'packages',
             'jeeps',
             'drivers',
+            'slots',
             'search',
             'tripDate',
             'packageId',
@@ -776,6 +781,9 @@ class AdminController extends Controller
                 'remaining_amount' => 0.00,
             ]);
 
+            // Otomatis alokasikan Driver dan Armada Jeep saat pelunasan di loket
+            \App\Services\BookingAssignmentService::autoAssign($booking);
+
             // Notifikasi & Riwayat Aktivitas: Pembayaran Berhasil & Aksi Admin
             ActivityLog::logPaymentSuccess($booking, $remaining, 'Loket Kasir Basecamp');
             ActivityLog::logAdmin(
@@ -791,32 +799,38 @@ class AdminController extends Controller
 
     public function assignDriver(Request $request, int $id)
     {
-        // 1. Pilih armada Jeep (bisa dipilih admin atau auto-pick jeep yang READY)
-        if (!$request->filled('jeep_id') || $request->input('jeep_id') === 'random') {
-            $randomJeep = Jeep::where('status', 'READY')->inRandomOrder()->first() ?? Jeep::inRandomOrder()->first();
-            $request->merge(['jeep_id' => $randomJeep?->id]);
-        }
-
-        // 2. Driver otomatis dialokasikan sistem/paguyuban (admin tidak perlu pusing mengelola data driver)
+        // 1. Driver dialokasikan dari pilihan admin, atau auto-alokasi jika 'random' / kosong
         if (!$request->filled('driver_id') || $request->input('driver_id') === 'random') {
             $autoDriver = Driver::where('is_active', true)
                 ->withCount('assignments')
                 ->orderBy('assignments_count', 'asc')
                 ->inRandomOrder()
-                ->first();
+                ->first()
+                ?? Driver::first();
             $request->merge(['driver_id' => $autoDriver?->id]);
         }
 
+        // 2. Armada Jeep dikelola otomatis oleh sistem (admin hanya menentukan Driver)
+        if (!$request->filled('jeep_id') || $request->input('jeep_id') === 'random') {
+            $existingAssign = BookingAssignment::where('booking_id', $id)->first();
+            $jeepId = $existingAssign?->jeep_id;
+            if (!$jeepId) {
+                $randomJeep = Jeep::where('status', 'READY')->inRandomOrder()->first() ?? Jeep::inRandomOrder()->first();
+                $jeepId = $randomJeep?->id;
+            }
+            $request->merge(['jeep_id' => $jeepId]);
+        }
+
         $validated = $request->validate([
-            'jeep_id' => 'required|exists:jeeps,id',
             'driver_id' => 'required|exists:drivers,id',
+            'jeep_id'   => 'nullable|exists:jeeps,id',
         ]);
 
         BookingAssignment::updateOrCreate(
             ['booking_id' => $id],
             [
-                'jeep_id' => $validated['jeep_id'],
-                'driver_id' => $validated['driver_id'],
+                'jeep_id'     => $validated['jeep_id'],
+                'driver_id'   => $validated['driver_id'],
                 'assigned_at' => now(),
             ]
         );
@@ -825,19 +839,19 @@ class AdminController extends Controller
         $driver = Driver::find($validated['driver_id']);
         $booking = Booking::find($id);
 
-        if ($booking && $booking->trip_date->isToday()) {
+        if ($booking && $booking->trip_date?->isToday()) {
             $jeep?->update(['status' => 'ON_TRIP']);
         }
 
-        // Riwayat Aktivitas: Penugasan Armada Jeep
+        // Riwayat Aktivitas: Penugasan Driver
         ActivityLog::logAdmin(
-            'Penugasan Armada Jeep',
-            "Menugaskan unit {$jeep?->model_name} (Driver Paguyuban: {$driver?->full_name}) untuk booking #{$booking?->booking_code} ({$booking?->customer_name}).",
+            'Penugasan Driver',
+            "Menugaskan Driver Paguyuban: {$driver?->full_name} untuk booking #{$booking?->booking_code} ({$booking?->customer_name}).",
             'admin',
             route('admin.dashboard', ['search' => $booking?->booking_code])
         );
 
-        return redirect()->back()->with('success', "Armada {$jeep?->model_name} berhasil ditugaskan!");
+        return redirect()->back()->with('success', "Driver {$driver?->full_name} berhasil ditugaskan!");
     }
 
     /**
@@ -1116,6 +1130,144 @@ class AdminController extends Controller
     }
 
     /**
+     * Ubah Jadwal Booking (Reschedule untuk Menyelesaikan Bentrok / Cuaca / Permintaan Wisatawan)
+     */
+    public function rescheduleBooking(Request $request, int $id)
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!$user || $user->role !== 'admin') {
+            return redirect()->route('login')->with('info', 'Silakan masuk dengan akun Admin Paguyuban.');
+        }
+
+        $booking = Booking::with(['package', 'slot', 'assignments.jeep', 'assignments.driver'])->findOrFail($id);
+
+        $validated = $request->validate([
+            'trip_date'  => 'required|date',
+            'slot_id'    => 'required|exists:schedule_slots,id',
+            'reason'     => 'nullable|string|max:255',
+            'admin_note' => 'nullable|string|max:500',
+            'force'      => 'nullable|boolean',
+        ]);
+
+        $newSlot = ScheduleSlot::findOrFail($validated['slot_id']);
+        $newTripDate = $validated['trip_date'];
+        $oldTripDate = $booking->trip_date ? $booking->trip_date->format('Y-m-d') : '-';
+        $oldSlotLabel = $booking->slot ? ($booking->slot->slot_label . ' (' . $booking->slot->start_time . ' - ' . $booking->slot->end_time . ' WIB)') : '-';
+
+        // Cek apakah ada perubahan
+        if ($oldTripDate === $newTripDate && (int)$booking->slot_id === (int)$validated['slot_id']) {
+            return redirect()->back()->with('info', "Jadwal booking {$booking->booking_code} tidak berubah (tanggal dan sesi waktu sama).");
+        }
+
+        // Cek bentrok kuota slot target (kecuali jika admin memaksa/force override paguyuban)
+        $isSameSlotAndDate = ($oldTripDate === $newTripDate && (int)$booking->slot_id === (int)$validated['slot_id']);
+        if (!$isSameSlotAndDate) {
+            $bookedJeeps = $newSlot->bookedJeepsCount($newTripDate);
+            $remaining = max(0, $newSlot->max_jeeps - $bookedJeeps);
+
+            if ($booking->jeep_quantity > $remaining && !$request->boolean('force')) {
+                return redirect()->back()->with('error', "Bentrok Jadwal / Kuota Penuh: Sesi {$newSlot->slot_label} pada tanggal " . date('d/m/Y', strtotime($newTripDate)) . " hanya tersisa {$remaining} Jeep (booking ini butuh {$booking->jeep_quantity} Jeep). Silakan pilih sesi lain atau centang 'Tetap Jadwalkan (Override Kuota Paguyuban)'.");
+            }
+        }
+
+        $reason = $validated['reason'] ?? 'Penyelesaian Bentrok / Reschedule';
+        $note = $validated['admin_note'] ?? null;
+
+        DB::transaction(function () use ($booking, $newTripDate, $newSlot, $oldTripDate, $oldSlotLabel, $reason, $note, $user) {
+            $booking->trip_date = $newTripDate;
+            $booking->slot_id = $newSlot->id;
+
+            // Catat log reschedule ke customer_notes untuk jejak audit
+            $rescheduleNote = "[Reschedule: " . date('d/m/Y H:i') . " oleh " . ($user->name ?? 'Admin') . " - {$reason}";
+            if ($note) {
+                $rescheduleNote .= " ({$note})";
+            }
+            $rescheduleNote .= "]";
+
+            if (!empty($booking->customer_notes)) {
+                $booking->customer_notes .= "\n" . $rescheduleNote;
+            } else {
+                $booking->customer_notes = $rescheduleNote;
+            }
+
+            $booking->save();
+
+            // Perbarui status armada Jeep jika tanggal dipindahkan ke atau dari hari ini
+            $assignment = $booking->assignments->first();
+            if ($assignment && $assignment->jeep) {
+                if ($booking->trip_date->isToday()) {
+                    $assignment->jeep->update(['status' => 'ON_TRIP']);
+                } else {
+                    if ($assignment->jeep->status === 'ON_TRIP') {
+                        $hasOtherTripToday = BookingAssignment::where('jeep_id', $assignment->jeep_id)
+                            ->where('booking_id', '!=', $booking->id)
+                            ->whereHas('booking', function ($q) {
+                                $q->whereDate('trip_date', now()->toDateString())
+                                  ->whereIn('booking_status', ['DP_PAID', 'FULL_PAID']);
+                            })->exists();
+
+                        if (!$hasOtherTripToday) {
+                            $assignment->jeep->update(['status' => 'READY']);
+                        }
+                    }
+                }
+            }
+
+            // Catat riwayat aktivitas admin & notifikasi sistem
+            ActivityLog::logAdmin(
+                'Perubahan Jadwal Booking (Reschedule)',
+                "Mengubah jadwal booking #{$booking->booking_code} ({$booking->customer_name}) dari {$oldTripDate} ({$oldSlotLabel}) menjadi {$newTripDate} sesi {$newSlot->slot_label} ({$newSlot->start_time} - {$newSlot->end_time} WIB). Alasan: {$reason}.",
+                'schedule',
+                route('admin.bookings', ['search' => $booking->booking_code])
+            );
+        });
+
+        return redirect()->back()->with('success', "Jadwal booking {$booking->booking_code} berhasil diubah ke tanggal " . date('d F Y', strtotime($newTripDate)) . " ({$newSlot->slot_label})!");
+    }
+
+    /**
+     * Cek Ketersediaan Kuota Sesi Jadwal Secara Dinamis (AJAX / Realtime untuk Modal Reschedule)
+     */
+    public function checkSlotAvailability(Request $request)
+    {
+        $date = $request->query('date', date('Y-m-d'));
+        $excludeBookingId = (int) $request->query('exclude_booking_id', 0);
+
+        $slots = ScheduleSlot::where('is_active', true)->orderBy('start_time')->get();
+
+        $data = $slots->map(function ($s) use ($date, $excludeBookingId) {
+            $query = $s->bookings()
+                ->whereDate('trip_date', $date)
+                ->whereIn('booking_status', ['PENDING', 'DP_PAID', 'FULL_PAID']);
+
+            if ($excludeBookingId > 0) {
+                $query->where('id', '!=', $excludeBookingId);
+            }
+
+            $booked = (int) $query->sum('jeep_quantity');
+            $remaining = max(0, $s->max_jeeps - $booked);
+
+            return [
+                'id' => $s->id,
+                'slot_label' => $s->slot_label,
+                'start_time' => $s->start_time,
+                'end_time' => $s->end_time,
+                'time_range' => $s->start_time . ' - ' . $s->end_time . ' WIB',
+                'max_jeeps' => $s->max_jeeps,
+                'booked_jeeps' => $booked,
+                'remaining_jeeps' => $remaining,
+                'is_full' => $remaining <= 0,
+            ];
+        });
+
+        return response()->json([
+            'date' => $date,
+            'slots' => $data,
+        ]);
+    }
+
+    /**
      * Tandai Semua Notifikasi Sudah Dibaca
      */
     public function markAllNotificationsRead(Request $request)
@@ -1167,6 +1319,18 @@ class AdminController extends Controller
             'hero_location_3' => 'Museum Kampung Hilang',
             'hero_slide_4' => null,
             'hero_location_4' => 'Manuver Air',
+            'gallery_title' => 'Jelajahi Momen Indah Bersama Kami',
+            'gallery_subtitle' => 'Kumpulan foto perjalanan seru di berbagai rute wisata.',
+            'gallery_image_1' => null,
+            'gallery_caption_1' => 'Petualangan Jeep Merapi',
+            'gallery_image_2' => null,
+            'gallery_caption_2' => 'Sunrise Tour Merapi',
+            'gallery_image_3' => null,
+            'gallery_caption_3' => 'Bunker Kaliadem Merapi',
+            'gallery_image_4' => null,
+            'gallery_caption_4' => 'Rute Kali Kuning Offroad',
+            'gallery_image_5' => null,
+            'gallery_caption_5' => 'Lembah Panorama Merapi',
             'notify_booking_new' => true,
             'notify_payment_success' => true,
             'notify_cancellation' => true,
@@ -1282,6 +1446,29 @@ class AdminController extends Controller
             'hero_slide_4_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,avif|max:5120',
             'reset_hero_slide_4' => 'nullable',
             'hero_location_4' => 'nullable|string|max:100',
+            // Gallery Beranda fields
+            'gallery_title' => 'nullable|string|max:150',
+            'gallery_subtitle' => 'nullable|string|max:255',
+            'gallery_image_1' => 'nullable|string|max:1000',
+            'gallery_image_1_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,avif|max:5120',
+            'reset_gallery_image_1' => 'nullable',
+            'gallery_caption_1' => 'nullable|string|max:100',
+            'gallery_image_2' => 'nullable|string|max:1000',
+            'gallery_image_2_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,avif|max:5120',
+            'reset_gallery_image_2' => 'nullable',
+            'gallery_caption_2' => 'nullable|string|max:100',
+            'gallery_image_3' => 'nullable|string|max:1000',
+            'gallery_image_3_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,avif|max:5120',
+            'reset_gallery_image_3' => 'nullable',
+            'gallery_caption_3' => 'nullable|string|max:100',
+            'gallery_image_4' => 'nullable|string|max:1000',
+            'gallery_image_4_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,avif|max:5120',
+            'reset_gallery_image_4' => 'nullable',
+            'gallery_caption_4' => 'nullable|string|max:100',
+            'gallery_image_5' => 'nullable|string|max:1000',
+            'gallery_image_5_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,avif|max:5120',
+            'reset_gallery_image_5' => 'nullable',
+            'gallery_caption_5' => 'nullable|string|max:100',
         ]);
 
         $settingsFile = storage_path('app/basecamp_settings.json');
@@ -1325,6 +1512,34 @@ class AdminController extends Controller
             }
         }
 
+        // 3. Galeri Foto Beranda (Slide 1 sampai 5)
+        $galleryDestination = public_path('uploads/gallery');
+        if (!file_exists($galleryDestination)) {
+            mkdir($galleryDestination, 0755, true);
+        }
+
+        for ($i = 1; $i <= 5; $i++) {
+            $resetKey = "reset_gallery_image_{$i}";
+            $fileKey = "gallery_image_{$i}_file";
+            $textKey = "gallery_image_{$i}";
+            $captionKey = "gallery_caption_{$i}";
+
+            if ($request->boolean($resetKey)) {
+                unset($existing[$textKey]);
+            } elseif ($request->hasFile($fileKey)) {
+                $file = $request->file($fileKey);
+                $fileName = "gallery_{$i}_" . time() . '_' . Str::random(6) . '.' . $file->getClientOriginalExtension();
+                $file->move($galleryDestination, $fileName);
+                $existing[$textKey] = 'uploads/gallery/' . $fileName;
+            } elseif ($request->filled($textKey)) {
+                $existing[$textKey] = $request->input($textKey);
+            }
+
+            if ($request->has($captionKey)) {
+                $existing[$captionKey] = $request->input($captionKey);
+            }
+        }
+
         // Tangani boolean checkbox bila form notifikasi dikirimkan
         if ($request->has('is_notification_form')) {
             $validated['notify_booking_new'] = $request->boolean('notify_booking_new');
@@ -1340,7 +1555,12 @@ class AdminController extends Controller
             $cleanValidated['hero_slide_1_file'],
             $cleanValidated['hero_slide_2_file'],
             $cleanValidated['hero_slide_3_file'],
-            $cleanValidated['hero_slide_4_file']
+            $cleanValidated['hero_slide_4_file'],
+            $cleanValidated['gallery_image_1_file'],
+            $cleanValidated['gallery_image_2_file'],
+            $cleanValidated['gallery_image_3_file'],
+            $cleanValidated['gallery_image_4_file'],
+            $cleanValidated['gallery_image_5_file']
         );
 
         $merged = array_merge($existing, array_filter($cleanValidated, fn($val) => $val !== null));
@@ -1429,6 +1649,9 @@ class AdminController extends Controller
                 'remaining_amount' => $newRemainingAmount,
                 'lock_expires_at' => null,
             ]);
+
+            // Otomatis alokasikan Driver dan Armada Jeep saat verifikasi transfer bank disetujui
+            \App\Services\BookingAssignmentService::autoAssign($booking);
 
             return redirect()->back()->with('success', "Pembayaran transfer Bank BPD DIY sebesar Rp " . number_format($grossInt, 0, ',', '.') . " untuk booking {$booking->booking_code} berhasil disetujui ({$newBookingStatus})!");
         });
@@ -1526,6 +1749,9 @@ class AdminController extends Controller
                 'lock_expires_at' => null,
             ]);
 
+            // Otomatis alokasikan Driver dan Armada Jeep saat pembayaran tunai dikonfirmasi
+            \App\Services\BookingAssignmentService::autoAssign($booking);
+
             return redirect()->back()->with('success', "Pembayaran tunai sebesar Rp " . number_format($grossInt, 0, ',', '.') . " untuk booking {$booking->booking_code} berhasil dikonfirmasi ({$newBookingStatus}) oleh {$user->name}. E-Tiket resmi telah aktif!");
         });
     }
@@ -1610,112 +1836,5 @@ class AdminController extends Controller
         }
 
         return response()->file($filePath);
-    }
-
-    /**
-     * Halaman Daftar Kandidat Hotel Baru
-     * Hotel yang dimasukkan tamu saat booking antar-jemput yang belum ada di hotels.json.
-     */
-    public function hotelCandidates(Request $request)
-    {
-        /** @var User|null $user */
-        $user = Auth::user();
-        if (!$user || $user->role !== 'admin') {
-            return redirect()->route('login')->with('info', 'Silakan masuk dengan akun Admin Paguyuban untuk membuka portal ini.');
-        }
-
-        $candFile = database_path('hotel_kandidat.json');
-        $candidates = file_exists($candFile) ? (json_decode(file_get_contents($candFile), true) ?: []) : [];
-
-        // Urutkan berdasarkan frekuensi pakai terbanyak, lalu terbaru
-        usort($candidates, function ($a, $b) {
-            $diff = ($b['jumlah_pakai'] ?? 1) <=> ($a['jumlah_pakai'] ?? 1);
-            if ($diff !== 0) return $diff;
-            return strcmp($b['updated_at'] ?? '', $a['updated_at'] ?? '');
-        });
-
-        return view('admin.hotel_candidates', compact('user', 'candidates'));
-    }
-
-    /**
-     * Setujui Kandidat Hotel (Satu Klik):
-     * Otomatis dipindahkan dan masuk ke database/hotels.json
-     */
-    public function approveHotelCandidate(Request $request, string $id)
-    {
-        /** @var User|null $user */
-        $user = Auth::user();
-        if (!$user || $user->role !== 'admin') {
-            abort(403);
-        }
-
-        $candFile = database_path('hotel_kandidat.json');
-        $candidates = file_exists($candFile) ? (json_decode(file_get_contents($candFile), true) ?: []) : [];
-
-        $target = null;
-        $remaining = [];
-        foreach ($candidates as $c) {
-            if (($c['id'] ?? '') === $id) {
-                $target = $c;
-            } else {
-                $remaining[] = $c;
-            }
-        }
-
-        if (!$target) {
-            return redirect()->back()->withErrors(['msg' => 'Data kandidat hotel tidak ditemukan atau sudah disetujui.']);
-        }
-
-        $hotelName = trim((string) $request->input('name', $target['name'] ?? 'Hotel'));
-        $hotelAddress = trim((string) $request->input('address', $target['name'] . ', Cangkringan, Sleman'));
-        $aliasInput = trim((string) $request->input('alias', ''));
-        $aliases = $aliasInput !== '' ? array_filter(array_map('trim', explode(',', $aliasInput))) : [];
-        if (!in_array($hotelName, $aliases, true)) {
-            array_unshift($aliases, $hotelName);
-        }
-
-        $hotelsFile = database_path('hotels.json');
-        $hotels = file_exists($hotelsFile) ? (json_decode(file_get_contents($hotelsFile), true) ?: []) : [];
-
-        // Tambah ke hotels.json
-        $hotels[] = [
-            'nama'   => $hotelName,
-            'alias'  => array_values(array_unique($aliases)),
-            'alamat' => $hotelAddress,
-            'lat'    => (float) $target['lat'],
-            'lng'    => (float) $target['lng'],
-        ];
-
-        @file_put_contents($hotelsFile, json_encode($hotels, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
-        @file_put_contents($candFile, json_encode($remaining, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
-
-        ActivityLog::logAdmin(
-            'Persetujuan Hotel Baru',
-            "Admin menyetujui hotel baru '{$hotelName}' ke daftar hotels.json.",
-            'admin',
-            route('admin.hotel_candidates')
-        );
-
-        return redirect()->back()->with('success', "Hotel '{$hotelName}' berhasil disetujui dan otomatis masuk ke hotels.json!");
-    }
-
-    /**
-     * Hapus / Tolak Kandidat Hotel
-     */
-    public function deleteHotelCandidate(Request $request, string $id)
-    {
-        /** @var User|null $user */
-        $user = Auth::user();
-        if (!$user || $user->role !== 'admin') {
-            abort(403);
-        }
-
-        $candFile = database_path('hotel_kandidat.json');
-        $candidates = file_exists($candFile) ? (json_decode(file_get_contents($candFile), true) ?: []) : [];
-
-        $filtered = array_values(array_filter($candidates, fn($c) => ($c['id'] ?? '') !== $id));
-        @file_put_contents($candFile, json_encode($filtered, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
-
-        return redirect()->back()->with('success', 'Kandidat hotel berhasil dihapus.');
     }
 }

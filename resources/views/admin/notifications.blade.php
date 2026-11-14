@@ -23,9 +23,9 @@
         }
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        .font-display { font-family: 'Outfit', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800;900&display=swap');
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        .font-display, h1, h2, h3, h4, h5, h6 { font-family: 'Poppins', 'Inter', sans-serif; }
     </style>
 </head>
 <body class="bg-[#F4F6F8] text-slate-800 min-h-screen flex flex-col md:flex-row antialiased">
@@ -36,10 +36,9 @@
     <div class="flex-1 flex flex-col min-w-0 min-h-screen overflow-x-hidden">
         
         <!-- Header Banner -->
-        <header class="bg-white border-b border-slate-200 px-6 sm:px-8 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-0 z-20 shadow-2xs">
+        <header class="bg-white border-b border-slate-200 px-4 sm:px-8 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-0 z-20 shadow-2xs">
             <div>
-                <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2 font-display">
-                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight font-display">
                     Notifikasi & Riwayat Aktivitas Operasional
                 </h1>
                 <p class="text-xs text-slate-500 mt-0.5">Audit log pemesanan baru, konfirmasi pembayaran kasir, pembatalan tiket, dan mutasi driver/armada.</p>
@@ -60,7 +59,7 @@
             </div>
         </header>
 
-        <main class="p-6 sm:p-8 space-y-6 flex-1 overflow-y-auto">
+        <main class="p-4 sm:p-8 space-y-5 sm:space-y-6 flex-1 overflow-y-auto">
 
             @if(session('success'))
             <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs sm:text-sm font-semibold flex items-center justify-between shadow-xs">
