@@ -869,7 +869,6 @@
     <section id="galeri" class="py-12 sm:py-16 lg:py-20 bg-wukirsari-cream">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="mb-8 sm:mb-12">
-                <span class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#1E3F20] font-display block mb-1">GALERI</span>
                 <h2 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-merapiText-primary font-display">{{ $homeSettings['gallery_title'] ?? 'Jelajahi Momen Indah Bersama Kami' }}</h2>
                 <p class="text-merapiText-secondary text-xs sm:text-base mt-1.5 max-w-xl">{{ $homeSettings['gallery_subtitle'] ?? 'Kumpulan foto perjalanan seru di berbagai rute wisata.' }}</p>
             </div>
@@ -918,7 +917,6 @@
     <section class="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-wukirsari-cream via-white to-wukirsari-cream border-t border-wukirsari-border">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="mb-8 sm:mb-12">
-                <span class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#1E3F20] font-display block mb-1">TESTIMONI</span>
                 <h2 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-merapiText-primary font-display">Apa Kata Mereka?</h2>
                 <p class="text-merapiText-secondary text-xs sm:text-base mt-1.5 max-w-xl">
                     Pengalaman nyata dari pelanggan yang sudah merasakan keseruannya.
