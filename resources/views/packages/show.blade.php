@@ -489,7 +489,7 @@
 
                     <div class="pt-3 border-t border-wukirsari-border flex items-center justify-between">
                         <div>
-                            <span class="text-[10px] text-merapiText-muted block">Tarif</span>
+                            
                             <span class="text-base font-bold text-merapiText-primary font-display">{{ $other->formatted_price }}</span>
                         </div>
                         <a href="{{ route('packages.show', $other->slug) }}" class="px-4 py-2 rounded-full border border-wukirsari-border hover:border-wukirsari-primary text-merapiText-primary hover:text-wukirsari-primary text-xs font-semibold transition-all">

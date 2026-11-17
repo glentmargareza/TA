@@ -85,7 +85,6 @@
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
                                 <span class="font-bold text-sm sm:text-base text-merapiText-primary font-display" id="calMonthTitle">November 2026</span>
-                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">Deteksi Live</span>
                             </div>
                             <div class="flex items-center gap-1.5">
                                 <button type="button" id="calPrevBtn" class="w-8 h-8 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 flex items-center justify-center transition-all cursor-pointer" title="Bulan Sebelumnya">
@@ -252,10 +251,6 @@
                             <span id="lJeep">Sewa Jeep</span>
                             <strong class="text-merapiText-primary font-bold" id="vJeep">Rp 0</strong>
                         </div>
-                        <div class="flex justify-between items-center text-merapiText-secondary">
-                            <span>BBM, Driver & Asuransi</span>
-                            <strong class="text-emerald-700 font-bold">Gratis (Termasuk)</strong>
-                        </div>
                     </div>
  
                     <!-- Total Amount -->
@@ -294,14 +289,7 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                     </button>
  
-                    <!-- Trust Badges -->
-                    <div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] text-merapiText-muted font-medium pt-1">
-                        <span>🛡️ Pembayaran Resmi</span>
-                        <span>•</span>
-                        <span>🔄 Reschedule H-2</span>
-                        <span>•</span>
-                        <span>⚡ Konfirmasi Instan</span>
-                    </div>
+    
                 </div>
             </div>
  

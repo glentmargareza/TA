@@ -517,15 +517,14 @@
 
                     <!-- Status Operasional Pill -->
                     <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 text-xs">
-                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        
                         <span class="font-medium">Buka Setiap Hari: 06.00 – 18.00 WIB</span>
                     </div>
                 </div>
 
                 <!-- Kolom 2: Navigasi Cepat (lg:col-span-3) -->
                 <div class="lg:col-span-3">
-                    <h4 class="text-white font-bold text-xs sm:text-sm tracking-wider mb-4 font-display flex items-center gap-2">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    <h4 class="text-white font-bold text-xs sm:text-sm tracking-wider mb-4 font-display flex items-center gap-2">   
                         <span>Navigasi</span>
                     </h4>
                     <ul class="space-y-2.5 text-xs sm:text-sm text-white/75">
@@ -566,7 +565,6 @@
                 <!-- Kolom 3: Basecamp & Media Sosial (lg:col-span-4) -->
                 <div class="lg:col-span-4 space-y-4">
                     <h4 class="text-white font-bold text-xs sm:text-sm tracking-wider mb-4 font-display flex items-center gap-2">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                         <span>Basecamp & Kontak</span>
                     </h4>
                     
