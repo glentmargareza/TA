@@ -6,10 +6,10 @@
     <title>@yield('title', 'Jeep Wukirsari Adventure Tour | Wisata Offroad Lereng Merapi')</title>
     <meta name="description" content="Jelajahi keindahan dan petualangan lereng Gunung Merapi bersama Jeep Wukirsari Adventure Tour. Reservasi online cepat, aman, dan bergaransi pengalaman terbaik.">
     
-    <!-- Google Fonts -->
+    <!-- Google Fonts: Inter (Teks Utama Sangat Jelas & Nyaman Dibaca) & Poppins (Judul Modern) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Outfit:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;1,400;1,600&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Tailwind CSS CDN dengan Konfigurasi Resmi Wukirsari -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -28,8 +28,8 @@
                         },
                         merapiText: {
                             primary: '#19231A',
-                            secondary: '#526054',
-                            muted: '#7E8E81',
+                            secondary: '#374151',
+                            muted: '#6B7280',
                         },
                         accent: {
                             emerald: '#10B981',
@@ -42,8 +42,9 @@
                         }
                     },
                     fontFamily: {
-                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-                        display: ['Outfit', 'sans-serif'],
+                        sans: ['"Inter"', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+                        display: ['"Poppins"', '"Inter"', 'sans-serif'],
+                        heading: ['"Poppins"', '"Inter"', 'sans-serif'],
                         accent: ['"Playfair Display"', 'serif'],
                         script: ['"Caveat"', 'cursive'],
                     }
@@ -52,12 +53,29 @@
         }
     </script>
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #F7F7F2; color: #526054; -webkit-tap-highlight-color: transparent; }
-        h1, h2, h3, h4, h5, h6 { font-family: 'Outfit', sans-serif; }
-        html { scroll-behavior: smooth; }
+        html {
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+            max-width: 100vw;
+            width: 100%;
+        }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #F7F7F2;
+            color: #374151;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+            max-width: 100vw;
+            width: 100%;
+            position: relative;
+        }
+        h1, h2, h3, h4, h5, h6 { 
+            font-family: 'Poppins', 'Inter', sans-serif; 
+            letter-spacing: -0.015em;
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col selection:bg-wukirsari-sage selection:text-wukirsari-primary">
+<body class="min-h-screen flex flex-col selection:bg-wukirsari-sage selection:text-wukirsari-primary pb-20 md:pb-0 overflow-x-hidden w-full max-w-full relative">
 
     <!-- NAVBAR HEADER -->
     @hasSection('header')
@@ -213,17 +231,17 @@
                 </div>
 
                 <!-- Mobile Header Actions & Hamburger Toggle (lg:hidden) -->
-                <div class="flex items-center gap-2 lg:hidden">
-                    <a href="https://wa.me/6281228677843" target="_blank" class="p-2 rounded-full border {{ request()->routeIs('home') ? 'border-white/25 text-emerald-300 hover:bg-white/10' : 'border-wukirsari-border text-emerald-600 hover:bg-wukirsari-sage/40' }} transition-colors" title="Chat WhatsApp CS">
+                <div class="flex items-center gap-2 lg:hidden shrink-0">
+                    <a href="https://wa.me/6281234567890" target="_blank" class="hidden sm:inline-flex p-2 rounded-full border {{ request()->routeIs('home') ? 'border-white/25 text-emerald-300 hover:bg-white/10' : 'border-wukirsari-border text-emerald-600 hover:bg-wukirsari-sage/40' }} transition-colors" title="Chat WhatsApp CS">
                         <svg class="w-4 h-4 fill-none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
                     </a>
 
-                    <a href="{{ route('booking.create') }}" class="px-3 sm:px-4 py-1.5 rounded-full bg-[#245329] hover:bg-[#2d6633] border border-white/20 text-white text-xs font-semibold shadow-xs transition-all">
+                    <a href="{{ route('booking.create') }}" class="px-3 sm:px-4 py-1.5 rounded-full bg-[#245329] hover:bg-[#2d6633] border border-white/20 text-white text-xs font-bold shadow-xs transition-all shrink-0">
                         Booking
                     </a>
 
                     <!-- Hamburger Button -->
-                    <button type="button" id="btnMobileMenuToggle" aria-label="Buka Menu Navigasi" class="p-2 rounded-xl border {{ request()->routeIs('home') ? 'border-white/25 text-white hover:bg-white/10' : 'border-wukirsari-border text-merapiText-primary hover:bg-wukirsari-sage/50' }} active:scale-95 transition-all cursor-pointer">
+                    <button type="button" id="btnMobileMenuToggle" aria-label="Buka Menu Navigasi" class="p-2 rounded-xl border {{ request()->routeIs('home') ? 'border-white/25 text-white hover:bg-white/10' : 'border-wukirsari-border text-merapiText-primary hover:bg-wukirsari-sage/50' }} active:scale-95 transition-all cursor-pointer shrink-0">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                         </svg>
@@ -238,7 +256,7 @@
     <!-- MOBILE NAVIGATION DRAWER & BACKDROP (lg:hidden) -->
     <div id="mobileMenuBackdrop" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 transition-opacity duration-300 opacity-0 pointer-events-none lg:hidden"></div>
 
-    <aside id="mobileNavDrawer" class="fixed inset-y-0 right-0 w-[85%] max-w-sm bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col justify-between overflow-y-auto lg:hidden">
+    <aside id="mobileNavDrawer" class="fixed inset-y-0 right-0 w-[85%] max-w-sm bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col justify-between overflow-y-auto lg:hidden invisible pointer-events-none">
         <!-- Top Drawer Section -->
         <div>
             <!-- Header Drawer with Logo & Close button -->
@@ -423,45 +441,48 @@
     @hasSection('footer')
         @yield('footer')
     @else
-    <footer id="kontak" class="bg-gradient-to-b from-[#091F12] via-[#0D2918] to-[#06140B] text-white/80 pt-14 sm:pt-16 pb-24 md:pb-12 border-t border-emerald-900/40 relative overflow-hidden select-none mt-auto">
+    <footer id="kontak" class="bg-gradient-to-b from-[#091F12] via-[#0D2918] to-[#06140B] text-white/80 pt-14 sm:pt-16 pb-24 md:pb-12 border-t border-emerald-900/40 relative overflow-hidden select-none mt-auto w-full max-w-full">
         
-        <!-- Ambient Glowing Lights -->
-        <div class="absolute -top-24 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="absolute -bottom-24 right-1/4 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none"></div>
+        <!-- Ambient Background Lights & Decorative SVGs wrapped in overflow-hidden container -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none z-0">
+            <!-- Ambient Glowing Lights -->
+            <div class="absolute -top-24 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl"></div>
+            <div class="absolute -bottom-24 right-1/4 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl"></div>
 
-        <!-- Topographic Contour Lines - Left -->
-        <svg class="absolute bottom-0 left-0 w-80 sm:w-96 lg:w-[540px] h-auto pointer-events-none opacity-20 text-emerald-400 z-0" viewBox="0 0 500 280" fill="none" stroke="currentColor" stroke-width="1.2">
-            <path d="M-60,280 C40,240 100,270 200,200 C300,130 380,180 500,80" />
-            <path d="M-60,255 C50,220 110,250 210,180 C310,110 390,160 500,60" />
-            <path d="M-60,230 C60,200 120,230 220,160 C320,90 400,140 500,40" />
-            <path d="M-60,205 C70,180 130,210 230,140 C330,70 410,120 500,20" />
-            <path d="M-60,180 C80,160 140,190 240,120 C340,50 420,100 500,0" />
-            <path d="M-60,155 C90,140 150,170 250,100 C350,30 430,80 500,-20" />
-        </svg>
-
-        <!-- Topographic Contour Lines - Right -->
-        <svg class="absolute bottom-0 right-0 w-80 sm:w-96 lg:w-[540px] h-auto pointer-events-none opacity-20 text-emerald-400 z-0 transform scale-x-[-1]" viewBox="0 0 500 280" fill="none" stroke="currentColor" stroke-width="1.2">
-            <path d="M-60,280 C40,240 100,270 200,200 C300,130 380,180 500,80" />
-            <path d="M-60,255 C50,220 110,250 210,180 C310,110 390,160 500,60" />
-            <path d="M-60,230 C60,200 120,230 220,160 C320,90 400,140 500,40" />
-            <path d="M-60,205 C70,180 130,210 230,140 C330,70 410,120 500,20" />
-            <path d="M-60,180 C80,160 140,190 240,120 C340,50 420,100 500,0" />
-        </svg>
-
-        <!-- Botanical Corner Fronds (Echoing the natural botanical aesthetic of the site) -->
-        <div class="hidden lg:block absolute bottom-0 left-0 pointer-events-none opacity-25 text-emerald-400/80 z-0">
-            <svg class="w-40 h-auto" viewBox="-5 0 175 125" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M -5,108 C 28,105 65,86 102,56 C 126,36 146,20 162,7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-                <path d="M 26,98 C 14,86 8,74 15,64 C 25,66 31,82 34,92 Z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1.1"/>
-                <path d="M 36,92 C 48,80 60,76 65,84 C 59,93 47,95 40,94 Z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1.1"/>
-                <path d="M 46,80 C 32,67 28,53 36,46 C 44,50 49,64 52,75 Z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1.1"/>
-                <path d="M 56,74 C 70,61 82,58 86,66 C 78,74 68,76 60,75 Z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1.1"/>
-                <path d="M 68,61 C 56,48 54,35 62,30 C 69,34 71,47 74,57 Z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1.1"/>
-                <path d="M 76,56 C 90,44 100,41 104,49 C 96,56 86,57 79,57 Z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1.1"/>
-                <path d="M 88,45 C 78,34 78,23 85,18 C 91,23 92,32 93,41 Z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1"/>
-                <path d="M 96,40 C 108,30 117,28 120,35 C 113,41 105,42 98,41 Z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1"/>
-                <path d="M 130,18 C 141,9 148,7 152,9 C 148,15 142,20 135,20 Z" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="1"/>
+            <!-- Topographic Contour Lines - Left -->
+            <svg class="absolute bottom-0 left-0 w-80 sm:w-96 lg:w-[540px] h-auto opacity-20 text-emerald-400" viewBox="0 0 500 280" fill="none" stroke="currentColor" stroke-width="1.2">
+                <path d="M-60,280 C40,240 100,270 200,200 C300,130 380,180 500,80" />
+                <path d="M-60,255 C50,220 110,250 210,180 C310,110 390,160 500,60" />
+                <path d="M-60,230 C60,200 120,230 220,160 C320,90 400,140 500,40" />
+                <path d="M-60,205 C70,180 130,210 230,140 C330,70 410,120 500,20" />
+                <path d="M-60,180 C80,160 140,190 240,120 C340,50 420,100 500,0" />
+                <path d="M-60,155 C90,140 150,170 250,100 C350,30 430,80 500,-20" />
             </svg>
+
+            <!-- Topographic Contour Lines - Right -->
+            <svg class="absolute bottom-0 right-0 w-80 sm:w-96 lg:w-[540px] h-auto opacity-20 text-emerald-400 transform scale-x-[-1]" viewBox="0 0 500 280" fill="none" stroke="currentColor" stroke-width="1.2">
+                <path d="M-60,280 C40,240 100,270 200,200 C300,130 380,180 500,80" />
+                <path d="M-60,255 C50,220 110,250 210,180 C310,110 390,160 500,60" />
+                <path d="M-60,230 C60,200 120,230 220,160 C320,90 400,140 500,40" />
+                <path d="M-60,205 C70,180 130,210 230,140 C330,70 410,120 500,20" />
+                <path d="M-60,180 C80,160 140,190 240,120 C340,50 420,100 500,0" />
+            </svg>
+
+            <!-- Botanical Corner Fronds -->
+            <div class="hidden lg:block absolute bottom-0 left-0 opacity-25 text-emerald-400/80">
+                <svg class="w-40 h-auto" viewBox="-5 0 175 125" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M -5,108 C 28,105 65,86 102,56 C 126,36 146,20 162,7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                    <path d="M 26,98 C 14,86 8,74 15,64 C 25,66 31,82 34,92 Z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1.1"/>
+                    <path d="M 36,92 C 48,80 60,76 65,84 C 59,93 47,95 40,94 Z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1.1"/>
+                    <path d="M 46,80 C 32,67 28,53 36,46 C 44,50 49,64 52,75 Z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1.1"/>
+                    <path d="M 56,74 C 70,61 82,58 86,66 C 78,74 68,76 60,75 Z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1.1"/>
+                    <path d="M 68,61 C 56,48 54,35 62,30 C 69,34 71,47 74,57 Z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1.1"/>
+                    <path d="M 76,56 C 90,44 100,41 104,49 C 96,56 86,57 79,57 Z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1.1"/>
+                    <path d="M 88,45 C 78,34 78,23 85,18 C 91,23 92,32 93,41 Z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1"/>
+                    <path d="M 96,40 C 108,30 117,28 120,35 C 113,41 105,42 98,41 Z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1"/>
+                    <path d="M 130,18 C 141,9 148,7 152,9 C 148,15 142,20 135,20 Z" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="1"/>
+                </svg>
+            </div>
         </div>
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -546,17 +567,26 @@
                     
                     <ul class="space-y-2.5 text-xs sm:text-sm text-white/75">
                         <li class="flex items-center gap-2.5">
-                            <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
-                                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                            <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
                                     <path d="M20 15.5c-1.2 0-2.4-.2-3.6-.6-.3-.1-.7 0-1 .2l-2.2 2.2c-2.8-1.4-5.1-3.8-6.6-6.6l2.2-2.2c.3-.3.4-.7.2-1-.3-1.1-.5-2.3-.5-3.5 0-.6-.4-1-1-1H4c-.6 0-1 .4-1 1 0 9.4 7.6 17 17 17 .6 0 1-.4 1-1v-3.5c0-.6-.4-1-1-1z"/>
                                 </svg>
                             </div>
-                            <a href="https://wa.me/6281228677843" target="_blank" class="hover:text-emerald-300 transition-colors font-medium">+62 81228677843</a>
+                            <a href="https://wa.me/6281234567890" target="_blank" class="hover:text-emerald-300 transition-colors font-medium">+62 812-3456-7890</a>
+                        </li>
+
+                        <li class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
+                                <svg class="w-4 h-4 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                            <a href="mailto:jeepwukirsari@gmail.com" class="hover:text-emerald-300 transition-colors font-medium">jeepwukirsari@gmail.com</a>
                         </li>
 
                         <li class="flex items-start gap-2.5">
-                            <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30 mt-0.5">
-                                <svg class="w-3.5 h-3.5 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
+                            <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30 mt-0.5">
+                                <svg class="w-4 h-4 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
                                     <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
                                     <circle cx="12" cy="9" r="2.2" fill="currentColor"/>
                                 </svg>
@@ -567,15 +597,23 @@
 
                     <!-- Social Media Pills -->
                     <div class="pt-2">
-                        <span class="block text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-2.5">Ikuti Media Sosial</span>
+                        <span class="block text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-2.5">IKUTI MEDIA SOSIAL</span>
                         <div class="flex items-center gap-2.5">
                             <!-- Instagram -->
-                            <a href="https://www.instagram.com/jeep_wukirsari?rpxt=Z3puazN5aDMwNm5s" target="_blank" class="w-9 h-9 rounded-xl bg-white/5 hover:bg-emerald-500 hover:text-white border border-white/10 flex items-center justify-center text-white/80 transition-all hover:-translate-y-1 shadow-sm" title="Instagram">
+                            <a href="https://www.instagram.com/jeep_wukirsari?rpxt=Z3puazN5aDMwNm5s" target="_blank" class="w-10 h-10 rounded-2xl bg-white/5 hover:bg-emerald-500 hover:text-white border border-white/10 flex items-center justify-center text-white/80 transition-all hover:-translate-y-1 shadow-sm" title="Instagram">
                                 <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
                             </a>
                             <!-- TikTok -->
-                            <a href="https://www.tiktok.com/@antocingoh.26?_r=1&_t=ZS-9BJ4ZkjdNwK" target="_blank" class="w-9 h-9 rounded-xl bg-white/5 hover:bg-emerald-500 hover:text-white border border-white/10 flex items-center justify-center text-white/80 transition-all hover:-translate-y-1 shadow-sm" title="TikTok">
+                            <a href="https://www.tiktok.com/@antocingoh.26?_r=1&_t=ZS-9BJ4ZkjdNwK" target="_blank" class="w-10 h-10 rounded-2xl bg-white/5 hover:bg-emerald-500 hover:text-white border border-white/10 flex items-center justify-center text-white/80 transition-all hover:-translate-y-1 shadow-sm" title="TikTok">
                                 <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.24 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
+                            </a>
+                            <!-- YouTube -->
+                            <a href="https://www.youtube.com/@jeepwukirsari" target="_blank" class="w-10 h-10 rounded-2xl bg-white/5 hover:bg-emerald-500 hover:text-white border border-white/10 flex items-center justify-center text-white/80 transition-all hover:-translate-y-1 shadow-sm" title="YouTube">
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                            </a>
+                            <!-- WhatsApp -->
+                            <a href="https://wa.me/6281234567890" target="_blank" class="w-10 h-10 rounded-2xl bg-white/5 hover:bg-emerald-500 hover:text-white border border-white/10 flex items-center justify-center text-white/80 transition-all hover:-translate-y-1 shadow-sm" title="WhatsApp">
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12.004 2C6.48 2 2 6.48 2 12c0 1.97.57 3.81 1.56 5.37L2.1 21.9l4.67-1.42A9.95 9.95 0 0 0 12 22c5.52 0 10-4.48 10-10S17.52 2 12.004 2zm5.82 14.28c-.24.68-1.2 1.25-1.68 1.33-.45.07-1.04.1-3.03-.72-2.54-1.05-4.18-3.64-4.31-3.81-.13-.17-1.03-1.37-1.03-2.61s.65-1.85.88-2.1c.23-.25.5-.31.67-.31.17 0 .34 0 .49.01.15.01.36-.06.56.43.21.5.72 1.76.78 1.89.06.13.1.28.02.45-.09.17-.13.28-.26.43-.13.15-.27.33-.39.45-.13.13-.27.27-.12.53.15.26.68 1.12 1.46 1.81 1 .89 1.84 1.17 2.1 1.3.26.13.41.11.56-.06.15-.17.65-.76.82-1.02.17-.26.35-.22.59-.13.24.09 1.52.72 1.78.85.26.13.43.2.49.31.06.11.06.64-.18 1.32z"/></svg>
                             </a>
                         </div>
                     </div>
@@ -601,12 +639,12 @@
 
     <!-- STICKY BOTTOM BAR (MOBILE ONLY - DISEMBUNYIKAN DI FORM BOOKING / ADMIN) -->
     @if(!View::hasSection('hide_floating_cta') && !request()->routeIs('admin.*'))
-    <div class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-wukirsari-border px-4 py-2.5 shadow-lg flex items-center justify-between gap-3">
+    <div class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-wukirsari-border px-4 py-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom,0px))] shadow-lg flex items-center justify-between gap-3">
         <div>
             <span class="block text-[10px] font-medium text-merapiText-muted uppercase tracking-wider">Mulai dari</span>
             <span class="text-sm font-extrabold text-merapiText-primary leading-tight">Rp 450.000<span class="text-[11px] font-normal text-merapiText-secondary">/jeep</span></span>
         </div>
-        <a href="{{ route('booking.create') }}" class="flex-1 max-w-[200px] py-2 px-3.5 rounded-full bg-wukirsari-primary text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-wukirsari-primary/20 active:scale-95 transition-all">
+        <a href="{{ route('booking.create') }}" class="flex-1 max-w-[200px] py-2 px-3.5 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-wukirsari-primary/20 active:scale-95 transition-all">
             <span>Booking Sekarang</span>
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
         </a>
@@ -705,15 +743,20 @@
         }
 
         // Mobile Menu Drawer Functions
+        let drawerCloseTimer = null;
         function openMobileDrawer() {
             const backdrop = document.getElementById('mobileMenuBackdrop');
             const drawer = document.getElementById('mobileNavDrawer');
             if (!backdrop || !drawer) return;
-            backdrop.classList.remove('opacity-0', 'pointer-events-none');
-            backdrop.classList.add('opacity-100', 'pointer-events-auto');
-            drawer.classList.remove('translate-x-full');
-            drawer.classList.add('translate-x-0');
-            document.body.classList.add('overflow-hidden');
+            if (drawerCloseTimer) clearTimeout(drawerCloseTimer);
+            drawer.classList.remove('invisible', 'pointer-events-none');
+            requestAnimationFrame(() => {
+                backdrop.classList.remove('opacity-0', 'pointer-events-none');
+                backdrop.classList.add('opacity-100', 'pointer-events-auto');
+                drawer.classList.remove('translate-x-full');
+                drawer.classList.add('translate-x-0');
+                document.body.classList.add('overflow-hidden');
+            });
         }
 
         function closeMobileDrawer() {
@@ -725,6 +768,12 @@
             drawer.classList.remove('translate-x-0');
             drawer.classList.add('translate-x-full');
             document.body.classList.remove('overflow-hidden');
+            if (drawerCloseTimer) clearTimeout(drawerCloseTimer);
+            drawerCloseTimer = setTimeout(() => {
+                if (drawer.classList.contains('translate-x-full')) {
+                    drawer.classList.add('invisible', 'pointer-events-none');
+                }
+            }, 300);
         }
 
         document.addEventListener('DOMContentLoaded', function () {

@@ -1,22 +1,40 @@
 <!-- Topbar Mobile (hanya tampil di HP) -->
-<header class="md:hidden sticky top-0 z-40 flex items-center gap-3 h-14 px-4 bg-[#0E2C15] text-white border-b border-white/10 shadow-lg">
-    <button id="adminMenuOpen" type="button" aria-label="Buka menu" aria-controls="adminSidebar" aria-expanded="false"
-            class="p-2 -ml-2 rounded-lg hover:bg-white/10 active:bg-white/15 transition">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-    </button>
-    <img src="{{ asset('img/logo.png') }}" alt="Logo" class="w-7 h-7 object-contain">
-    <span class="font-black text-sm tracking-widest">JEEP WUKIRSARI</span>
+<header class="md:hidden sticky top-0 z-40 flex items-center justify-between h-14 px-4 bg-[#0E2C15] text-white border-b border-white/10 shadow-lg">
+    <div class="flex items-center gap-3">
+        <button id="adminMenuOpen" type="button" aria-label="Buka menu navigasi" aria-controls="adminSidebar" aria-expanded="false"
+                class="p-2 -ml-2 rounded-lg hover:bg-white/10 active:bg-white/15 transition cursor-pointer">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <div class="flex items-center gap-2">
+            <img src="{{ asset('img/logo.png') }}" alt="Logo" class="w-7 h-7 object-contain">
+            <span class="font-black text-sm tracking-widest font-display">JEEP WUKIRSARI</span>
+        </div>
+    </div>
+    <div class="flex items-center gap-1.5">
+        <a href="{{ route('home') }}" class="p-2 rounded-lg text-emerald-200 hover:text-white hover:bg-white/10 transition" title="Lihat Website Beranda">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        </a>
+        @php
+            $topbarUnreadCount = $unreadNotificationsCount ?? \App\Models\ActivityLog::unread()->count();
+        @endphp
+        <a href="{{ route('admin.notifications') }}" class="relative p-2 rounded-lg text-emerald-200 hover:text-white hover:bg-white/10 transition" title="Notifikasi Sistem">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+            @if($topbarUnreadCount > 0)
+            <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+            @endif
+        </a>
+    </div>
 </header>
 
 <!-- Overlay gelap di belakang drawer -->
 <div id="adminSidebarOverlay"
-     class="fixed inset-0 z-[45] bg-black/60 opacity-0 pointer-events-none transition-opacity duration-300 md:hidden"></div>
+     class="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs opacity-0 pointer-events-none transition-opacity duration-300 md:hidden"></div>
 
 <!-- Sidebar Admin: drawer di HP, sidebar tetap di desktop -->
 <aside id="adminSidebar"
        class="fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] h-[100dvh] -translate-x-full transition-transform duration-300 ease-out overflow-y-auto overflow-x-hidden
-              md:relative md:inset-auto md:z-auto md:h-auto md:w-64 md:max-w-none md:translate-x-0 md:overflow-hidden
-              bg-gradient-to-b from-[#143B1E] via-[#0E2C15] to-[#07180B] text-white p-5 flex flex-col justify-between shrink-0 shadow-2xl border-r border-[#1e4e2a]/80 select-none">
+              md:sticky md:top-0 md:h-screen md:w-64 md:max-w-none md:translate-x-0 md:shrink-0 md:overflow-y-auto
+              bg-gradient-to-b from-[#143B1E] via-[#0E2C15] to-[#07180B] text-white p-5 flex flex-col justify-between shadow-2xl border-r border-[#1e4e2a]/80 select-none">
 
     <!-- Tombol tutup (hanya di HP) -->
     <button id="adminMenuClose" type="button" aria-label="Tutup menu"
@@ -126,24 +144,6 @@
                     <svg class="w-4 h-4 {{ request()->routeIs('admin.settings*') ? 'text-white' : 'text-emerald-300' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                     <span>Pengaturan</span>
                 </div>
-            </a>
-
-            @php
-                $sidebarCandFile = database_path('hotel_kandidat.json');
-                $sidebarCandCount = file_exists($sidebarCandFile) ? count(json_decode(file_get_contents($sidebarCandFile), true) ?: []) : 0;
-            @endphp
-
-            <!-- 10. Kandidat Hotel Baru -->
-            <a href="{{ route('admin.hotel_candidates') }}" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs transition-all duration-150 {{ request()->routeIs('admin.hotel_candidates*') ? 'bg-[#1D5E30] text-white font-bold shadow-md shadow-emerald-950/40' : 'text-white/80 hover:bg-white/10 hover:text-white' }}">
-                <div class="flex items-center gap-3">
-                    <svg class="w-4 h-4 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                    <span>Kandidat Hotel</span>
-                </div>
-                @if($sidebarCandCount > 0)
-                <span class="px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold shadow-xs">
-                    {{ $sidebarCandCount }}
-                </span>
-                @endif
             </a>
         </nav>
     </div>

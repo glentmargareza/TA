@@ -101,7 +101,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="space-y-1.5">
                             <label for="date" class="block text-xs font-bold text-merapiText-primary">Tanggal Kunjungan *</label>
-                            <input id="date" type="date" class="w-full px-4 py-3 rounded-2xl border border-wukirsari-border bg-white text-merapiText-primary text-sm font-semibold focus:outline-none focus:border-wukirsari-primary focus:ring-2 focus:ring-wukirsari-primary/15 transition-all">
+                            <input id="date" type="date" value="{{ $defaultDate ?? '' }}" class="w-full px-4 py-3 rounded-2xl border border-wukirsari-border bg-white text-merapiText-primary text-sm font-semibold focus:outline-none focus:border-wukirsari-primary focus:ring-2 focus:ring-wukirsari-primary/15 transition-all">
                         </div>
                         <div class="space-y-1.5">
                             <label for="session" class="block text-xs font-bold text-merapiText-primary">Sesi Waktu Keberangkatan *</label>
@@ -342,7 +342,7 @@ const D              = bookingDataEl ? JSON.parse(bookingDataEl.textContent || '
 window.BOOKING_DATA  = D;
 const PER_JEEP       = 4;
 const PACKAGES       = D.packages || [];
-const SESSIONS       = D.slots || [];
+let SESSIONS         = D.slots || [];
  
 const $ = s => document.querySelector(s);
 const rp = n => 'Rp ' + Number(n).toLocaleString('id-ID');
@@ -370,7 +370,24 @@ if (pkgsEl && PACKAGES.length) {
     const b = e.target.closest('.pkg'); if(!b) return;
     state.pkg = b.dataset.id;
     pkgsEl.querySelectorAll('.pkg').forEach(x => x.classList.toggle('sel', x === b));
-    update(); setStep(2);
+
+    const p = curPkg();
+    const isSunrise = p && (p.is_sunrise || /sunrise/i.test(p.slug || '') || /sunrise/i.test(p.name || ''));
+    const isToday = dateEl.value === iso(new Date());
+    const now = new Date();
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+
+    // Jika beralih ke Sunrise dan tanggal masih hari ini tetapi jam 04:30 WIB sudah lewat:
+    // Otomatis sesuaikan tanggal ke besok (H+1)
+    if(isSunrise && isToday && nowMin >= (4 * 60 + 30)){
+      const def = new Date();
+      def.setDate(def.getDate() + 1);
+      dateEl.value = iso(def);
+    }
+
+    renderSessions();
+    update();
+    setStep(2);
   });
 }
  
@@ -378,26 +395,129 @@ if (pkgsEl && PACKAGES.length) {
 const dateEl = $('#date');
 const iso = d => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 dateEl.min = iso(new Date());
-const def = new Date(); def.setDate(def.getDate() + 1);
-dateEl.value = iso(def);
-dateEl.addEventListener('change', () => { renderSessions(); update(); setStep(2); });
- 
-function renderSessions(){
+function getSmartDefaultDate(pkg){
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const isSunrise = pkg && (pkg.is_sunrise || /sunrise/i.test(pkg.slug || '') || /sunrise/i.test(pkg.name || ''));
+
+  if(isSunrise){
+    if(nowMin >= (4 * 60 + 30)){
+      const def = new Date();
+      def.setDate(def.getDate() + 1);
+      return iso(def);
+    }
+    return iso(now);
+  } else {
+    if(nowMin >= (13 * 60 + 30)){
+      const def = new Date();
+      def.setDate(def.getDate() + 1);
+      return iso(def);
+    }
+    return iso(now);
+  }
+}
+
+// Inisialisasi tanggal otomatis cerdas
+if (D.defaultDate) {
+  dateEl.value = D.defaultDate;
+} else if (!dateEl.value || dateEl.value < iso(new Date())) {
+  dateEl.value = getSmartDefaultDate(curPkg());
+}
+let fetchTimer = null;
+function fetchSlotAvailability(date, jeeps){
+  if(!date) return;
+  clearTimeout(fetchTimer);
+  fetchTimer = setTimeout(async () => {
+    try {
+      const res = await fetch(`{{ route('booking.slot_availability') }}?trip_date=${encodeURIComponent(date)}&jeep_quantity=${encodeURIComponent(jeeps)}`);
+      if(res.ok){
+        const data = await res.json();
+        if(data && Array.isArray(data.slots)){
+          SESSIONS = SESSIONS.map(s => {
+            const found = data.slots.find(x => x.id === s.id);
+            return found ? { ...s, remaining: found.remaining, available: found.available, passed: found.passed } : s;
+          });
+          renderSessionOptions();
+          update();
+        }
+      }
+    } catch(e) {
+      // Abaikan jika error jaringan/offline
+    }
+  }, 120);
+}
+
+function renderSessionOptions(){
   const sel = $('#session');
+  if(!sel) return;
+  const pkg = curPkg();
+  const isSunrisePkg = pkg && (pkg.is_sunrise || /sunrise/i.test(pkg.slug || '') || /sunrise/i.test(pkg.name || ''));
+
   const isToday = dateEl.value === iso(new Date());
-  const now = new Date(); const nowMin = now.getHours() * 60 + now.getMinutes();
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
   const prev = state.session;
-  sel.innerHTML = SESSIONS.map(s => {
-    let passed = false;
-    if(isToday && s.time){ const [h,m] = s.time.split(':').map(Number); passed = (h * 60 + m) <= nowMin; }
-    return `<option value="${s.id}" ${passed?'disabled':''}>${esc(s.label)}</option>`;
+
+  // Filter aturan sesi keberangkatan:
+  // - Paket Sunrise: HANYA sesi 04:30 WIB yang tampil / dapat dipilih. Sesi lain otomatis tidak bisa.
+  // - Paket Reguler: Sesi 04:30 WIB dilarang/disembunyikan. Wisatawan bebas memilih sesi reguler (08:00, 10:30, 13:30 WIB).
+  const filteredSlots = SESSIONS.filter(s => {
+    const isSunSlot = s.is_sunrise || s.time === '04:30' || /sunrise/i.test(s.label);
+    return isSunrisePkg ? isSunSlot : !isSunSlot;
+  });
+
+  if(filteredSlots.length === 0){
+    sel.innerHTML = '<option value="" disabled selected>Tidak ada sesi yang tersedia</option>';
+    state.session = null;
+    $('#sessHint').textContent = 'Tidak ada sesi yang tersedia untuk paket ini.';
+    return;
+  }
+
+  sel.innerHTML = filteredSlots.map(s => {
+    let passed = s.passed ?? false;
+    if(isToday && s.time){
+      const [h, m] = s.time.split(':').map(Number);
+      if((h * 60 + m) <= nowMin) passed = true;
+    }
+    const isFull = (typeof s.remaining === 'number' && s.remaining < state.qty);
+    const disabled = passed || isFull;
+
+    let badge = '';
+    if(passed){
+      badge = ' — (Sudah Lewat)';
+    } else if(isFull){
+      badge = ' — (Kuota Penuh)';
+    } else if(typeof s.remaining === 'number'){
+      badge = ` (Sisa ${s.remaining} Jeep)`;
+    }
+
+    return `<option value="${s.id}" ${disabled ? 'disabled' : ''}>${esc(s.label)}${badge}</option>`;
   }).join('');
-  const firstOk = [...sel.options].find(o => !o.disabled);
+
+  const firstOk = [...sel.options].find(o => !o.disabled && o.value);
   const keep = [...sel.options].find(o => o.value === String(prev) && !o.disabled);
   sel.value = keep ? keep.value : (firstOk ? firstOk.value : '');
   state.session = sel.value || null;
-  $('#sessHint').textContent = firstOk ? '' : 'Semua sesi jadwal hari ini sudah lewat, silakan pilih tanggal esok atau lainnya.';
+
+  if(!firstOk){
+    if(isSunrisePkg){
+      $('#sessHint').textContent = 'Sesi Sunrise (04:30 WIB) untuk tanggal ini tidak dapat dipilih (sudah lewat atau kuota habis). Silakan pilih tanggal berikutnya.';
+    } else {
+      $('#sessHint').textContent = 'Semua sesi jadwal reguler untuk tanggal ini sudah lewat atau penuh. Silakan pilih tanggal berikutnya.';
+    }
+  } else {
+    $('#sessHint').textContent = isSunrisePkg ? '✓ Paket Sunrise Tour khusus beroperasi pada sesi Sunrise (04:30 WIB).' : '';
+  }
 }
+
+function renderSessions(){
+  renderSessionOptions();
+  if(dateEl.value){
+    fetchSlotAvailability(dateEl.value, state.qty);
+  }
+}
+
+dateEl.addEventListener('change', () => { renderSessions(); update(); setStep(2); });
 $('#session').addEventListener('change', e => { state.session = e.target.value; update(); setStep(3); });
  
 /* ====== 3. KAPASITAS & ARMADA ====== */

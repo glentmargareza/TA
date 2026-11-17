@@ -26,9 +26,12 @@
         }
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap');
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Poppins', 'Inter', sans-serif;
         }
     </style>
 </head>
@@ -48,7 +51,7 @@
             <!-- Soft White/Cream to Transparent Gradient so left texts are crisp -->
             <div class="absolute inset-0 bg-gradient-to-r from-white via-white/85 to-transparent pointer-events-none"></div>
 
-            <div class="relative z-10 px-6 sm:px-8 py-6 sm:py-7 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="relative z-10 px-4 sm:px-8 py-5 sm:py-7 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <!-- Left: Title & Subtitle -->
                 <div>
                     <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Dashboard</h1>
@@ -56,7 +59,7 @@
                 </div>
 
                 <!-- Right: Header Quick Controls (Date, Notifications, Avatar) -->
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
                     <!-- Tombol Cepat Kunjungi Beranda -->
                     <a href="{{ route('home') }}" target="_self" class="inline-flex items-center gap-2 bg-emerald-800 hover:bg-emerald-900 active:scale-95 text-white px-3.5 py-1.5 rounded-full text-xs font-bold shadow-xs hover:shadow transition-all cursor-pointer" title="Buka website Beranda wisatawan">
                         <svg class="w-3.5 h-3.5 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
@@ -435,7 +438,7 @@
 
                         <!-- Table -->
                         <div class="overflow-x-auto">
-                            <table class="w-full text-left text-xs">
+                            <table class="w-full text-left text-xs min-w-[640px]">
                                 <thead class="bg-slate-50/80 text-slate-500 font-bold uppercase tracking-wider text-[10px] border-b border-slate-100">
                                     <tr>
                                         <th class="py-3 px-4">Kode Booking</th>
@@ -559,46 +562,16 @@
                                         </td>
                                     </tr>
                                     @empty
-                                    <!-- Fallback sample rows matching visual mockup -->
-                                    <tr class="hover:bg-slate-50/70">
-                                        <td class="py-3 px-4 font-mono font-bold text-slate-800">JKR-1027</td>
-                                        <td class="py-3 px-4 font-semibold text-slate-800">Andi Pratama</td>
-                                        <td class="py-3 px-4 text-slate-600">Short Trip</td>
-                                        <td class="py-3 px-4 text-slate-500 text-[11px]">01 Nov 2026 &bull; 09.00</td>
-                                        <td class="py-3 px-4"><span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FEF3C7] text-[#D97706]">Menunggu Pembayaran</span></td>
-                                        <td class="py-3 px-4 text-center"><button class="px-2.5 py-1 rounded-lg border border-slate-200 text-slate-600 text-[11px] font-semibold">👁 Detail</button></td>
-                                    </tr>
-                                    <tr class="hover:bg-slate-50/70">
-                                        <td class="py-3 px-4 font-mono font-bold text-slate-800">JKR-1026</td>
-                                        <td class="py-3 px-4 font-semibold text-slate-800">Siti Nurhaliza</td>
-                                        <td class="py-3 px-4 text-slate-600">Adventure</td>
-                                        <td class="py-3 px-4 text-slate-500 text-[11px]">01 Nov 2026 &bull; 10.00</td>
-                                        <td class="py-3 px-4"><span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#DCFCE7] text-[#16A34A]">Dikonfirmasi</span></td>
-                                        <td class="py-3 px-4 text-center"><button class="px-2.5 py-1 rounded-lg border border-slate-200 text-slate-600 text-[11px] font-semibold">👁 Detail</button></td>
-                                    </tr>
-                                    <tr class="hover:bg-slate-50/70">
-                                        <td class="py-3 px-4 font-mono font-bold text-slate-800">JKR-1025</td>
-                                        <td class="py-3 px-4 font-semibold text-slate-800">Budi Santoso</td>
-                                        <td class="py-3 px-4 text-slate-600">Lavature</td>
-                                        <td class="py-3 px-4 text-slate-500 text-[11px]">31 Okt 2026 &bull; 14.00</td>
-                                        <td class="py-3 px-4"><span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#DCFCE7] text-[#16A34A]">Selesai</span></td>
-                                        <td class="py-3 px-4 text-center"><button class="px-2.5 py-1 rounded-lg border border-slate-200 text-slate-600 text-[11px] font-semibold">👁 Detail</button></td>
-                                    </tr>
-                                    <tr class="hover:bg-slate-50/70">
-                                        <td class="py-3 px-4 font-mono font-bold text-slate-800">JKR-1024</td>
-                                        <td class="py-3 px-4 font-semibold text-slate-800">Rina Amelia</td>
-                                        <td class="py-3 px-4 text-slate-600">Sunrise Trip</td>
-                                        <td class="py-3 px-4 text-slate-500 text-[11px]">31 Okt 2026 &bull; 05.30</td>
-                                        <td class="py-3 px-4"><span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#DCFCE7] text-[#16A34A]">Selesai</span></td>
-                                        <td class="py-3 px-4 text-center"><button class="px-2.5 py-1 rounded-lg border border-slate-200 text-slate-600 text-[11px] font-semibold">👁 Detail</button></td>
-                                    </tr>
-                                    <tr class="hover:bg-slate-50/70">
-                                        <td class="py-3 px-4 font-mono font-bold text-slate-800">JKR-1023</td>
-                                        <td class="py-3 px-4 font-semibold text-slate-800">Dika Permana</td>
-                                        <td class="py-3 px-4 text-slate-600">Medium Trip</td>
-                                        <td class="py-3 px-4 text-slate-500 text-[11px]">31 Okt 2026 &bull; 09.00</td>
-                                        <td class="py-3 px-4"><span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FEE2E2] text-[#DC2626]">Dibatalkan</span></td>
-                                        <td class="py-3 px-4 text-center"><button class="px-2.5 py-1 rounded-lg border border-slate-200 text-slate-600 text-[11px] font-semibold">👁 Detail</button></td>
+                                    <tr>
+                                        <td colspan="6" class="py-12 text-center">
+                                            <div class="flex flex-col items-center justify-center text-slate-400">
+                                                <svg class="w-8 h-8 mb-2 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                                </svg>
+                                                <p class="text-xs font-semibold text-slate-500">Belum ada booking terbaru</p>
+                                                <p class="text-[11px] text-slate-400 mt-0.5">Semua reservasi booking yang masuk akan ditampilkan di sini.</p>
+                                            </div>
+                                        </td>
                                     </tr>
                                     @endforelse
                                 </tbody>
@@ -623,7 +596,7 @@
                         </div>
 
                         <!-- Connected Vertical Timeline (Matching Reference) -->
-                        <div class="relative pl-6 space-y-5 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
+                        <div class="relative {{ $recentActivities->isNotEmpty() ? 'pl-6 space-y-5 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200' : '' }}">
                             @forelse($recentActivities->take(4) as $act)
                             @php
                                 $dotColor = 'bg-[#10B981]';
@@ -645,41 +618,12 @@
                                 </span>
                             </div>
                             @empty
-                            <!-- Sample Timeline items matching mockup -->
-                            <div class="relative flex items-start justify-between gap-3">
-                                <span class="absolute -left-[1.8rem] top-1 w-2.5 h-2.5 rounded-full bg-[#10B981]"></span>
-                                <div class="min-w-0 flex-1">
-                                    <span class="block text-xs font-bold text-slate-800">Booking baru</span>
-                                    <span class="block text-[11px] text-slate-500 truncate">JKR-1027 oleh Andi Pratama</span>
-                                </div>
-                                <span class="text-[10px] text-slate-400 shrink-0">2 menit lalu</span>
-                            </div>
-
-                            <div class="relative flex items-start justify-between gap-3">
-                                <span class="absolute -left-[1.8rem] top-1 w-2.5 h-2.5 rounded-full bg-[#3B82F6]"></span>
-                                <div class="min-w-0 flex-1">
-                                    <span class="block text-xs font-bold text-slate-800">Pembayaran berhasil</span>
-                                    <span class="block text-[11px] text-slate-500 truncate">JKR-1026 senilai Rp 750.000</span>
-                                </div>
-                                <span class="text-[10px] text-slate-400 shrink-0">5 menit lalu</span>
-                            </div>
-
-                            <div class="relative flex items-start justify-between gap-3">
-                                <span class="absolute -left-[1.8rem] top-1 w-2.5 h-2.5 rounded-full bg-[#F59E0B]"></span>
-                                <div class="min-w-0 flex-1">
-                                    <span class="block text-xs font-bold text-slate-800">Booking dibatalkan</span>
-                                    <span class="block text-[11px] text-slate-500 truncate">JKR-1025 oleh Budi Santoso</span>
-                                </div>
-                                <span class="text-[10px] text-slate-400 shrink-0">10 menit lalu</span>
-                            </div>
-
-                            <div class="relative flex items-start justify-between gap-3">
-                                <span class="absolute -left-[1.8rem] top-1 w-2.5 h-2.5 rounded-full bg-[#10B981]"></span>
-                                <div class="min-w-0 flex-1">
-                                    <span class="block text-xs font-bold text-slate-800">Jadwal Jeep diperbarui</span>
-                                    <span class="block text-[11px] text-slate-500 truncate">Sesi 09.00 - 11.00</span>
-                                </div>
-                                <span class="text-[10px] text-slate-400 shrink-0">1 jam lalu</span>
+                            <div class="py-8 text-center text-slate-400">
+                                <svg class="w-7 h-7 mx-auto mb-1.5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <p class="text-xs font-semibold text-slate-500">Belum ada aktivitas terbaru</p>
+                                <p class="text-[10px] text-slate-400 mt-0.5">Aktivitas reservasi dan sistem akan muncul di sini.</p>
                             </div>
                             @endforelse
                         </div>

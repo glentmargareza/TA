@@ -37,6 +37,18 @@ class HomeController extends Controller
             'hero_location_3' => 'Museum Kampung Hilang',
             'hero_slide_4' => null,
             'hero_location_4' => 'Manuver Air',
+            'gallery_title' => 'Jelajahi Momen Indah Bersama Kami',
+            'gallery_subtitle' => 'Kumpulan foto perjalanan seru di berbagai rute wisata.',
+            'gallery_image_1' => null,
+            'gallery_caption_1' => 'Petualangan Jeep Merapi',
+            'gallery_image_2' => null,
+            'gallery_caption_2' => 'Sunrise Tour Merapi',
+            'gallery_image_3' => null,
+            'gallery_caption_3' => 'Bunker Kaliadem Merapi',
+            'gallery_image_4' => null,
+            'gallery_caption_4' => 'Rute Kali Kuning Offroad',
+            'gallery_image_5' => null,
+            'gallery_caption_5' => 'Lembah Panorama Merapi',
         ];
 
         if (file_exists($settingsFile)) {
