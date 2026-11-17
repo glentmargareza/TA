@@ -23,6 +23,11 @@
             }
         }
     </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800;900&display=swap');
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        .font-display, h1, h2, h3, h4, h5, h6 { font-family: 'Poppins', 'Inter', sans-serif; }
+    </style>
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col md:flex-row font-sans">
 
@@ -30,16 +35,16 @@
 
     <!-- Main Content -->
     <div class="flex-1 flex flex-col min-w-0">
-        <header class="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between">
-            <h2 class="text-base font-bold text-slate-800">
+        <header class="h-16 bg-white border-b border-slate-200 px-4 sm:px-6 flex items-center justify-between">
+            <h2 class="text-sm sm:text-base font-bold text-slate-800 truncate">
                 Manajemen Ulasan & Testimoni Wisatawan
             </h2>
-            <div class="flex items-center gap-2 text-xs text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-full font-semibold border border-emerald-200/60">
-                <span>⭐ Moderasi Ulasan Aktif</span>
+            <div class="flex items-center gap-2 text-xs text-emerald-800 bg-emerald-50 px-2.5 sm:px-3 py-1.5 rounded-full font-semibold border border-emerald-200/60 shrink-0">
+                <span>⭐ Moderasi Ulasan</span>
             </div>
         </header>
 
-        <main class="p-6 space-y-6 flex-1 overflow-y-auto">
+        <main class="p-4 sm:p-6 space-y-5 sm:space-y-6 flex-1 overflow-y-auto">
 
             <!-- Flash Alert -->
             @if(session('success'))
@@ -130,7 +135,7 @@
                 </div>
 
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs">
+                    <table class="w-full text-left text-xs min-w-[640px]">
                         <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-100">
                             <tr>
                                 <th class="py-3 px-4">Wisatawan</th>

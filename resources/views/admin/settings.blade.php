@@ -23,9 +23,9 @@
         }
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        .font-display { font-family: 'Outfit', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800;900&display=swap');
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        .font-display, h1, h2, h3, h4, h5, h6 { font-family: 'Poppins', 'Inter', sans-serif; }
     </style>
 </head>
 <body class="bg-[#F4F6F8] text-slate-800 min-h-screen flex flex-col md:flex-row antialiased">
@@ -36,15 +36,14 @@
     <div class="flex-1 flex flex-col min-w-0 min-h-screen overflow-x-hidden">
         
         <!-- Header Banner -->
-        <header class="bg-white border-b border-slate-200 px-6 sm:px-8 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-0 z-20 shadow-2xs">
+        <header class="bg-white border-b border-slate-200 px-4 sm:px-8 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-0 z-20 shadow-2xs">
             <div>
-                <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2 font-display">
-                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight font-display">
                     Pengaturan Sistem & Operasional
                 </h1>
                 <p class="text-xs text-slate-500 mt-0.5">Kelola informasi profil, data usaha Jeep Wukirsari, kebijakan trip, pembayaran, dan keamanan akun.</p>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2.5 sm:gap-3 flex-wrap">
                 <span class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs flex items-center gap-1.5">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                     <span>Admin Loket: {{ $user->name ?? 'Administrator' }}</span>
@@ -55,7 +54,7 @@
             </div>
         </header>
 
-        <main class="p-6 sm:p-8 space-y-6 flex-1 overflow-y-auto">
+        <main class="p-4 sm:p-8 space-y-5 sm:space-y-6 flex-1 overflow-y-auto">
 
             <!-- Flash Success Message -->
             @if(session('success'))
@@ -84,6 +83,26 @@
                 </ul>
             </div>
             @endif
+
+            <!-- Quick Navigation Shortcuts -->
+            <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs no-scrollbar">
+                <button type="button" onclick="toggleSection(1); document.getElementById('section-1').scrollIntoView({behavior:'smooth'});" class="px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold shadow-2xs whitespace-nowrap cursor-pointer transition">
+                    👤 Profil Admin
+                </button>
+                <button type="button" onclick="toggleSection(3); document.getElementById('section-3').scrollIntoView({behavior:'smooth'});" class="px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold shadow-2xs whitespace-nowrap cursor-pointer transition">
+                    🌄 Background Hero
+                </button>
+                <button type="button" onclick="toggleSection('gallery'); document.getElementById('section-gallery').scrollIntoView({behavior:'smooth'});" class="px-3.5 py-2 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-900 hover:bg-emerald-100 font-bold shadow-2xs whitespace-nowrap cursor-pointer flex items-center gap-1.5 transition">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>📸 Galeri Beranda</span>
+                </button>
+                <button type="button" onclick="toggleSection(4); document.getElementById('section-4').scrollIntoView({behavior:'smooth'});" class="px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold shadow-2xs whitespace-nowrap cursor-pointer transition">
+                    ⚙️ Operasional
+                </button>
+                <button type="button" onclick="toggleSection(5); document.getElementById('section-5').scrollIntoView({behavior:'smooth'});" class="px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold shadow-2xs whitespace-nowrap cursor-pointer transition">
+                    💳 Pembayaran
+                </button>
+            </div>
 
             <!-- KONTENER UTAMA PENGATURAN (SESUAI GAMBAR) -->
             <div class="bg-white rounded-3xl border border-slate-200/80 shadow-xs divide-y divide-slate-100 overflow-hidden">
@@ -420,7 +439,157 @@
                     </div>
                 </div>
 
-                <!-- 4. PENGATURAN OPERASIONAL -->
+                <!-- 4. PENGATURAN GALERI BERANDA -->
+                <div class="setting-item group" id="section-gallery">
+                    <button type="button" onclick="toggleSection('gallery')" class="w-full text-left p-6 sm:p-7 flex items-center justify-between gap-4 hover:bg-slate-50/70 transition-colors cursor-pointer select-none">
+                        <div class="flex items-start sm:items-center gap-4 sm:gap-5 min-w-0">
+                            <!-- Icon Photo Gallery -->
+                            <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-800 flex items-center justify-center shrink-0 border border-emerald-100/80 shadow-2xs">
+                                <svg class="w-6 h-6 text-emerald-800" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h3 class="font-extrabold text-slate-900 text-base sm:text-lg font-display tracking-tight">4. Galeri Foto Beranda</h3>
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 uppercase tracking-wide">5 Foto Momen</span>
+                                </div>
+                                <p class="text-xs sm:text-sm text-slate-500 mt-0.5 font-medium">Ubah foto-foto petualangan pada bagian "Jelajahi Momen Indah Bersama Kami" di beranda.</p>
+                                <p class="text-xs text-slate-400 mt-1">Upload foto langsung dari HP/PC atau gunakan link gambar online dengan live preview sebelum disimpan.</p>
+                            </div>
+                        </div>
+                        <div class="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 shrink-0 transition-transform duration-200 arrow-btn" id="arrow-gallery">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        </div>
+                    </button>
+
+                    <!-- Form Content Section Galeri -->
+                    <div class="hidden border-t border-slate-100 bg-slate-50/40 p-6 sm:p-8" id="content-gallery">
+                        <form action="{{ route('admin.settings.basecamp') }}" method="POST" enctype="multipart/form-data" class="max-w-5xl space-y-6">
+                            @csrf
+
+                            <!-- Header Section Galeri Setting -->
+                            <div class="p-5 bg-white rounded-2xl border border-slate-200/90 shadow-2xs space-y-4">
+                                <h4 class="font-black text-slate-900 text-sm flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+                                    <span>Teks Header Bagian Galeri di Beranda</span>
+                                </h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Judul Galeri</label>
+                                        <input type="text" name="gallery_title" value="{{ old('gallery_title', $basecamp['gallery_title'] ?? 'Jelajahi Momen Indah Bersama Kami') }}" placeholder="Contoh: Jelajahi Momen Indah Bersama Kami" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Subjudul / Deskripsi Galeri</label>
+                                        <input type="text" name="gallery_subtitle" value="{{ old('gallery_subtitle', $basecamp['gallery_subtitle'] ?? 'Kumpulan foto perjalanan seru di berbagai rute wisata.') }}" placeholder="Contoh: Kumpulan foto perjalanan seru di berbagai rute wisata." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Grid 5 Foto Galeri -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                                @for($i = 1; $i <= 5; $i++)
+                                @php
+                                    $defaultImg = asset("img/{$i}.jpeg");
+                                    $currentImg = !empty($basecamp["gallery_image_{$i}"]) ? (str_starts_with($basecamp["gallery_image_{$i}"], 'http') ? $basecamp["gallery_image_{$i}"] : asset($basecamp["gallery_image_{$i}"])) : $defaultImg;
+                                    $isCustom = !empty($basecamp["gallery_image_{$i}"]);
+                                    $defaultCaptions = [
+                                        1 => 'Petualangan Jeep Merapi',
+                                        2 => 'Sunrise Tour Merapi',
+                                        3 => 'Bunker Kaliadem Merapi',
+                                        4 => 'Rute Kali Kuning Offroad',
+                                        5 => 'Lembah Panorama Merapi',
+                                    ];
+                                    $currentCaption = $basecamp["gallery_caption_{$i}"] ?? ($defaultCaptions[$i] ?? "Foto Galeri {$i}");
+                                @endphp
+                                <div class="p-5 bg-white rounded-2xl border border-slate-200/90 shadow-2xs flex flex-col justify-between space-y-4">
+                                    <div class="space-y-3.5">
+                                        <!-- Header Card -->
+                                        <div class="flex items-center justify-between pb-2.5 border-b border-slate-100">
+                                            <div class="flex items-center gap-2">
+                                                <span class="w-6 h-6 rounded-lg bg-emerald-700 text-white font-black text-xs flex items-center justify-center shadow-xs">0{{ $i }}</span>
+                                                <h5 class="font-extrabold text-slate-900 text-xs sm:text-sm">Foto Galeri 0{{ $i }}</h5>
+                                            </div>
+                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold {{ $isCustom ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-emerald-50 text-emerald-800 border border-emerald-200' }}">
+                                                {{ $isCustom ? 'Foto Kustom' : 'Default' }}
+                                            </span>
+                                        </div>
+
+                                        <!-- Preview Box [16/11] Sesuai Tampilan Beranda -->
+                                        <div class="relative w-full aspect-[16/11] rounded-xl overflow-hidden bg-slate-900 border border-slate-200 shadow-inner group">
+                                            <img id="preview_gallery_{{ $i }}" 
+                                                 src="{{ $currentImg }}" 
+                                                 alt="Preview Foto Galeri {{ $i }}" 
+                                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                            <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-2 text-white text-[11px] font-semibold truncate pointer-events-none">
+                                                <span id="preview_gallery_caption_text_{{ $i }}">{{ $currentCaption }}</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Kontrol Upload Device -->
+                                        <div class="space-y-1.5 pt-1">
+                                            <label class="block text-xs font-bold text-slate-700">Pilih Foto dari Device</label>
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <label for="input_gallery_{{ $i }}_file" class="inline-flex items-center gap-1.5 px-3 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold cursor-pointer transition shadow-2xs hover:shadow">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                                                    <span>Upload Foto</span>
+                                                </label>
+                                                <input type="file" id="input_gallery_{{ $i }}_file" name="gallery_image_{{ $i }}_file" accept="image/png, image/jpeg, image/jpg, image/webp" class="hidden" data-gallery-index="{{ $i }}" onchange="previewGalleryFile(this)">
+                                                
+                                                <button type="button" id="btn_cancel_gallery_{{ $i }}_file" data-gallery-index="{{ $i }}" onclick="cancelGalleryFile(this)" class="hidden px-2.5 py-1.5 text-xs text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-xl font-medium transition cursor-pointer">
+                                                    Batal
+                                                </button>
+                                            </div>
+                                            <p id="label_gallery_{{ $i }}_filename" class="text-[10px] text-slate-500">JPG, PNG, WEBP (Maks. 5 MB)</p>
+                                        </div>
+
+                                        <!-- Caption / Judul Foto -->
+                                        <div>
+                                            <label class="block text-xs font-bold text-slate-700 mb-1">Judul / Caption Foto</label>
+                                            <input type="text" name="gallery_caption_{{ $i }}" id="input_gallery_caption_{{ $i }}" 
+                                                   value="{{ old("gallery_caption_{$i}", $currentCaption) }}" 
+                                                   data-gallery-index="{{ $i }}" 
+                                                   oninput="updateGalleryCaptionPreview(this)" 
+                                                   placeholder="Contoh: {{ $defaultCaptions[$i] ?? 'Foto Galeri ' . $i }}" 
+                                                   class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                        </div>
+
+                                        <!-- URL Online (Opsional) -->
+                                        <div>
+                                            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Atau Link URL Gambar Online:</label>
+                                            <input type="url" name="gallery_image_{{ $i }}" id="input_gallery_url_{{ $i }}" 
+                                                   value="{{ old("gallery_image_{$i}", $basecamp["gallery_image_{$i}"] ?? '') }}" 
+                                                   data-gallery-index="{{ $i }}" 
+                                                   oninput="previewGalleryUrl(this)" 
+                                                   placeholder="https://images.unsplash.com/..." 
+                                                   class="w-full px-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                        </div>
+                                    </div>
+
+                                    @if($isCustom)
+                                    <div class="pt-2 border-t border-slate-100">
+                                        <label class="inline-flex items-center gap-1.5 text-xs text-rose-600 hover:text-rose-700 font-bold cursor-pointer">
+                                            <input type="checkbox" name="reset_gallery_image_{{ $i }}" value="1" data-gallery-index="{{ $i }}" onchange="toggleResetGallery(this)" class="rounded text-rose-600 focus:ring-rose-500">
+                                            <span>Kembalikan ke Default (img/{{ $i }}.jpeg)</span>
+                                        </label>
+                                    </div>
+                                    @endif
+                                </div>
+                                @endfor
+                            </div>
+
+                            <!-- Tombol Simpan -->
+                            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
+                                <button type="submit" class="px-6 py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs sm:text-sm shadow-md hover:shadow-lg transition flex items-center gap-2 cursor-pointer">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                    <span>Simpan Perubahan Galeri Beranda</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- 5. PENGATURAN OPERASIONAL -->
                 <div class="setting-item group" id="section-4">
                     <button type="button" onclick="toggleSection(4)" class="w-full text-left p-6 sm:p-7 flex items-center justify-between gap-4 hover:bg-slate-50/70 transition-colors cursor-pointer select-none">
                         <div class="flex items-start sm:items-center gap-4 sm:gap-5 min-w-0">
@@ -431,7 +600,7 @@
                                 </svg>
                             </div>
                             <div>
-                                <h3 class="font-extrabold text-slate-900 text-base sm:text-lg font-display tracking-tight">4. Pengaturan Operasional</h3>
+                                <h3 class="font-extrabold text-slate-900 text-base sm:text-lg font-display tracking-tight">5. Pengaturan Operasional</h3>
                                 <p class="text-xs sm:text-sm text-slate-500 mt-0.5 font-medium">Mengatur ketentuan operasional wisata.</p>
                                 <p class="text-xs text-slate-400 mt-1">Jam operasional, maksimal 4 penumpang/jeep, batas pickup, ketentuan pembatalan.</p>
                             </div>
@@ -496,7 +665,7 @@
                     </div>
                 </div>
 
-                <!-- 5. METODE PEMBAYARAN -->
+                <!-- 6. METODE PEMBAYARAN -->
                 <div class="setting-item group" id="section-5">
                     <button type="button" onclick="toggleSection(5)" class="w-full text-left p-6 sm:p-7 flex items-center justify-between gap-4 hover:bg-slate-50/70 transition-colors cursor-pointer select-none">
                         <div class="flex items-start sm:items-center gap-4 sm:gap-5 min-w-0">
@@ -507,7 +676,7 @@
                                 </svg>
                             </div>
                             <div>
-                                <h3 class="font-extrabold text-slate-900 text-base sm:text-lg font-display tracking-tight">5. Metode Pembayaran</h3>
+                                <h3 class="font-extrabold text-slate-900 text-base sm:text-lg font-display tracking-tight">6. Metode Pembayaran</h3>
                                 <p class="text-xs sm:text-sm text-slate-500 mt-0.5 font-medium">Mengelola konfigurasi pembayaran.</p>
                                 <p class="text-xs text-slate-400 mt-1">QRIS, informasi rekening, konfigurasi Xendit, status integrasi pembayaran.</p>
                             </div>
@@ -609,7 +778,7 @@
                     </div>
                 </div>
 
-                <!-- 6. NOTIFIKASI -->
+                <!-- 7. NOTIFIKASI -->
                 <div class="setting-item group" id="section-6">
                     <button type="button" onclick="toggleSection(6)" class="w-full text-left p-6 sm:p-7 flex items-center justify-between gap-4 hover:bg-slate-50/70 transition-colors cursor-pointer select-none">
                         <div class="flex items-start sm:items-center gap-4 sm:gap-5 min-w-0">
@@ -620,7 +789,7 @@
                                 </svg>
                             </div>
                             <div>
-                                <h3 class="font-extrabold text-slate-900 text-base sm:text-lg font-display tracking-tight">6. Notifikasi</h3>
+                                <h3 class="font-extrabold text-slate-900 text-base sm:text-lg font-display tracking-tight">7. Notifikasi</h3>
                                 <p class="text-xs sm:text-sm text-slate-500 mt-0.5 font-medium">Mengatur pemberitahuan sistem.</p>
                                 <p class="text-xs text-slate-400 mt-1">Notifikasi booking baru, pembayaran berhasil, pembatalan, notifikasi WhatsApp.</p>
                             </div>
@@ -704,7 +873,7 @@
                     </div>
                 </div>
 
-                <!-- 7. KEAMANAN AKUN -->
+                <!-- 8. KEAMANAN AKUN -->
                 <div class="setting-item group" id="section-7">
                     <button type="button" onclick="toggleSection(7)" class="w-full text-left p-6 sm:p-7 flex items-center justify-between gap-4 hover:bg-slate-50/70 transition-colors cursor-pointer select-none">
                         <div class="flex items-start sm:items-center gap-4 sm:gap-5 min-w-0">
@@ -715,7 +884,7 @@
                                 </svg>
                             </div>
                             <div>
-                                <h3 class="font-extrabold text-slate-900 text-base sm:text-lg font-display tracking-tight">7. Keamanan Akun</h3>
+                                <h3 class="font-extrabold text-slate-900 text-base sm:text-lg font-display tracking-tight">8. Keamanan Akun</h3>
                                 <p class="text-xs sm:text-sm text-slate-500 mt-0.5 font-medium">Menjaga keamanan akun administrator.</p>
                                 <p class="text-xs text-slate-400 mt-1">Ganti password, konfirmasi password, logout.</p>
                             </div>
@@ -803,14 +972,11 @@
             const isHidden = content.classList.contains('hidden');
 
             // Close all other sections for accordion behavior
-            for (let i = 1; i <= 7; i++) {
-                const otherContent = document.getElementById('content-' + i);
-                const otherArrow = document.getElementById('arrow-' + i);
-                if (otherContent && otherArrow) {
-                    otherContent.classList.add('hidden');
-                    otherArrow.classList.remove('rotate-180', 'bg-emerald-50', 'text-emerald-700', 'border-emerald-300');
-                }
-            }
+            const allContents = document.querySelectorAll('[id^="content-"]');
+            allContents.forEach(c => c.classList.add('hidden'));
+
+            const allArrows = document.querySelectorAll('[id^="arrow-"]');
+            allArrows.forEach(a => a.classList.remove('rotate-180', 'bg-emerald-50', 'text-emerald-700', 'border-emerald-300'));
 
             // If it was hidden, open it
             if (isHidden) {
@@ -907,6 +1073,83 @@
             const previewImg = document.getElementById('preview_slide_' + idx);
             if (previewImg && url && url.trim().length > 5) {
                 previewImg.src = url.trim();
+            }
+        }
+
+        // Galeri Beranda Helpers (1 - 5)
+        const defaultGallerySrcs = {
+            1: "{{ !empty($basecamp['gallery_image_1']) ? (str_starts_with($basecamp['gallery_image_1'], 'http') ? $basecamp['gallery_image_1'] : asset($basecamp['gallery_image_1'])) : asset('img/1.jpeg') }}",
+            2: "{{ !empty($basecamp['gallery_image_2']) ? (str_starts_with($basecamp['gallery_image_2'], 'http') ? $basecamp['gallery_image_2'] : asset($basecamp['gallery_image_2'])) : asset('img/2.jpeg') }}",
+            3: "{{ !empty($basecamp['gallery_image_3']) ? (str_starts_with($basecamp['gallery_image_3'], 'http') ? $basecamp['gallery_image_3'] : asset($basecamp['gallery_image_3'])) : asset('img/3.jpeg') }}",
+            4: "{{ !empty($basecamp['gallery_image_4']) ? (str_starts_with($basecamp['gallery_image_4'], 'http') ? $basecamp['gallery_image_4'] : asset($basecamp['gallery_image_4'])) : asset('img/4.jpeg') }}",
+            5: "{{ !empty($basecamp['gallery_image_5']) ? (str_starts_with($basecamp['gallery_image_5'], 'http') ? $basecamp['gallery_image_5'] : asset($basecamp['gallery_image_5'])) : asset('img/5.jpeg') }}",
+        };
+
+        function previewGalleryFile(input) {
+            const index = input.getAttribute('data-gallery-index');
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const previewImg = document.getElementById('preview_gallery_' + index);
+                const btnCancel = document.getElementById('btn_cancel_gallery_' + index + '_file');
+                const labelName = document.getElementById('label_gallery_' + index + '_filename');
+
+                if (previewImg) previewImg.src = URL.createObjectURL(file);
+                if (btnCancel) btnCancel.classList.remove('hidden');
+                if (labelName) labelName.textContent = 'File: ' + file.name + ' (' + (file.size / 1024 / 1024).toFixed(2) + ' MB)';
+            }
+        }
+
+        function cancelGalleryFile(btn) {
+            const index = btn.getAttribute('data-gallery-index');
+            const input = document.getElementById('input_gallery_' + index + '_file');
+            const btnCancel = document.getElementById('btn_cancel_gallery_' + index + '_file');
+            const labelName = document.getElementById('label_gallery_' + index + '_filename');
+            const previewImg = document.getElementById('preview_gallery_' + index);
+            const urlInput = document.getElementById('input_gallery_url_' + index);
+
+            if (input) input.value = '';
+            if (btnCancel) btnCancel.classList.add('hidden');
+            if (labelName) labelName.textContent = 'JPG, PNG, WEBP (Maks. 5 MB)';
+
+            if (urlInput && urlInput.value.trim().length > 5) {
+                previewImg.src = urlInput.value.trim();
+            } else {
+                previewImg.src = defaultGallerySrcs[index];
+            }
+        }
+
+        function previewGalleryUrl(input) {
+            const index = input.getAttribute('data-gallery-index');
+            const url = input.value;
+            const fileInput = document.getElementById('input_gallery_' + index + '_file');
+            if (fileInput && fileInput.files && fileInput.files.length > 0) return;
+
+            const previewImg = document.getElementById('preview_gallery_' + index);
+            if (previewImg) {
+                if (url && url.trim().length > 5) {
+                    previewImg.src = url.trim();
+                } else {
+                    previewImg.src = defaultGallerySrcs[index];
+                }
+            }
+        }
+
+        function updateGalleryCaptionPreview(input) {
+            const index = input.getAttribute('data-gallery-index');
+            const text = input.value;
+            const captionEl = document.getElementById('preview_gallery_caption_text_' + index);
+            if (captionEl) {
+                captionEl.textContent = text && text.trim().length > 0 ? text : 'Foto Galeri ' + index;
+            }
+        }
+
+        function toggleResetGallery(checkbox) {
+            const index = checkbox.getAttribute('data-gallery-index');
+            const previewImg = document.getElementById('preview_gallery_' + index);
+            if (checkbox.checked) {
+                if (previewImg) previewImg.src = "{{ asset('img') }}/" + index + ".jpeg";
+            } else {
+                if (previewImg) previewImg.src = defaultGallerySrcs[index];
             }
         }
     </script>
