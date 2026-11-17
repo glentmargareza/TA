@@ -47,9 +47,7 @@
                 <span class="px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
                     Total: {{ $bookings->total() }} Booking Terdaftar
                 </span>
-                <a href="{{ route('admin.dashboard') }}" class="px-3.5 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all">
-                    &larr; Dashboard
-                </a>
+                
             </div>
         </header>
 

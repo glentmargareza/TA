@@ -44,16 +44,12 @@
                 <p class="text-xs text-slate-500 mt-0.5">Atur jam operasional trip dan ketersediaan waktu pemesanan tiket wisatawan.</p>
             </div>
             <div class="flex items-center gap-2.5 flex-wrap">
-                <span class="px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs">
-                    {{ $slots->count() }} Sesi Terdaftar ({{ $slots->where('is_active', true)->count() }} Aktif)
-                </span>
+                
                 <button type="button" onclick="openCreateScheduleModal()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-700 via-[#183c21] to-[#102b17] hover:from-emerald-600 hover:to-[#183c21] text-white text-xs font-bold shadow-xs hover:shadow transition-all cursor-pointer active:scale-95">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                     <span>Tambah Sesi Baru</span>
                 </button>
-                <a href="{{ route('admin.dashboard') }}" class="px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all">
-                    &larr; Dashboard
-                </a>
+                
             </div>
         </header>
 
@@ -97,14 +93,9 @@
                         <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 block mt-1 tracking-tight font-display">
                             {{ $totalSlots }} <span class="text-xs font-normal text-slate-400">Sesi</span>
                         </span>
-                        <span class="inline-flex items-center gap-1.5 text-[11px] text-slate-600 font-medium mt-2">
-                            <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-                            Slot operasional pangkalan
-                        </span>
+                       
                     </div>
-                    <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0 shadow-2xs">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    </div>
+                    
                 </div>
 
                 <!-- 2. Sesi Buka (Aktif) -->
@@ -114,14 +105,9 @@
                         <span class="text-2xl sm:text-3xl font-extrabold text-emerald-800 block mt-1 tracking-tight font-display">
                             {{ $activeSlots }} <span class="text-xs font-normal text-slate-400">Sesi</span>
                         </span>
-                        <span class="inline-flex items-center gap-1.5 text-[11px] text-emerald-700 font-semibold mt-2">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                            Dapat dipilih wisatawan
-                        </span>
+                        
                     </div>
-                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 shadow-2xs border border-emerald-100">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    </div>
+                    
                 </div>
 
                 <!-- 3. Sesi Tutup / Libur -->
@@ -131,14 +117,9 @@
                         <span class="text-2xl sm:text-3xl font-extrabold text-amber-700 block mt-1 tracking-tight font-display">
                             {{ $inactiveSlots }} <span class="text-xs font-normal text-slate-400">Sesi</span>
                         </span>
-                        <span class="inline-flex items-center gap-1.5 text-[11px] text-amber-700 font-semibold mt-2">
-                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                            Ditutup sementara
-                        </span>
+                        
                     </div>
-                    <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center shrink-0 shadow-2xs border border-amber-100">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    </div>
+                    
                 </div>
             </div>
 
@@ -146,19 +127,13 @@
             <div class="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
                 <div class="p-5 sm:p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-slate-50 to-white">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold shadow-xs">
-                            <svg class="w-5 h-5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        </div>
+                        
                         <div>
                             <h3 class="text-base font-extrabold text-slate-900 font-display tracking-tight">Daftar Slot Waktu Keberangkatan Jeep</h3>
                             <p class="text-xs text-slate-500 mt-0.5">Wisatawan hanya dapat memilih sesi yang berstatus aktif saat melakukan pemesanan tiket.</p>
                         </div>
                     </div>
-                    <div>
-                        <span class="px-3 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
-                            Total: {{ $slots->count() }} Sesi Terjadwal
-                        </span>
-                    </div>
+                    
                 </div>
 
                 <div class="overflow-x-auto">
@@ -190,9 +165,7 @@
                                     <!-- Nama Sesi -->
                                     <td class="py-4 px-5">
                                         <div class="flex items-center gap-3">
-                                            <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-sm shrink-0 border border-emerald-100">
-                                                ⏱️
-                                            </div>
+                                           
                                             <div>
                                                 <span class="font-extrabold text-slate-900 text-sm font-display block leading-tight">{{ $slot->slot_label }}</span>
                                                 <span class="text-[11px] text-slate-400 font-mono block mt-0.5">ID Sesi: #{{ $slot->id }}</span>
@@ -203,7 +176,7 @@
                                     <!-- Rentang Waktu -->
                                     <td class="py-4 px-5 whitespace-nowrap">
                                         <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100/80 border border-slate-200/80 font-bold text-slate-800 text-xs">
-                                            <svg class="w-3.5 h-3.5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                            
                                             <span>{{ $startTimeFormatted }}</span>
                                             <span class="text-slate-400">&ndash;</span>
                                             <span>{{ $endTimeFormatted }} WIB</span>
@@ -213,7 +186,7 @@
                                     <!-- Total Reservasi -->
                                     <td class="py-4 px-5 text-center whitespace-nowrap">
                                         <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200/80 shadow-2xs">
-                                            <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
+                                            
                                             <span>{{ $slot->bookings_count ?? 0 }} Tiket</span>
                                         </span>
                                     </td>
@@ -228,7 +201,7 @@
                                               data-confirm-cancel="Batal">
                                             @csrf
                                             <button type="submit" title="Klik untuk mengubah status buka/tutup sesi" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer shadow-2xs {{ $slot->is_active ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100' : 'bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200' }}">
-                                                <span class="w-2 h-2 rounded-full {{ $slot->is_active ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400' }}"></span>
+                                                
                                                 <span>{{ $slot->is_active ? 'Buka (Aktif)' : 'Tutup (Libur)' }}</span>
                                             </button>
                                         </form>
@@ -246,7 +219,7 @@
                                                 data-max="{{ $slot->max_jeeps }}"
                                                 onclick="handleEditScheduleClick(this)">
                                                 <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                                <span>Edit</span>
+                                                
                                             </button>
                                             
                                             <!-- Tombol Hapus dengan Konfirmasi Modal Kustom -->

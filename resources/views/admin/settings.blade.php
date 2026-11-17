@@ -43,15 +43,7 @@
                 </h1>
                 <p class="text-xs text-slate-500 mt-0.5">Kelola informasi profil, data usaha Jeep Wukirsari, kebijakan trip, pembayaran, dan keamanan akun.</p>
             </div>
-            <div class="flex items-center gap-2.5 sm:gap-3 flex-wrap">
-                <span class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs flex items-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span>Admin Loket: {{ $user->name ?? 'Administrator' }}</span>
-                </span>
-                <a href="{{ route('admin.dashboard') }}" class="px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all">
-                    &larr; Dashboard
-                </a>
-            </div>
+           
         </header>
 
         <main class="p-4 sm:p-8 space-y-5 sm:space-y-6 flex-1 overflow-y-auto">
@@ -83,26 +75,6 @@
                 </ul>
             </div>
             @endif
-
-            <!-- Quick Navigation Shortcuts -->
-            <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs no-scrollbar">
-                <button type="button" onclick="toggleSection(1); document.getElementById('section-1').scrollIntoView({behavior:'smooth'});" class="px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold shadow-2xs whitespace-nowrap cursor-pointer transition">
-                    👤 Profil Admin
-                </button>
-                <button type="button" onclick="toggleSection(3); document.getElementById('section-3').scrollIntoView({behavior:'smooth'});" class="px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold shadow-2xs whitespace-nowrap cursor-pointer transition">
-                    🌄 Background Hero
-                </button>
-                <button type="button" onclick="toggleSection('gallery'); document.getElementById('section-gallery').scrollIntoView({behavior:'smooth'});" class="px-3.5 py-2 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-900 hover:bg-emerald-100 font-bold shadow-2xs whitespace-nowrap cursor-pointer flex items-center gap-1.5 transition">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span>📸 Galeri Beranda</span>
-                </button>
-                <button type="button" onclick="toggleSection(4); document.getElementById('section-4').scrollIntoView({behavior:'smooth'});" class="px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold shadow-2xs whitespace-nowrap cursor-pointer transition">
-                    ⚙️ Operasional
-                </button>
-                <button type="button" onclick="toggleSection(5); document.getElementById('section-5').scrollIntoView({behavior:'smooth'});" class="px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold shadow-2xs whitespace-nowrap cursor-pointer transition">
-                    💳 Pembayaran
-                </button>
-            </div>
 
             <!-- KONTENER UTAMA PENGATURAN (SESUAI GAMBAR) -->
             <div class="bg-white rounded-3xl border border-slate-200/80 shadow-xs divide-y divide-slate-100 overflow-hidden">

@@ -53,9 +53,7 @@
                     </button>
                 </form>
                 @endif
-                <a href="{{ route('admin.dashboard') }}" class="px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all">
-                    &larr; Dashboard
-                </a>
+               
             </div>
         </header>
 
