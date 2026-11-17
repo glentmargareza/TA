@@ -27,6 +27,16 @@ class HomeController extends Controller
             'hero_badge' => 'Offroad Lereng Merapi',
             'hero_headline' => 'Jelajahi Keindahan Alam Merapi Bersama Jeep Wukirsari',
             'hero_subtitle' => 'Rasakan petualangan seru menyusuri jalur lava, menikmati panorama Merapi, dan menciptakan cerita perjalanan yang tak terlupakan.',
+            'hero_background' => null,
+            'hero_location_0' => 'Susur Kali Gendol',
+            'hero_slide_1' => null,
+            'hero_location_1' => 'Spot Sunrise',
+            'hero_slide_2' => null,
+            'hero_location_2' => 'Jalur Offroad',
+            'hero_slide_3' => null,
+            'hero_location_3' => 'Museum Kampung Hilang',
+            'hero_slide_4' => null,
+            'hero_location_4' => 'Manuver Air',
         ];
 
         if (file_exists($settingsFile)) {

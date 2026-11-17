@@ -19,17 +19,27 @@ Route::get('/paket-wisata/{slug}', [HomeController::class, 'showPackage'])->name
 // 2. Alur Pemesanan (Booking)
 Route::get('/booking', [BookingController::class, 'create'])->name('booking.create');
 Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
+Route::get('/booking/resolve-link', [BookingController::class, 'resolvePlace'])->name('booking.resolve');
+Route::match(['get', 'post'], '/api/resolve-place', [BookingController::class, 'resolvePlace'])->middleware('throttle:60,1')->name('places.resolve_place');
+Route::match(['get', 'post'], '/api/resolve-map-link', [BookingController::class, 'resolvePlace'])->middleware('throttle:60,1')->name('places.resolve_link');
+Route::get('/api/places-autocomplete', [BookingController::class, 'placesSearch'])->middleware('throttle:60,1')->name('places.autocomplete');
+Route::get('/api/place-details', [BookingController::class, 'placesDetail'])->middleware('throttle:60,1')->name('places.details');
+Route::get('/api/places/search', [BookingController::class, 'placesSearch'])->middleware('throttle:60,1')->name('places.search');
+Route::get('/api/places/detail', [BookingController::class, 'placesDetail'])->middleware('throttle:60,1')->name('places.detail');
 Route::get('/booking/{code}/payment', [BookingController::class, 'payment'])->name('booking.payment');
 Route::post('/booking/{code}/confirm-transfer', [BookingController::class, 'confirmTransfer'])->name('booking.confirm_transfer');
 Route::post('/booking/{code}/confirm-cash', [BookingController::class, 'confirmCash'])->name('booking.confirm_cash');
 Route::post('/booking/{code}/charge', [PaymentController::class, 'charge'])->name('booking.charge');
 Route::get('/booking/{code}/status', [PaymentController::class, 'status'])->name('booking.status');
 Route::get('/booking/{code}/active-payment', [PaymentController::class, 'activePayment'])->name('booking.active_payment');
+Route::get('/booking/distance', [BookingController::class, 'distance'])->middleware('throttle:60,1')->name('booking.distance');
 Route::get('/booking/{code}/success', [BookingController::class, 'success'])->name('booking.success');
-Route::get('/lokasi-jemput', [BookingController::class, 'searchLocation'])->middleware('throttle:30,1')->name('booking.location');
+Route::get('/lokasi-jemput', [BookingController::class, 'placesSearch'])->middleware('throttle:60,1')->name('booking.location');
+Route::get('/lokasi-jemput/reverse', [BookingController::class, 'reverseLocation'])->middleware('throttle:60,1')->name('booking.reverse');
+Route::get('/lokasi-jemput/nearby', [BookingController::class, 'nearbyLodging'])->name('booking.nearby');
 
-// 3. Pelacakan Tiket Mandiri
-Route::get('/cek-tiket', [TicketController::class, 'check'])->name('ticket.check');
+// 3. Pelacakan Tiket Mandiri (Wajib Login)
+Route::get('/cek-tiket', [TicketController::class, 'check'])->middleware('auth')->name('ticket.check');
 
 // 4. Portal Admin & Loket Basecamp
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -41,12 +51,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('/bookings/{id}/settle', [AdminController::class, 'settleDp'])->name('settle');
     Route::post('/bookings/{id}/assign', [AdminController::class, 'assignDriver'])->name('assign');
     Route::post('/bookings/{id}/cancel', [AdminController::class, 'cancelBooking'])->name('cancel');
-    Route::post('/bookings/{id}/verify-payment', [AdminController::class, 'verifyPayment'])->name('verify_payment');
-    Route::post('/bookings/{id}/reject-payment', [AdminController::class, 'rejectPayment'])->name('reject_payment');
-    Route::post('/bookings/{id}/confirm-cash', [AdminController::class, 'confirmCashPayment'])->name('confirm_cash');
-    Route::get('/bookings/{id}/proof/{paymentId}', [AdminController::class, 'viewProof'])->name('proof');
+    Route::post('/jeep', [AdminController::class, 'storeJeep'])->name('jeeps.store');
     Route::post('/jeep/{id}/status', [AdminController::class, 'updateJeepStatus'])->name('jeeps.status');
+    Route::delete('/jeep/{id}', [AdminController::class, 'destroyJeep'])->name('jeeps.destroy');
     Route::post('/jeep/activate-all', [AdminController::class, 'activateAllJeeps'])->name('jeeps.activateAll');
+    Route::post('/driver/{id}/status', [AdminController::class, 'toggleDriverStatus'])->name('drivers.status');
+    Route::delete('/driver/{id}', [AdminController::class, 'destroyDriver'])->name('drivers.destroy');
     Route::post('/notifikasi/mark-all-read', [AdminController::class, 'markAllNotificationsRead'])->name('notifications.markAllRead');
 
     // Laporan Penjualan
@@ -74,6 +84,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/pengaturan', [AdminController::class, 'settings'])->name('settings');
     Route::put('/pengaturan/profile', [AdminController::class, 'updateAdminProfile'])->name('settings.profile');
     Route::post('/pengaturan/basecamp', [AdminController::class, 'updateBasecampSettings'])->name('settings.basecamp');
+
+    // Kandidat Hotel Baru
+    Route::get('/hotel-kandidat', [AdminController::class, 'hotelCandidates'])->name('hotel_candidates');
+    Route::post('/hotel-kandidat/{id}/approve', [AdminController::class, 'approveHotelCandidate'])->name('hotel_candidates.approve');
+    Route::post('/hotel-kandidat/{id}/delete', [AdminController::class, 'deleteHotelCandidate'])->name('hotel_candidates.delete');
 });
 
 // 5. Payment Gateway Webhook (Midtrans)

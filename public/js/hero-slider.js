@@ -7,14 +7,18 @@ let currentHeroSlide = 0;
 const totalHeroSlides = 5;
 let heroSlideTimer = null;
 
-// Daftar nama lokasi destinasi sesuai foto 01 - 05
-const heroSlideLocations = [
+// Daftar nama lokasi destinasi sesuai foto 01 - 05 (Mendukung custom dari Admin Settings)
+const defaultHeroSlideLocations = [
     'Susur Kali Gendol', // Slide 01 (img/beranda.jpeg)
     'Spot Sunrise',  // Slide 02 (img/sunrise_trip.jpeg)
     'Jalur Offroad',      // Slide 03 (img/long_trip.jpeg)
     'Museum Kampung Hilang', // Slide 04 (img/medium_trip_a.jpeg)
     'Manuver Air'      // Slide 05 (img/manuver_air.png)
 ];
+
+const heroSlideLocations = (typeof window !== 'undefined' && Array.isArray(window.customHeroLocations) && window.customHeroLocations.length === 5)
+    ? window.customHeroLocations
+    : defaultHeroSlideLocations;
 
 /**
  * Pindah slide foto berdasarkan nomor indeks (0 sampai 4)
@@ -41,9 +45,9 @@ function goToHeroSlide(index) {
     const indicators = document.querySelectorAll('#heroSlideButtons .hero-indicator');
     indicators.forEach(function (btn, i) {
         if (i === index) {
-            btn.className = 'hero-indicator font-bold text-white border-b-2 border-emerald-400 pb-0.5 transition-all cursor-pointer';
+            btn.className = 'hero-indicator font-bold text-white border-b-2 border-emerald-400 pb-0.5 text-xs sm:text-sm transition-all cursor-pointer';
         } else {
-            btn.className = 'hero-indicator text-white/60 hover:text-white border-b-2 border-transparent pb-0.5 transition-all cursor-pointer';
+            btn.className = 'hero-indicator text-white/50 hover:text-white border-b-2 border-transparent pb-0.5 text-xs sm:text-sm transition-all cursor-pointer';
         }
     });
 
@@ -55,6 +59,14 @@ function goToHeroSlide(index) {
 
     currentHeroSlide = index;
     restartHeroAutoSlide();
+}
+
+/**
+ * Bergeser ke slide sebelumnya
+ */
+function prevHeroSlide() {
+    const prevIndex = (currentHeroSlide - 1 + totalHeroSlides) % totalHeroSlides;
+    goToHeroSlide(prevIndex);
 }
 
 /**

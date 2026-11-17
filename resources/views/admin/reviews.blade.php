@@ -185,7 +185,12 @@
                                         </button>
 
                                         <!-- Tombol Hapus Admin -->
-                                        <form action="{{ route('reviews.destroy', $rev->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus ulasan ini?');" class="inline">
+                                        <form action="{{ route('reviews.destroy', $rev->id) }}" method="POST" class="inline"
+                                              data-confirm-title="Hapus Ulasan"
+                                              data-confirm-message="Apakah Anda yakin ingin menghapus ulasan dari <strong class='text-slate-800 font-bold'>{{ $rev->reviewer_name }}</strong> secara permanen?"
+                                              data-confirm-type="danger"
+                                              data-confirm-text="Ya, Hapus Ulasan"
+                                              data-confirm-cancel="Batal">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 text-[11px] font-bold border border-rose-200 transition-colors cursor-pointer" title="Hapus Ulasan Ini">
