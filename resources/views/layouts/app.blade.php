@@ -6,47 +6,66 @@
     <title>@yield('title', 'Jeep Wukirsari Adventure Tour | Wisata Offroad Lereng Merapi')</title>
     <meta name="description" content="Jelajahi keindahan dan petualangan lereng Gunung Merapi bersama Jeep Wukirsari Adventure Tour. Reservasi online cepat, aman, dan bergaransi pengalaman terbaik.">
     
-    <!-- Google Fonts: Inter (Teks Utama Sangat Jelas & Nyaman Dibaca) & Poppins (Judul Modern) -->
+    <!-- Google Fonts: Fraunces (Editorial Rugged Serif) & Plus Jakarta Sans (Clean Indonesian Geometric Sans) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;1,400;1,600&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..700&family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..700&display=swap" rel="stylesheet">
     
-    <!-- Tailwind CSS CDN dengan Konfigurasi Resmi Wukirsari -->
+    <!-- Tailwind CSS CDN dengan Konfigurasi Resmi Wukirsari Earth Tone -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
+                        basalt: {
+                            900: '#111412',
+                            800: '#171B18',
+                            700: '#232924',
+                            600: '#353D37',
+                            border: '#2B332C',
+                        },
+                        sand: {
+                            50: '#FAF9F5',
+                            100: '#F6F4EE',
+                            200: '#ECE8DF',
+                            300: '#E2DDD3',
+                            muted: '#5C635B',
+                        },
+                        terracotta: {
+                            DEFAULT: '#C25E38',
+                            hover: '#A54B28',
+                            active: '#833719',
+                            light: '#F9EDE6',
+                        },
                         wukirsari: {
-                            primary: '#1E3F20',
-                            dark: '#142B16',
-                            hover: '#265029',
-                            sage: '#E8EFE9',
-                            cream: '#F7F7F2',
-                            border: '#E2EAE3',
+                            primary: '#171B18',
+                            dark: '#111412',
+                            hover: '#232924',
+                            sage: '#ECE8DF',
+                            cream: '#F6F4EE',
+                            border: '#E2DDD3',
                         },
                         merapiText: {
-                            primary: '#19231A',
-                            secondary: '#374151',
-                            muted: '#6B7280',
+                            primary: '#171B18',
+                            secondary: '#3D443E',
+                            muted: '#5C635B',
                         },
                         accent: {
-                            emerald: '#10B981',
-                            light: '#34D399',
-                            dark: '#059669',
+                            emerald: '#2C6B3E',
+                            light: '#4E8C61',
+                            dark: '#1C4A28',
                         },
                         sunrise: {
-                            gold: '#E8EFE9',
-                            amber: '#1E3F20',
+                            gold: '#ECE8DF',
+                            amber: '#C25E38',
                         }
                     },
                     fontFamily: {
-                        sans: ['"Inter"', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-                        display: ['"Poppins"', '"Inter"', 'sans-serif'],
-                        heading: ['"Poppins"', '"Inter"', 'sans-serif'],
-                        accent: ['"Playfair Display"', 'serif'],
-                        script: ['"Caveat"', 'cursive'],
+                        sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+                        serif: ['"Fraunces"', 'Georgia', 'serif'],
+                        display: ['"Fraunces"', 'Georgia', 'serif'],
+                        heading: ['"Fraunces"', 'Georgia', 'serif'],
                     }
                 }
             }
@@ -60,9 +79,9 @@
             width: 100%;
         }
         body {
-            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: #F7F7F2;
-            color: #374151;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #F6F4EE;
+            color: #171B18;
             -webkit-tap-highlight-color: transparent;
             overflow-x: clip;
             max-width: 100vw;
@@ -74,9 +93,9 @@
             top: 0;
             z-index: 50;
         }
-        h1, h2, h3, h4, h5, h6 { 
-            font-family: 'Poppins', 'Inter', sans-serif; 
-            letter-spacing: -0.015em;
+        h1, h2, h3 { 
+            font-family: 'Fraunces', Georgia, serif; 
+            letter-spacing: -0.02em;
         }
     </style>
 </head>
@@ -86,50 +105,50 @@
     @hasSection('header')
         @yield('header')
     @else
-    <header id="mainNavbar" class="{{ request()->routeIs('home') ? 'sticky top-0 z-50 bg-[#0c2314]/95 backdrop-blur-md border-b border-emerald-900/60 text-white shadow-md transition-all' : 'sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-wukirsari-border text-merapiText-secondary shadow-xs transition-all' }}">
+    <header id="mainNavbar" class="{{ request()->routeIs('home') ? 'sticky top-0 z-50 bg-[#171B18] border-b border-[#2B332C] text-[#FAF9F5] transition-all' : 'sticky top-0 z-50 bg-[#FAF9F5] border-b border-[#E2DDD3] text-[#171B18] transition-all' }}">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16 sm:h-20 gap-3 xl:gap-6">
                 
                 <!-- Logo Brand (Logo Asli Jeep Wukirsari) -->
                 <a href="{{ route('home') }}" class="flex items-center gap-2.5 sm:gap-3 group shrink-0">
-                    <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl {{ request()->routeIs('home') ? 'bg-black/40 border border-white/20' : 'bg-wukirsari-primary/10 border border-wukirsari-border' }} p-1 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform shrink-0">
+                    <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-md {{ request()->routeIs('home') ? 'bg-[#111412] border border-[#2B332C]' : 'bg-[#E2DDD3]/50 border border-[#E2DDD3]' }} p-1.5 flex items-center justify-center shrink-0">
                         <img src="{{ asset('img/logo.png') }}" alt="Logo Jeep Wukirsari" class="w-full h-full object-contain">
                     </div>
                     <div>
-                        <span class="block font-display font-extrabold text-sm sm:text-base {{ request()->routeIs('home') ? 'text-white' : 'text-merapiText-primary' }} tracking-tight leading-none">
+                        <span class="block font-serif font-black text-sm sm:text-base {{ request()->routeIs('home') ? 'text-white' : 'text-[#171B18]' }} tracking-tight leading-none">
                             JEEP WUKIRSARI
                         </span>
-                        <span class="block text-[9px] sm:text-[10px] font-medium {{ request()->routeIs('home') ? 'text-emerald-300' : 'text-merapiText-secondary' }} uppercase tracking-widest mt-0.5">
-                            ADVENTURE TOUR
+                        <span class="block text-[9px] sm:text-[10px] font-semibold {{ request()->routeIs('home') ? 'text-[#C25E38]' : 'text-[#5C635B]' }} uppercase tracking-widest mt-0.5">
+                            PAGUYUBAN OFFROAD MERAPI
                         </span>
                     </div>
                 </a>
 
                 <!-- Desktop Nav Links (Matching Mockup) -->
                 <nav class="hidden lg:flex items-center gap-4 xl:gap-7 shrink-0">
-                    <a href="{{ route('home') }}" class="text-xs xl:text-sm py-1 relative whitespace-nowrap transition-colors {{ request()->routeIs('home') ? 'font-semibold text-white' : 'font-medium text-merapiText-secondary hover:text-wukirsari-primary' }}">
+                    <a href="{{ route('home') }}" class="text-xs xl:text-sm py-1 relative whitespace-nowrap transition-colors {{ request()->routeIs('home') ? 'font-bold text-white' : 'font-medium text-[#5C635B] hover:text-[#171B18]' }}">
                         Beranda
                         @if(request()->routeIs('home'))
-                        <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-white rounded-full"></span>
+                        <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C25E38]"></span>
                         @endif
                     </a>
-                    <a href="{{ route('home') }}#paket" class="text-xs xl:text-sm font-medium {{ request()->routeIs('home') ? 'text-white/85 hover:text-white' : 'text-merapiText-secondary hover:text-wukirsari-primary' }} transition-colors py-1 whitespace-nowrap">
-                        Paket Wisata
+                    <a href="{{ route('home') }}#rute-sewa" class="text-xs xl:text-sm font-medium {{ request()->routeIs('home') ? 'text-[#FAF9F5]/85 hover:text-white' : 'text-[#5C635B] hover:text-[#171B18]' }} transition-colors py-1 whitespace-nowrap">
+                        Rute & Tarif
                     </a>
-                    <a href="{{ route('home') }}#tentang" class="text-xs xl:text-sm font-medium {{ request()->routeIs('home') ? 'text-white/85 hover:text-white' : 'text-merapiText-secondary hover:text-wukirsari-primary' }} transition-colors py-1 whitespace-nowrap">
-                        Tentang Kami
+                    <a href="{{ route('home') }}#tentang-paguyuban" class="text-xs xl:text-sm font-medium {{ request()->routeIs('home') ? 'text-[#FAF9F5]/85 hover:text-white' : 'text-[#5C635B] hover:text-[#171B18]' }} transition-colors py-1 whitespace-nowrap">
+                        Tentang Paguyuban
                     </a>
-                    <a href="{{ route('home') }}#galeri" class="text-xs xl:text-sm font-medium {{ request()->routeIs('home') ? 'text-white/85 hover:text-white' : 'text-merapiText-secondary hover:text-wukirsari-primary' }} transition-colors py-1 whitespace-nowrap">
-                        Galeri
+                    <a href="{{ route('home') }}#panduan" class="text-xs xl:text-sm font-medium {{ request()->routeIs('home') ? 'text-[#FAF9F5]/85 hover:text-white' : 'text-[#5C635B] hover:text-[#171B18]' }} transition-colors py-1 whitespace-nowrap">
+                        Panduan Wisatawan
                     </a>
-                    <a href="{{ route('home') }}#kontak" class="text-xs xl:text-sm font-medium {{ request()->routeIs('home') ? 'text-white/85 hover:text-white' : 'text-merapiText-secondary hover:text-wukirsari-primary' }} transition-colors py-1 whitespace-nowrap">
-                        Kontak
+                    <a href="{{ route('home') }}#galeri" class="text-xs xl:text-sm font-medium {{ request()->routeIs('home') ? 'text-[#FAF9F5]/85 hover:text-white' : 'text-[#5C635B] hover:text-[#171B18]' }} transition-colors py-1 whitespace-nowrap">
+                        Dokumentasi
                     </a>
                     @if(!request()->routeIs('home'))
-                    <a href="{{ route('reviews.index') }}" class="text-xs xl:text-sm py-1 relative whitespace-nowrap transition-colors {{ request()->routeIs('reviews.*') ? 'font-semibold text-wukirsari-primary' : 'font-medium text-merapiText-secondary hover:text-wukirsari-primary' }}">
+                    <a href="{{ route('reviews.index') }}" class="text-xs xl:text-sm py-1 relative whitespace-nowrap transition-colors {{ request()->routeIs('reviews.*') ? 'font-bold text-[#C25E38]' : 'font-medium text-[#5C635B] hover:text-[#171B18]' }}">
                         Ulasan
                         @if(request()->routeIs('reviews.*'))
-                        <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-wukirsari-primary rounded-full"></span>
+                        <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C25E38]"></span>
                         @endif
                     </a>
                     @endif
@@ -137,10 +156,9 @@
 
                 <!-- Right Action -->
                 <div class="hidden lg:flex items-center gap-2 xl:gap-3 shrink-0">
-                    <a href="{{ route('home') }}#paket" class="p-2 rounded-full {{ request()->routeIs('home') ? 'hover:bg-white/15 text-white/85 hover:text-white' : 'hover:bg-wukirsari-sage text-merapiText-secondary hover:text-wukirsari-primary' }} transition-colors shrink-0" title="Cari Paket Wisata">
-                        <svg class="w-4 h-4 xl:w-5 xl:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
+                    <a href="https://wa.me/6281228677843" target="_blank" class="px-3 py-2 rounded-md {{ request()->routeIs('home') ? 'border border-[#2B332C] text-[#FAF9F5]/90 hover:bg-[#232924]' : 'border border-[#E2DDD3] text-[#171B18] hover:bg-[#ECE8DF]' }} text-xs font-semibold transition-all inline-flex items-center gap-1.5" title="WhatsApp Basecamp">
+                        <svg class="w-3.5 h-3.5 text-[#2C6B3E]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                        <span>WA Pos Siaga</span>
                     </a>
 
                     <!-- MENU PROFIL / LOGIN (USER & ADMIN - Sesuai Image 2) -->
@@ -446,50 +464,7 @@
     @hasSection('footer')
         @yield('footer')
     @else
-    <footer id="kontak" class="bg-gradient-to-b from-[#091F12] via-[#0D2918] to-[#06140B] text-white/80 pt-14 sm:pt-16 pb-24 md:pb-12 border-t border-emerald-900/40 relative overflow-hidden select-none mt-auto w-full max-w-full">
-        
-        <!-- Ambient Background Lights & Decorative SVGs wrapped in overflow-hidden container -->
-        <div class="absolute inset-0 overflow-hidden pointer-events-none z-0">
-            <!-- Ambient Glowing Lights -->
-            <div class="absolute -top-24 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl"></div>
-            <div class="absolute -bottom-24 right-1/4 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl"></div>
-
-            <!-- Topographic Contour Lines - Left -->
-            <svg class="absolute bottom-0 left-0 w-80 sm:w-96 lg:w-[540px] h-auto opacity-20 text-emerald-400" viewBox="0 0 500 280" fill="none" stroke="currentColor" stroke-width="1.2">
-                <path d="M-60,280 C40,240 100,270 200,200 C300,130 380,180 500,80" />
-                <path d="M-60,255 C50,220 110,250 210,180 C310,110 390,160 500,60" />
-                <path d="M-60,230 C60,200 120,230 220,160 C320,90 400,140 500,40" />
-                <path d="M-60,205 C70,180 130,210 230,140 C330,70 410,120 500,20" />
-                <path d="M-60,180 C80,160 140,190 240,120 C340,50 420,100 500,0" />
-                <path d="M-60,155 C90,140 150,170 250,100 C350,30 430,80 500,-20" />
-            </svg>
-
-            <!-- Topographic Contour Lines - Right -->
-            <svg class="absolute bottom-0 right-0 w-80 sm:w-96 lg:w-[540px] h-auto opacity-20 text-emerald-400 transform scale-x-[-1]" viewBox="0 0 500 280" fill="none" stroke="currentColor" stroke-width="1.2">
-                <path d="M-60,280 C40,240 100,270 200,200 C300,130 380,180 500,80" />
-                <path d="M-60,255 C50,220 110,250 210,180 C310,110 390,160 500,60" />
-                <path d="M-60,230 C60,200 120,230 220,160 C320,90 400,140 500,40" />
-                <path d="M-60,205 C70,180 130,210 230,140 C330,70 410,120 500,20" />
-                <path d="M-60,180 C80,160 140,190 240,120 C340,50 420,100 500,0" />
-            </svg>
-
-            <!-- Botanical Corner Fronds -->
-            <div class="hidden lg:block absolute bottom-0 left-0 opacity-25 text-emerald-400/80">
-                <svg class="w-40 h-auto" viewBox="-5 0 175 125" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M -5,108 C 28,105 65,86 102,56 C 126,36 146,20 162,7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-                    <path d="M 26,98 C 14,86 8,74 15,64 C 25,66 31,82 34,92 Z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1.1"/>
-                    <path d="M 36,92 C 48,80 60,76 65,84 C 59,93 47,95 40,94 Z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1.1"/>
-                    <path d="M 46,80 C 32,67 28,53 36,46 C 44,50 49,64 52,75 Z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1.1"/>
-                    <path d="M 56,74 C 70,61 82,58 86,66 C 78,74 68,76 60,75 Z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1.1"/>
-                    <path d="M 68,61 C 56,48 54,35 62,30 C 69,34 71,47 74,57 Z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1.1"/>
-                    <path d="M 76,56 C 90,44 100,41 104,49 C 96,56 86,57 79,57 Z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1.1"/>
-                    <path d="M 88,45 C 78,34 78,23 85,18 C 91,23 92,32 93,41 Z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1"/>
-                    <path d="M 96,40 C 108,30 117,28 120,35 C 113,41 105,42 98,41 Z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1"/>
-                    <path d="M 130,18 C 141,9 148,7 152,9 C 148,15 142,20 135,20 Z" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="1"/>
-                </svg>
-            </div>
-        </div>
-
+    <footer id="kontak" class="bg-[#171B18] text-[#ECE8DF] pt-14 sm:pt-16 pb-24 md:pb-12 border-t border-[#2B332C] relative select-none mt-auto w-full max-w-full">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
 
             <!-- MAIN 3-COLUMN FOOTER CONTENT -->
