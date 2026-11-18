@@ -19,9 +19,6 @@
  
         <!-- Judul Halaman -->
         <div class="space-y-1.5">
-            <span class="text-xs font-bold uppercase tracking-wider text-wukirsari-primary font-display block">
-                FORMULIR RESERVASI ONLINE
-            </span>
             <h1 class="text-2xl sm:text-4xl font-extrabold text-merapiText-primary font-display tracking-tight">
                 Pemesanan Jeep Wukirsari
             </h1>
@@ -111,47 +108,34 @@
 
                         <!-- Legenda Warna Kalender -->
                         <div class="pt-2 border-t border-slate-200/60 flex flex-wrap items-center justify-between text-[10px] sm:text-[11px] text-merapiText-secondary gap-2">
-                            <div class="flex items-center gap-3 flex-wrap">
-                                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Tersedia</span>
-                                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-500"></span> Ada Bookingan</span>
-                                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-slate-300"></span> Lewat</span>
-                            </div>
+                            <span></span>
                             <span class="text-[10px] text-slate-400">Klik tanggal pada kalender untuk memilih trip</span>
                         </div>
                     </div>
  
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div class="space-y-1.5">
-                            <label for="date" class="block text-xs font-bold text-merapiText-primary">Tanggal Kunjungan (Input Kalender) *</label>
-                            <input id="date" type="date" value="{{ $defaultDate ?? '' }}" class="w-full px-4 py-3 rounded-2xl border border-wukirsari-border bg-white text-merapiText-primary text-sm font-semibold focus:outline-none focus:border-wukirsari-primary focus:ring-2 focus:ring-wukirsari-primary/15 transition-all">
-                        </div>
-                        <div class="space-y-1.5">
-                            <label for="session" class="block text-xs font-bold text-merapiText-primary">Sesi Waktu Keberangkatan *</label>
-                            <select id="session" class="w-full px-4 py-3 rounded-2xl border border-wukirsari-border bg-white text-merapiText-primary text-sm font-semibold focus:outline-none focus:border-wukirsari-primary focus:ring-2 focus:ring-wukirsari-primary/15 transition-all"></select>
-                            <span class="block text-[11px] font-medium text-amber-600" id="sessHint"></span>
-                        </div>
-                    </div>
+                    <!-- Penyimpan tanggal (disembunyikan; tanggal dipilih lewat kalender visual) -->
+                    <input id="date" type="hidden" value="{{ $defaultDate ?? '' }}">
 
                     <!-- Panel Deteksi Jadwal & Reservasi Tanggal Ini -->
                     <div id="dateDetectionBox" class="p-4 sm:p-5 rounded-2xl bg-slate-50/70 border border-wukirsari-border space-y-3.5 transition-all">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-slate-200/70">
                             <div class="flex items-center gap-2.5">
-                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" id="detStatusDot"></span>
-                                <div>
-                                    <h4 class="text-xs sm:text-sm font-bold text-merapiText-primary font-display" id="detDateTitle">Deteksi Jadwal Tanggal: ...</h4>
-                                    <p class="text-[11px] text-merapiText-secondary" id="detDateSub">Memeriksa ketersediaan armada...</p>
-                                </div>
-                            </div>
+                              <div>
+                                  <h4 class="text-xs sm:text-sm font-bold text-merapiText-primary font-display" id="detDateTitle">Deteksi Jadwal Tanggal: ...</h4>
+                                  <p class="text-[11px] text-merapiText-secondary" id="detDateSub">Memeriksa ketersediaan armada...</p>
+                              </div>
+                          </div>
                             <span id="detStatusBadge" class="self-start sm:self-auto text-[11px] font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
                                 Memuat...
                             </span>
                         </div>
 
-                        <!-- Kartu Interaktif Seluruh Jadwal Sesi -->
+                        <!-- Kartu Interaktif Seluruh Jadwal Sesi (menggantikan dropdown) -->
                         <div>
                             <span class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-2">Pilih Sesi Keberangkatan (Klik Sesi yang Tersedia):</span>
+                            <span class="block text-[11px] font-medium text-amber-600 mb-2" id="sessHint"></span>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5" id="detSessionsCards">
-                                <!-- Diisi dinamis oleh JavaScript -->
+                                <div class="col-span-full text-xs text-slate-400">Memuat jadwal sesi...</div>
                             </div>
                         </div>
                     </div>
@@ -276,11 +260,7 @@
  
                     <!-- Box Tagihan Sekarang -->
                     <div class="bg-wukirsari-dark text-white rounded-2xl p-4 flex items-center justify-between shadow-xs">
-                        <div>
-                            <span class="block text-[11px] text-wukirsari-sage font-medium" id="dueLbl">Wajib Dibayar Sekarang</span>
-                            <strong class="text-xl sm:text-2xl font-extrabold font-display" id="vDue">Rp 0</strong>
-                        </div>
-                        <span class="text-xs text-wukirsari-sage font-semibold" id="dueSub">Lunas</span>
+                        <strong class="text-xl sm:text-2xl font-extrabold font-display" id="vDue">Rp 0</strong>
                     </div>
  
                     <!-- Tombol Lanjutkan -->
@@ -288,8 +268,7 @@
                         <span>Konfirmasi & Terbitkan E-Tiket</span>
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                     </button>
- 
-    
+
                 </div>
             </div>
  
@@ -344,8 +323,7 @@ body{overflow-x:hidden}
   #paxMinus,#paxPlus,#minus,#plus{width:44px!important;height:44px!important;font-size:1.25rem!important}
   .po,.pkg{min-height:56px}
   #submit{min-height:52px}
-  input[type=date]{min-height:48px;-webkit-appearance:none;appearance:none}
-  #name,#wa,#session,#date{min-height:48px}
+  #name,#wa{min-height:48px}
   h1{line-height:1.2}
 }
 @media (max-width:380px){
@@ -418,7 +396,6 @@ if (pkgsEl && PACKAGES.length) {
 /* ====== 2. TANGGAL & SESI ====== */
 const dateEl = $('#date');
 const iso = d => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
-dateEl.min = iso(new Date());
 function getSmartDefaultDate(pkg){
   const now = new Date();
   const nowMin = now.getHours() * 60 + now.getMinutes();
@@ -521,7 +498,7 @@ function renderInteractiveCalendar() {
 
     if (isPast) {
       btnClass += 'border-transparent bg-slate-100/60 text-slate-300 cursor-not-allowed';
-      indicatorHtml = '<span class="text-[8px] text-slate-300">Lewat</span>';
+      indicatorHtml = '';
     } else if (isSelected) {
       btnClass += 'border-[#0c2314] bg-[#0c2314] text-white shadow-sm ring-2 ring-emerald-500 cursor-pointer';
       if (hasBooking) {
@@ -531,10 +508,15 @@ function renderInteractiveCalendar() {
       }
     } else if (hasBooking) {
       btnClass += 'border-amber-300 bg-amber-50/80 hover:bg-amber-100/80 text-amber-950 cursor-pointer';
-      indicatorHtml = `<span class="inline-flex items-center gap-0.5 text-[8px] font-bold text-amber-700 truncate"><span class="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>${bookingInfo.total_jeeps} Jp</span>`;
+      indicatorHtml = `<span class="text-[8px] font-bold text-amber-700 truncate">${bookingInfo.total_jeeps} Jp</span>`;
     } else {
       btnClass += 'border-slate-200/90 bg-white hover:border-emerald-500 hover:bg-emerald-50/40 text-slate-800 cursor-pointer';
-      indicatorHtml = '<span class="inline-flex items-center gap-0.5 text-[8px] text-emerald-600 truncate"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>Ada</span>';
+      indicatorHtml = '';
+    }
+
+    // Tanggal tanpa keterangan: angka di tengah kotak
+    if (!indicatorHtml) {
+      btnClass = btnClass.replace('justify-between', 'justify-center');
     }
 
     if (isToday && !isSelected) {
@@ -613,20 +595,20 @@ function renderDateDetectionPanel(data) {
     if (subEl) subEl.textContent = `Terdeteksi ${totalBooked} armada Jeep telah dipesan pada tanggal ini.`;
     if (badgeEl) {
       badgeEl.className = 'self-start sm:self-auto text-[11px] font-bold px-3 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-300';
-      badgeEl.textContent = `🟡 Ada Bookingan (${totalBooked} Jeep Terisi)`;
+      badgeEl.textContent = `Ada Bookingan (${totalBooked} Jeep Terisi)`;
     }
   } else {
     if (dotEl) dotEl.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0';
     if (subEl) subEl.textContent = 'Belum ada bookingan pada tanggal ini. Seluruh sesi keberangkatan tersedia penuh.';
     if (badgeEl) {
       badgeEl.className = 'self-start sm:self-auto text-[11px] font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300';
-      badgeEl.textContent = '🟢 Bebas Bookingan (100% Tersedia)';
+      badgeEl.textContent = 'Bebas Bookingan (100% Tersedia)';
     }
   }
 
   const slots = data?.slots || SESSIONS || [];
   if (!slots.length) {
-    cardsEl.innerHTML = '<div class="col-span-2 text-xs text-slate-400">Tidak ada jadwal sesi tersedia.</div>';
+    cardsEl.innerHTML = '<div class="col-span-full text-xs text-slate-400">Tidak ada jadwal sesi tersedia.</div>';
     return;
   }
 
@@ -641,60 +623,68 @@ function renderDateDetectionPanel(data) {
     const isDisabled = passed || isFull || isMismatched;
 
     let cardBorder = 'border-slate-200 bg-white hover:border-emerald-400';
-    let statusTag = '';
 
     if (passed) {
       cardBorder = 'border-slate-200 bg-slate-50/70 opacity-60 cursor-not-allowed';
-      statusTag = '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600">Jam Lewat</span>';
     } else if (isMismatched) {
       cardBorder = 'border-slate-200 bg-slate-50/50 opacity-50 cursor-not-allowed';
-      statusTag = `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">${isSunrisePkg ? 'Khusus Reguler' : 'Khusus Sunrise'}</span>`;
     } else if (isFull) {
       cardBorder = 'border-rose-200 bg-rose-50/50 opacity-70 cursor-not-allowed';
-      statusTag = '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">Penuh (0 Sisa)</span>';
     } else if (isSelected) {
-      cardBorder = 'border-emerald-600 bg-emerald-50/90 shadow-xs ring-2 ring-emerald-600/20';
-      statusTag = '<span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-600 text-white">✓ Sesi Terpilih</span>';
+      cardBorder = 'border-emerald-600 bg-emerald-50/90 shadow-xs ring-2 ring-emerald-600/20 cursor-pointer';
     } else if (booked > 0) {
       cardBorder = 'border-amber-300 bg-amber-50/40 hover:bg-amber-50 text-slate-800 cursor-pointer';
-      statusTag = `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">Ada Booking (${booked} Jeep)</span>`;
     } else {
       cardBorder = 'border-slate-200 bg-white hover:border-emerald-500 hover:bg-emerald-50/30 text-slate-800 cursor-pointer';
-      statusTag = `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Tersedia (${remaining} Jeep)</span>`;
     }
 
-    let quotaDetail = '';
-    if (passed) {
-      quotaDetail = '<span class="text-[11px] text-slate-400">Jadwal sesi ini sudah terlewati hari ini.</span>';
-    } else if (isMismatched) {
-      quotaDetail = `<span class="text-[11px] text-slate-400">${isSunrisePkg ? 'Pilih Paket Reguler untuk sesi ini.' : 'Pilih Paket Sunrise untuk sesi 04:30.'}</span>`;
-    } else if (booked > 0) {
-      quotaDetail = `<span class="text-[11px] text-amber-900 font-medium">Terpesan: <strong>${booked} Jeep</strong> · Sisa Kuota: <strong>${remaining} Jeep</strong></span>`;
-    } else {
-      quotaDetail = `<span class="text-[11px] text-emerald-800 font-medium">Belum ada pesanan · Kuota: <strong>${remaining} Jeep Tersedia</strong></span>`;
-    }
+    // Tampilkan sisa jeep untuk SEMUA jam, tanpa perlu memilih sesinya dulu
+const sisa = Math.max(remaining, 0);
+const maxJ = typeof s.max_jeeps === 'number' ? s.max_jeeps : (sisa + booked);
+
+let quotaDetail = '';
+if (passed) {
+  quotaDetail = `
+    <div class="flex items-center justify-between gap-2 text-[11px]">
+      <span class="text-slate-500 font-medium">Sudah lewat</span>
+      <span class="text-slate-400">${booked} Jeep dipesan</span>
+    </div>`;
+} else if (sisa <= 0) {
+  quotaDetail = `
+    <div class="flex items-center justify-between gap-2 text-[11px]">
+      <span class="text-rose-600 font-bold">Penuh</span>
+      <span class="text-rose-500">${booked} Jeep dipesan</span>
+    </div>`;
+} else {
+  const warna = booked > 0 ? 'text-amber-700' : 'text-emerald-700';
+  quotaDetail = `
+    <div class="flex items-center justify-between gap-2 text-[11px]">
+      <span class="text-slate-600 font-medium">Sisa: <strong class="${warna}">${sisa} dari ${maxJ} Jeep</strong></span>
+      ${booked > 0 ? `<span class="text-amber-600">${booked} dipesan</span>` : ''}
+    </div>
+    ${isFull ? `<div class="text-[10px] text-rose-600 font-semibold">Kurang untuk ${state.qty} jeep yang dipilih</div>` : ''}`;
+}
+
+if (isMismatched && !passed) {
+  quotaDetail += `<div class="text-[10px] text-slate-400">${isSunrisePkg ? 'Bukan untuk paket Sunrise' : 'Khusus paket Sunrise'}</div>`;
+}
 
     return `
       <div class="p-3 sm:p-3.5 rounded-xl border ${cardBorder} transition-all flex flex-col justify-between gap-2" data-slot-id="${s.id}" ${isDisabled ? 'data-disabled="1"' : ''}>
         <div class="flex items-start justify-between gap-2">
           <div class="flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full ${isSelected ? 'bg-emerald-600' : (booked > 0 ? 'bg-amber-500' : (isDisabled ? 'bg-slate-300' : 'bg-emerald-500'))}"></span>
             <span class="font-bold text-xs sm:text-sm text-merapiText-primary font-display">${esc(s.label)}</span>
           </div>
-          ${statusTag}
         </div>
         <div>${quotaDetail}</div>
       </div>
     `;
   }).join('');
 
+  // Kartu sesi adalah satu-satunya pemilih sesi (dropdown sudah dihapus)
   cardsEl.querySelectorAll('[data-slot-id]:not([data-disabled="1"])').forEach(card => {
     card.onclick = () => {
-      const slotId = card.getAttribute('data-slot-id');
-      state.session = slotId;
-      const sel = $('#session');
-      if (sel) sel.value = slotId;
-      renderSessionOptions();
+      state.session = card.getAttribute('data-slot-id');
       renderDateDetectionPanel(latestAvailabilityData || data);
       update();
       setStep(3);
@@ -740,71 +730,60 @@ function fetchSlotAvailability(date, jeeps, updateDateSelection = true){
   }, 100);
 }
 
+// Menentukan sesi terpilih (state.session) & hint, tanpa elemen <select>
 function renderSessionOptions(){
-  const sel = $('#session');
-  if(!sel) return;
   const pkg = curPkg();
   const isSunrisePkg = pkg && (pkg.is_sunrise || /sunrise/i.test(pkg.slug || '') || /sunrise/i.test(pkg.name || ''));
+  const hint = $('#sessHint');
 
   const isToday = dateEl.value === iso(new Date());
   const now = new Date();
   const nowMin = now.getHours() * 60 + now.getMinutes();
-  const prev = state.session;
 
   // Filter aturan sesi keberangkatan:
-  // - Paket Sunrise: HANYA sesi 04:30 WIB yang tampil / dapat dipilih. Sesi lain otomatis tidak bisa.
-  // - Paket Reguler: Sesi 04:30 WIB dilarang/disembunyikan. Wisatawan bebas memilih sesi reguler (08:00, 10:30, 13:30 WIB).
+  // - Paket Sunrise: HANYA sesi 04:30 WIB yang dapat dipilih.
+  // - Paket Reguler: Sesi 04:30 WIB dilarang. Bebas memilih sesi reguler (08:00, 10:30, 13:30 WIB).
   const filteredSlots = SESSIONS.filter(s => {
     const isSunSlot = s.is_sunrise || s.time === '04:30' || /sunrise/i.test(s.label);
     return isSunrisePkg ? isSunSlot : !isSunSlot;
   });
 
   if(filteredSlots.length === 0){
-    sel.innerHTML = '<option value="" disabled selected>Tidak ada sesi yang tersedia</option>';
     state.session = null;
-    $('#sessHint').textContent = 'Tidak ada sesi yang tersedia untuk paket ini.';
+    if(hint) hint.textContent = 'Tidak ada sesi yang tersedia untuk paket ini.';
     return;
   }
 
-  sel.innerHTML = filteredSlots.map(s => {
+  const okSlots = filteredSlots.filter(s => {
     let passed = s.passed ?? false;
     if(isToday && s.time){
       const [h, m] = s.time.split(':').map(Number);
       if((h * 60 + m) <= nowMin) passed = true;
     }
     const isFull = (typeof s.remaining === 'number' && s.remaining < state.qty);
-    const disabled = passed || isFull;
+    return !passed && !isFull;
+  });
 
-    let badge = '';
-    if(passed){
-      badge = ' — (Sudah Lewat)';
-    } else if(isFull){
-      badge = ' — (Kuota Penuh)';
-    } else if(typeof s.remaining === 'number'){
-      badge = ` (Sisa ${s.remaining} Jeep)`;
-    }
+  // Pertahankan pilihan lama jika masih valid, kalau tidak pilih sesi pertama yang tersedia
+  const keep = okSlots.find(s => String(s.id) === String(state.session));
+  state.session = keep ? keep.id : (okSlots[0] ? okSlots[0].id : null);
 
-    return `<option value="${s.id}" ${disabled ? 'disabled' : ''}>${esc(s.label)}${badge}</option>`;
-  }).join('');
-
-  const firstOk = [...sel.options].find(o => !o.disabled && o.value);
-  const keep = [...sel.options].find(o => o.value === String(prev) && !o.disabled);
-  sel.value = keep ? keep.value : (firstOk ? firstOk.value : '');
-  state.session = sel.value || null;
-
-  if(!firstOk){
-    if(isSunrisePkg){
-      $('#sessHint').textContent = 'Sesi Sunrise (04:30 WIB) untuk tanggal ini tidak dapat dipilih (sudah lewat atau kuota habis). Silakan pilih tanggal berikutnya.';
-    } else {
-      $('#sessHint').textContent = 'Semua sesi jadwal reguler untuk tanggal ini sudah lewat atau penuh. Silakan pilih tanggal berikutnya.';
-    }
+  if(!hint) return;
+  if(!okSlots.length){
+    hint.textContent = isSunrisePkg
+      ? 'Sesi Sunrise (04:30 WIB) untuk tanggal ini tidak dapat dipilih (sudah lewat atau kuota habis). Silakan pilih tanggal berikutnya.'
+      : 'Semua sesi jadwal reguler untuk tanggal ini sudah lewat atau penuh. Silakan pilih tanggal berikutnya.';
   } else {
-    $('#sessHint').textContent = isSunrisePkg ? '✓ Paket Sunrise Tour khusus beroperasi pada sesi Sunrise (04:30 WIB).' : '';
+    hint.textContent = isSunrisePkg ? '✓ Paket Sunrise Tour khusus beroperasi pada sesi Sunrise (04:30 WIB).' : '';
   }
 }
 
 function renderSessions(){
   renderSessionOptions();
+  // Segarkan kartu langsung bila data tanggal yang sama sudah ada (tanpa menunggu fetch)
+  if (latestAvailabilityData && latestAvailabilityData.date === dateEl.value) {
+    renderDateDetectionPanel(latestAvailabilityData);
+  }
   if(dateEl.value){
     fetchSlotAvailability(dateEl.value, state.qty);
   }
@@ -818,14 +797,6 @@ dateEl.addEventListener('change', () => {
   renderSessions();
   update();
   setStep(2);
-});
-$('#session').addEventListener('change', e => {
-  state.session = e.target.value;
-  if (latestAvailabilityData) {
-    renderDateDetectionPanel(latestAvailabilityData);
-  }
-  update();
-  setStep(3);
 });
  
 /* ====== 3. KAPASITAS & ARMADA ====== */
@@ -1036,11 +1007,11 @@ $('#submit').onclick = () => {
  
   if(!dateEl.value){
     toast('Pilih tanggal kunjungan trip terlebih dahulu.');
-    return dateEl.focus();
+    return $('#interactiveCalendar').scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
   if(!state.session){
     toast('Pilih sesi waktu keberangkatan yang tersedia.');
-    return $('#session').focus();
+    return $('#detSessionsCards').scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
   if(name.value.trim().length < 3){
     name.classList.add('err');
