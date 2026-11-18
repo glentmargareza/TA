@@ -58,10 +58,7 @@
             <span class="block font-black text-sm text-white tracking-widest leading-tight font-display group-hover:text-emerald-200 transition-colors">
                 JEEP WUKIRSARI
             </span>
-            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 uppercase tracking-widest mt-1">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                ADMIN LOKET
-            </span>
+            
         </a>
 
         <!-- Menu Navigasi Admin -->

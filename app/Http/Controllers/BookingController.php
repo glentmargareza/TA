@@ -67,13 +67,20 @@ class BookingController extends Controller
         // Otomatis tentukan tanggal kunjungan awal yang cerdas & tersedia
         $requestedDate = old('trip_date', $request->query('date', $request->query('trip_date')));
 
-        // Tanggal yang diminta tidak boleh di masa lalu
         if (!$requestedDate || $requestedDate < $today) {
-            $foundDate = null;   // tanggal pertama yang masih punya kuota
-            $fallback  = null;   // tanggal pertama yang masih punya sesi (kuota belum dicek)
-            $testDate  = $now->copy();
+            $startDate = $now->copy();
+            // Jika paket sunrise dan waktu saat ini >= 04:30 WIB, hari ini sudah tidak bisa -> mulai besok
+            if ($isSunriseSelected && $now->format('H:i') >= '04:30') {
+                $startDate = $startDate->addDay();
+            } else if (!$isSunriseSelected && $now->format('H:i') >= '13:30') {
+                // Jika paket reguler dan waktu saat ini >= 13:30 WIB, semua sesi hari ini sudah selesai -> mulai besok
+                $startDate = $startDate->addDay();
+            }
 
-            // Tanpa jam hardcode (04:30 / 13:30): cukup lihat sesi yang benar-benar belum lewat
+            // Cari tanggal yang masih memiliki sisa kuota armada (hingga 30 hari ke depan)
+            $foundDate = null;
+            $fallback = null;
+            $testDate = $startDate->copy();
             for ($i = 0; $i < 30; $i++) {
                 $dateStr = $testDate->format('Y-m-d');
                 $isToday = $dateStr === $today;
@@ -104,7 +111,7 @@ class BookingController extends Controller
                 $testDate->addDay();
             }
 
-            $defaultDate = $foundDate ?? $fallback ?? $today;
+            $defaultDate = $foundDate ?? $fallback ?? $startDate->format('Y-m-d');
         } else {
             $defaultDate = $requestedDate;
         }
@@ -164,26 +171,52 @@ class BookingController extends Controller
             $cleanLabel = preg_match('/\(\d{2}:\d{2}\s*WIB\)/i', $label) ? $label : ($label . ' (' . $time . ' WIB)');
             $isSunrise = str_contains(strtolower($s->slot_label), 'sunrise') || $time === '04:30';
 
-            $remaining = $s->remainingJeepsFor($date);
+            $booked = $s->bookedJeepsCount($date);
+            $remaining = max(0, $s->max_jeeps - $booked);
             $passed = $isPast || ($isToday && $time <= $nowTime);
             $available = !$passed && ($remaining >= $jeeps);
 
             return [
-                'id'         => $s->id,
-                'label'      => $cleanLabel,
-                'time'       => $time,
-                'is_sunrise' => $isSunrise,
-                'remaining'  => $remaining,
-                'max_jeeps'  => $s->max_jeeps,
-                'passed'     => $passed,
-                'available'  => $available,
+                'id'           => $s->id,
+                'label'        => $cleanLabel,
+                'time'         => $time,
+                'is_sunrise'   => $isSunrise,
+                'booked_jeeps' => $booked,
+                'remaining'    => $remaining,
+                'max_jeeps'    => $s->max_jeeps,
+                'passed'       => $passed,
+                'available'    => $available,
             ];
         });
 
+        $totalBookedJeeps = (int) $data->sum('booked_jeeps');
+        $hasBookings = $totalBookedJeeps > 0;
+
+        // Ambil overview booking untuk bulan terkait agar kalender interaktif dapat mendeteksi tanggal bookingan
+        $month = substr($date, 0, 7);
+        $monthBookings = Booking::where('trip_date', 'like', $month . '%')
+            ->whereIn('booking_status', ['PENDING', 'DP_PAID', 'FULL_PAID'])
+            ->where(function ($q) {
+                $q->whereNull('lock_expires_at')->orWhere('lock_expires_at', '>', now());
+            })
+            ->selectRaw('trip_date, SUM(jeep_quantity) as total_jeeps, COUNT(*) as total_orders')
+            ->groupBy('trip_date')
+            ->get()
+            ->mapWithKeys(function ($item) {
+                $d = is_string($item->trip_date) ? substr($item->trip_date, 0, 10) : $item->trip_date->format('Y-m-d');
+                return [$d => [
+                    'total_jeeps'  => (int) $item->total_jeeps,
+                    'total_orders' => (int) $item->total_orders,
+                ]];
+            });
+
         return response()->json([
-            'date'     => $date,
-            'is_today' => $isToday,
-            'slots'    => $data,
+            'date'               => $date,
+            'is_today'           => $isToday,
+            'has_bookings'       => $hasBookings,
+            'total_booked_jeeps' => $totalBookedJeeps,
+            'slots'              => $data,
+            'month_bookings'     => $monthBookings,
         ]);
     }
 
@@ -216,12 +249,13 @@ class BookingController extends Controller
             'pickup_manual' => 'nullable|boolean',
             'notes' => 'nullable|string|max:500',
             'customer_name' => 'required|string|max:100',
-            'customer_phone' => 'required|string|max:20',
+            'customer_phone' => ['required', 'string', 'max:25', 'regex:/^(\+?62|0)8[1-9][0-9]{6,11}$/'],
             'customer_email' => 'nullable|email|max:100',
             'payment_mode' => 'required|in:FULL,DP',
         ], [
             'customer_name.required' => 'Nama lengkap pemesan wajib diisi.',
             'customer_phone.required' => 'Nomor WhatsApp aktif wajib diisi.',
+            'customer_phone.regex' => 'Nomor WhatsApp tidak valid. Masukkan nomor seluler Indonesia aktif (contoh: 081234567890).',
             'trip_date.required' => 'Tanggal wisata wajib dipilih.',
             'trip_date.after_or_equal' => 'Tanggal wisata tidak boleh di masa lalu.',
             'slot_id.required' => 'Jadwal waktu keberangkatan wajib dipilih.',
@@ -598,6 +632,8 @@ class BookingController extends Controller
                 }
             }
         }
+
+        $booking->loadMissing(['assignments.driver', 'assignments.jeep']);
 
         return view('booking.success', compact('booking'));
     }
@@ -1616,5 +1652,5 @@ class BookingController extends Controller
 
         return response()->json(['places' => $places]);
     }
-
+    
 }

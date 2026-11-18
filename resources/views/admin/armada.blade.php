@@ -48,15 +48,6 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                     <span>Tambah Kendaraan</span>
                 </button>
-                <span class="px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                    {{ $totalJeepsCount }} Kendaraan
-                </span>
-                <span class="px-3 py-1.5 rounded-full text-xs font-bold bg-blue-50 text-blue-800 border border-blue-200">
-                    {{ $activeDriversCount }} Driver Aktif &bull; {{ $inactiveDriversCount }} Nonaktif
-                </span>
-                <a href="{{ route('admin.dashboard') }}" class="px-3.5 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all">
-                    &larr; Dashboard
-                </a>
             </div>
         </header>
 
@@ -93,12 +84,10 @@
                         </span>
                         <span class="inline-flex items-center gap-1.5 text-[11px] text-slate-600 font-semibold mt-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-                            Total Armada Paguyuban
+                            Total Armada
                         </span>
                     </div>
-                    <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 17a2 2 0 100-4 2 2 0 000 4zm8 0a2 2 0 100-4 2 2 0 000 4zM4 11h16M4 11l2-6h12l2 6M4 11v6a1 1 0 001 1h1m10 0h1a1 1 0 001-1v-6"/></svg>
-                    </div>
+                   
                 </div>
 
                 <!-- 2. Driver Aktif -->
@@ -110,12 +99,10 @@
                         </span>
                         <span class="inline-flex items-center gap-1.5 text-[11px] text-emerald-700 font-semibold mt-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                            Siap ditugaskan trip
+                            Siap ditugaskan
                         </span>
                     </div>
-                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                    </div>
+                   
                 </div>
 
                 <!-- 3. Driver Tidak Aktif / Nonaktif -->
@@ -127,12 +114,10 @@
                         </span>
                         <span class="inline-flex items-center gap-1.5 text-[11px] text-amber-700 font-semibold mt-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                            Libur / Izin / Nonaktif
+                            Nonaktif
                         </span>
                     </div>
-                    <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
-                    </div>
+                    
                 </div>
             </div>
 
@@ -140,17 +125,10 @@
             <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
                 <div class="p-5 sm:p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-slate-50 to-white">
                     <div>
-                        <h3 class="text-base font-bold text-slate-800">Status & Kesiapan Driver Paguyuban ({{ $totalDriversCount }} Driver)</h3>
+                        <h3 class="text-base font-bold text-slate-800">Status & Kesiapan Driver ({{ $totalDriversCount }} Driver)</h3>
                         <p class="text-xs text-slate-500 mt-0.5">Daftar driver yang siap ditugaskan melayani wisatawan dan driver yang sedang libur/tidak aktif.</p>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-800">
-                            {{ $activeDriversCount }} Driver Aktif
-                        </span>
-                        <span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-700">
-                            {{ $inactiveDriversCount }} Driver Nonaktif
-                        </span>
-                    </div>
+                    
                 </div>
 
                 <div class="p-5 sm:p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -158,15 +136,9 @@
                     <div class="bg-[#F8FAF9] rounded-2xl border border-emerald-200/80 p-5 flex flex-col justify-between">
                         <div>
                             <div class="flex items-center justify-between pb-3 mb-4 border-b border-emerald-200/70">
-                                <div class="flex items-center gap-2">
-                                    <span class="w-3 h-3 rounded-full bg-emerald-500 flex items-center justify-center">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
-                                    </span>
+                                <div class="flex items-center gap-2"> 
                                     <h4 class="text-sm font-extrabold text-slate-800 tracking-tight">Daftar Driver yang Aktif</h4>
                                 </div>
-                                <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                                    {{ $activeDriversCount }} Personel
-                                </span>
                             </div>
 
                             <div class="space-y-2">
@@ -222,10 +194,7 @@
                                 @endforelse
                             </div>
                         </div>
-                        <div class="mt-4 pt-3 border-t border-emerald-100 flex items-center justify-between text-[11px] text-emerald-800 font-medium">
-                            <span>Status: Muncul dalam penugasan order booking</span>
-                            <span>✓ Terintegrasi Rotasi</span>
-                        </div>
+                        
                     </div>
 
                     <!-- KOLOM 2: DAFTAR DRIVER YANG TIDAK AKTIF -->
@@ -233,14 +202,10 @@
                         <div>
                             <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-200">
                                 <div class="flex items-center gap-2">
-                                    <span class="w-3 h-3 rounded-full bg-slate-400 flex items-center justify-center">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
-                                    </span>
+                                    
                                     <h4 class="text-sm font-extrabold text-slate-800 tracking-tight">Daftar Driver yang Tidak Aktif</h4>
                                 </div>
-                                <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-200 text-slate-700">
-                                    {{ $inactiveDriversCount }} Personel
-                                </span>
+                                
                             </div>
 
                             <div class="space-y-2">
@@ -296,10 +261,7 @@
                                 @endforelse
                             </div>
                         </div>
-                        <div class="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-500 font-medium">
-                            <span>Status: Tidak dialokasikan untuk order baru</span>
-                            <span>⏸ Standby Off</span>
-                        </div>
+                    
                     </div>
                 </div>
             </div>

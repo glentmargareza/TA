@@ -44,16 +44,12 @@
                 <p class="text-xs text-slate-500 mt-0.5">Atur paket tour Merapi, tarif per armada jeep, rute destinasi, dan ketersediaan paket pemesanan.</p>
             </div>
             <div class="flex items-center gap-2.5 flex-wrap">
-                <span class="px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs">
-                    {{ $packages->count() }} Paket Wisata ({{ $packages->where('is_active', true)->count() }} Aktif)
-                </span>
+               
                 <button type="button" onclick="openCreatePackageModal()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-700 via-[#183c21] to-[#102b17] hover:from-emerald-600 hover:to-[#183c21] text-white text-xs font-bold shadow-xs hover:shadow transition-all cursor-pointer active:scale-95">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                     <span>Tambah Paket Baru</span>
                 </button>
-                <a href="{{ route('admin.dashboard') }}" class="px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all">
-                    &larr; Dashboard
-                </a>
+                
             </div>
         </header>
 
@@ -103,9 +99,7 @@
                             Terdaftar di sistem loket
                         </span>
                     </div>
-                    <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0 shadow-2xs">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-                    </div>
+                    
                 </div>
 
                 <!-- 2. Paket Aktif (Tampil) -->
@@ -120,9 +114,7 @@
                             Tampil di web pemesanan
                         </span>
                     </div>
-                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 shadow-2xs border border-emerald-100">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                    </div>
+                   
                 </div>
 
                 <!-- 3. Non-Aktif / Draft -->
@@ -137,9 +129,7 @@
                             Disembunyikan sementara
                         </span>
                     </div>
-                    <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center shrink-0 shadow-2xs border border-amber-100">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>
-                    </div>
+                    
                 </div>
 
                 <!-- 4. Rata-rata Tarif / Jeep -->
@@ -154,9 +144,7 @@
                             Kapasitas maks 4 wisatawan
                         </span>
                     </div>
-                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-800 flex items-center justify-center shrink-0 shadow-2xs border border-emerald-100">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                    </div>
+                    
                 </div>
             </div>
 
@@ -164,19 +152,13 @@
             <div class="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
                 <div class="p-5 sm:p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-slate-50 to-white">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold shadow-xs">
-                            <svg class="w-5 h-5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-                        </div>
+                        
                         <div>
                             <h3 class="text-base font-extrabold text-slate-900 font-display tracking-tight">Daftar Paket Tour Wisata Merapi</h3>
                             <p class="text-xs text-slate-500 mt-0.5">Paket berstatus aktif otomatis dapat dipilih oleh wisatawan pada form reservasi online.</p>
                         </div>
                     </div>
-                    <div>
-                        <span class="px-3 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
-                            Total: {{ $packages->count() }} Paket Terdaftar
-                        </span>
-                    </div>
+                    
                 </div>
 
                 <div class="overflow-x-auto">

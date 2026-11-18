@@ -159,9 +159,7 @@
                 <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all relative overflow-hidden flex flex-col justify-between">
                     <div>
                         <div class="flex items-center justify-between mb-3">
-                            <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                            </div>
+                            
                             @if($todayPercentChange >= 0)
                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#DCFCE7] text-[#16A34A] border border-emerald-200/60">
                                 &uarr; +{{ $todayPercentChange }}%
@@ -190,9 +188,7 @@
                 <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all relative overflow-hidden flex flex-col justify-between">
                     <div>
                         <div class="flex items-center justify-between mb-3">
-                            <div class="w-10 h-10 rounded-xl bg-emerald-700 text-white flex items-center justify-center shadow-xs">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            </div>
+                           
                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#DCFCE7] text-[#16A34A] border border-emerald-200/60">
                                 &uarr; +{{ $upcomingPercentage }}%
                             </span>
@@ -214,9 +210,7 @@
                 <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all relative overflow-hidden flex flex-col justify-between">
                     <div>
                         <div class="flex items-center justify-between mb-3">
-                            <div class="w-10 h-10 rounded-xl bg-[#174825] text-white flex items-center justify-center shadow-xs">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/></svg>
-                            </div>
+                           
                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#DCFCE7] text-[#16A34A] border border-emerald-200/60">
                                 &uarr; +{{ $completedPercentage }}%
                             </span>
@@ -238,9 +232,7 @@
                 <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all relative overflow-hidden flex flex-col justify-between">
                     <div>
                         <div class="flex items-center justify-between mb-3">
-                            <div class="w-10 h-10 rounded-xl bg-[#F87171] text-white flex items-center justify-center shadow-xs">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                            </div>
+                           
                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FEE2E2] text-[#DC2626] border border-rose-200/60">
                                 &darr; -{{ $cancelPercentage }}%
                             </span>
@@ -269,9 +261,7 @@
                         <!-- Header Bar with Title, Metric Switcher, Chart Type & Period -->
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                             <div class="flex items-center gap-2.5">
-                                <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center shrink-0 border border-emerald-100">
-                                    <svg class="w-4 h-4 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
-                                </div>
+                                
                                 <div>
                                     <h3 class="text-sm font-bold text-slate-800">Tren Performa Penjualan</h3>
                                     <p class="text-[11px] text-slate-500 font-medium" id="chartSubtitle">Statistik omzet penjualan harian</p>
@@ -320,7 +310,7 @@
                 <div class="lg:col-span-3 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
-                            <svg class="w-4 h-4 text-emerald-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                            
                             <h3 class="text-sm font-bold text-slate-800">Status Pembayaran</h3>
                         </div>
 
@@ -362,7 +352,7 @@
                     <div>
                         <div class="flex items-center justify-between mb-3">
                             <div class="flex items-center gap-2">
-                                <svg class="w-4 h-4 text-emerald-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 17a2 2 0 100-4 2 2 0 000 4zm8 0a2 2 0 100-4 2 2 0 000 4zM4 11h16M4 11l2-6h12l2 6M4 11v6a1 1 0 001 1h1m10 0h1a1 1 0 001-1v-6"/></svg>
+                                
                                 <h3 class="text-sm font-bold text-slate-800">Armada Jeep</h3>
                             </div>
                             <a href="{{ route('admin.armada') }}" class="text-xs font-semibold text-emerald-800 hover:text-emerald-950 inline-flex items-center gap-1">
@@ -405,12 +395,10 @@
 
                         <!-- Total Armada Box (Persis Mockup Hijau Mint Bawah) -->
                         <div class="mt-2.5 p-2.5 rounded-xl bg-[#EBF7EE] border border-[#D1EED7] flex items-center gap-2.5">
-                            <div class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
-                                ✓
-                            </div>
+                            
                             <div class="min-w-0 flex-1">
                                 <span class="block text-xs font-bold text-emerald-950 leading-tight">Total Armada: {{ $totalJeepsCount }} Jeep ({{ $readyJeepsCount }} Unit Aktif)</span>
-                                <span class="block text-[10px] text-emerald-700/80 leading-tight">Kapasitas Maks: 4 Penumpang/Jeep</span>
+                                
                             </div>
                         </div>
                     </div>
@@ -427,7 +415,7 @@
                         <!-- Header -->
                         <div class="p-5 border-b border-slate-100 flex items-center justify-between">
                             <div class="flex items-center gap-2">
-                                <svg class="w-4 h-4 text-emerald-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                                
                                 <h3 class="text-sm font-bold text-slate-800">Daftar Booking Terbaru</h3>
                             </div>
                             <a href="{{ route('admin.bookings') }}" class="text-xs font-semibold text-emerald-800 hover:text-emerald-950 inline-flex items-center gap-1">
@@ -543,7 +531,7 @@
                                         <td class="py-3 px-4 text-center">
                                             <div class="flex items-center justify-center gap-1.5">
                                                 <button type="button" data-booking='@json($rbDetail)' onclick="openBookingDetailModal(this)" class="px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 font-semibold text-[11px] shadow-2xs transition-all cursor-pointer">
-                                                    👁 Detail
+                                                    👁
                                                 </button>
                                                 @if(!empty($rbDetail['proof_url']))
                                                 <!-- Tombol Akses Bukti Transfer Cepat (1 Tab / Modal Lightbox) -->
@@ -586,7 +574,7 @@
                         <!-- Header -->
                         <div class="flex items-center justify-between mb-5">
                             <div class="flex items-center gap-2">
-                                <svg class="w-4 h-4 text-emerald-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                
                                 <h3 class="text-sm font-bold text-slate-800">Aktivitas Terbaru</h3>
                             </div>
                             <a href="{{ route('admin.notifications') }}" class="text-xs font-semibold text-emerald-800 hover:text-emerald-950 inline-flex items-center gap-1">

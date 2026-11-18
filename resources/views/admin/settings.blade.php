@@ -43,15 +43,7 @@
                 </h1>
                 <p class="text-xs text-slate-500 mt-0.5">Kelola informasi profil, data usaha Jeep Wukirsari, kebijakan trip, pembayaran, dan keamanan akun.</p>
             </div>
-            <div class="flex items-center gap-2.5 sm:gap-3 flex-wrap">
-                <span class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs flex items-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span>Admin Loket: {{ $user->name ?? 'Administrator' }}</span>
-                </span>
-                <a href="{{ route('admin.dashboard') }}" class="px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all">
-                    &larr; Dashboard
-                </a>
-            </div>
+           
         </header>
 
         <main class="p-4 sm:p-8 space-y-5 sm:space-y-6 flex-1 overflow-y-auto">
@@ -83,26 +75,6 @@
                 </ul>
             </div>
             @endif
-
-            <!-- Quick Navigation Shortcuts -->
-            <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs no-scrollbar">
-                <button type="button" onclick="toggleSection(1); document.getElementById('section-1').scrollIntoView({behavior:'smooth'});" class="px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold shadow-2xs whitespace-nowrap cursor-pointer transition">
-                    👤 Profil Admin
-                </button>
-                <button type="button" onclick="toggleSection(3); document.getElementById('section-3').scrollIntoView({behavior:'smooth'});" class="px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold shadow-2xs whitespace-nowrap cursor-pointer transition">
-                    🌄 Background Hero
-                </button>
-                <button type="button" onclick="toggleSection('gallery'); document.getElementById('section-gallery').scrollIntoView({behavior:'smooth'});" class="px-3.5 py-2 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-900 hover:bg-emerald-100 font-bold shadow-2xs whitespace-nowrap cursor-pointer flex items-center gap-1.5 transition">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span>📸 Galeri Beranda</span>
-                </button>
-                <button type="button" onclick="toggleSection(4); document.getElementById('section-4').scrollIntoView({behavior:'smooth'});" class="px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold shadow-2xs whitespace-nowrap cursor-pointer transition">
-                    ⚙️ Operasional
-                </button>
-                <button type="button" onclick="toggleSection(5); document.getElementById('section-5').scrollIntoView({behavior:'smooth'});" class="px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold shadow-2xs whitespace-nowrap cursor-pointer transition">
-                    💳 Pembayaran
-                </button>
-            </div>
 
             <!-- KONTENER UTAMA PENGATURAN (SESUAI GAMBAR) -->
             <div class="bg-white rounded-3xl border border-slate-200/80 shadow-xs divide-y divide-slate-100 overflow-hidden">
@@ -308,35 +280,24 @@
                                         <h5 class="text-base sm:text-xl font-extrabold font-display leading-tight drop-shadow-md max-w-xl">
                                             {{ $basecamp['hero_headline'] ?? 'Jelajahi Keindahan Alam Merapi Bersama Jeep Wukirsari' }}
                                         </h5>
-                                        <div class="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-[10px] text-emerald-300 w-fit">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                                            <span id="preview_hero_loc_text">{{ $basecamp['hero_location_0'] ?? 'Susur Kali Gendol' }}</span>
-                                        </div>
                                     </div>
                                 </div>
 
                                 <!-- Upload Controls & Options -->
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                                    <div>
-                                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Pilih Foto Baru dari Device</label>
-                                        <div class="flex flex-wrap items-center gap-2">
-                                            <label for="input_hero_bg_file" class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold cursor-pointer transition shadow-2xs hover:shadow">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                                                <span>Upload dari Device (HP/PC)</span>
-                                            </label>
-                                            <input type="file" id="input_hero_bg_file" name="hero_background_file" accept="image/png, image/jpeg, image/jpg, image/webp" class="hidden" onchange="previewHeroBgFile(this)">
-                                            
-                                            <button type="button" id="btn_reset_bg_file" onclick="cancelHeroBgFile()" class="hidden px-3 py-2 text-xs text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-xl font-medium transition cursor-pointer">
-                                                Batal File
-                                            </button>
-                                        </div>
-                                        <p id="label_hero_bg_filename" class="text-[11px] text-slate-500 mt-1.5">Format didukung: JPG, PNG, WEBP (Maksimal 5 MB)</p>
+                                <div class="pt-1">
+                                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Pilih Foto Baru dari Device</label>
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <label for="input_hero_bg_file" class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold cursor-pointer transition shadow-2xs hover:shadow">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                                            <span>Upload dari Device (HP/PC)</span>
+                                        </label>
+                                        <input type="file" id="input_hero_bg_file" name="hero_background_file" accept="image/png, image/jpeg, image/jpg, image/webp" class="hidden" onchange="previewHeroBgFile(this)">
+                                        
+                                        <button type="button" id="btn_reset_bg_file" onclick="cancelHeroBgFile()" class="hidden px-3 py-2 text-xs text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-xl font-medium transition cursor-pointer">
+                                            Batal File
+                                        </button>
                                     </div>
-
-                                    <div>
-                                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Label Lokasi Destinasi (Slide 01)</label>
-                                        <input type="text" name="hero_location_0" id="input_hero_location_0" value="{{ old('hero_location_0', $basecamp['hero_location_0'] ?? 'Susur Kali Gendol') }}" oninput="updateHeroLocPreview(this.value)" placeholder="Contoh: Susur Kali Gendol" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                                    </div>
+                                    <p id="label_hero_bg_filename" class="text-[11px] text-slate-500 mt-1.5">Format didukung: JPG, PNG, WEBP (Maksimal 5 MB)</p>
                                 </div>
 
                                 <!-- Optional Online URL -->
@@ -380,12 +341,10 @@
                                         @php
                                             $slideVal = $basecamp["hero_slide_{$idx}"] ?? null;
                                             $slideSrc = !empty($slideVal) ? (str_starts_with($slideVal, 'http') ? $slideVal : asset($slideVal)) : asset($cfg['default_img']);
-                                            $slideLoc = $basecamp["hero_location_{$idx}"] ?? $cfg['default_loc'];
                                         @endphp
                                         <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/60 space-y-2.5">
                                             <div class="flex items-center justify-between">
                                                 <span class="px-2 py-0.5 rounded-lg bg-emerald-700 text-white font-extrabold text-[11px]">Slide {{ $cfg['num'] }}</span>
-                                                <span class="text-[10px] text-slate-400 font-medium">Default: {{ $cfg['default_loc'] }}</span>
                                             </div>
 
                                             <div class="flex items-center gap-3">
@@ -403,12 +362,8 @@
                                             </div>
 
                                             <div>
-                                                <label class="block text-[11px] font-semibold text-slate-700 mb-1">Nama Lokasi Slide {{ $cfg['num'] }}</label>
-                                                <input type="text" name="hero_location_{{ $idx }}" value="{{ old("hero_location_{$idx}", $slideLoc) }}" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                                            </div>
-
-                                            <div>
-                                                <input type="url" name="hero_slide_{{ $idx }}" id="input_slide_{{ $idx }}_url" value="{{ old("hero_slide_{$idx}", $slideVal ?? '') }}" placeholder="Atau URL gambar online..." data-slide-index="{{ $idx }}" oninput="previewExtraSlideUrl(this)" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-[11px] focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                                <label class="block text-[11px] font-semibold text-slate-700 mb-1">Atau URL Gambar Online (Opsional):</label>
+                                                <input type="url" name="hero_slide_{{ $idx }}" id="input_slide_{{ $idx }}_url" value="{{ old("hero_slide_{$idx}", $slideVal ?? '') }}" placeholder="https://images.unsplash.com/..." data-slide-index="{{ $idx }}" oninput="previewExtraSlideUrl(this)" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-[11px] focus:outline-none focus:ring-2 focus:ring-emerald-500">
                                             </div>
 
                                             @if(!empty($slideVal))
@@ -1032,13 +987,6 @@
                 } else {
                     previewImg.src = defaultHeroBgSrc;
                 }
-            }
-        }
-
-        function updateHeroLocPreview(text) {
-            const locText = document.getElementById('preview_hero_loc_text');
-            if (locText) {
-                locText.textContent = text && text.trim().length > 0 ? text : 'Susur Kali Gendol';
             }
         }
 

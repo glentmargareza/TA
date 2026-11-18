@@ -44,11 +44,11 @@
  
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
-            <!-- Kolom Kiri: Stepper & 4 Kartu Formulir (lg:col-span-8) -->
+            <!-- Kolom Kiri: 4 Kartu Formulir (lg:col-span-8) -->
             <div class="lg:col-span-8 space-y-6">
                 
-                <!-- Stepper Progress Bar -->
-                <div class="bg-white border border-wukirsari-border rounded-2xl p-2 shadow-xs flex items-center justify-between gap-1 sm:gap-2 overflow-x-auto scrollbar-none" id="stepper">
+                
+                <div class="bg-white border border-wukirsari-border rounded-2xl p-2 shadow-xs flex items-center justify-between gap-1 sm:gap-2 overflow-x-auto scrollbar-none sticky top-16 sm:top-20 z-30 backdrop-blur-md bg-white/95" id="stepper">
                     <button type="button" class="st on flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-merapiText-secondary hover:text-merapiText-primary transition-all shrink-0 cursor-pointer" data-s="1">
                         <i class="w-6 h-6 rounded-lg bg-wukirsari-sage text-wukirsari-primary flex items-center justify-center text-xs font-bold not-italic">1</i>
                         <span>1. Paket</span>
@@ -87,47 +87,93 @@
  
                 <!-- 2. JADWAL & SESI TRIP -->
                 <section class="bg-white rounded-3xl border border-wukirsari-border shadow-xs p-4 sm:p-7 space-y-5" data-sec="2">
-                    <div class="flex items-center gap-3 pb-3 border-b border-wukirsari-border/70">
-                        <span class="w-8 h-8 rounded-xl bg-wukirsari-primary text-white text-sm font-bold flex items-center justify-center font-display shadow-xs shrink-0">2</span>
-                        <div>
-                            <h2 class="text-base sm:text-lg font-bold text-merapiText-primary font-display">Pilih Tanggal & Jam Trip</h2>
-                            <p class="text-xs text-merapiText-secondary">Tentukan tanggal wisata dan pilih sesi keberangkatan yang tersedia.</p>
+                    <div class="flex items-center justify-between pb-3 border-b border-wukirsari-border/70 flex-wrap gap-2">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-xl bg-wukirsari-primary text-white text-sm font-bold flex items-center justify-center font-display shadow-xs shrink-0">2</span>
+                            <div>
+                                <h2 class="text-base sm:text-lg font-bold text-merapiText-primary font-display">Pilih Tanggal & Jam Trip</h2>
+                                <p class="text-xs text-merapiText-secondary">Deteksi otomatis ketersediaan jadwal & status bookingan armada jeep.</p>
+                            </div>
+                        </div>
+                        <button type="button" id="toggleCalBtn" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-wukirsari-border hover:border-wukirsari-primary/50 bg-slate-50 hover:bg-slate-100 text-xs font-bold text-merapiText-primary transition-all cursor-pointer">
+                            <svg class="w-3.5 h-3.5 text-wukirsari-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            <span id="toggleCalText">Tutup Kalender Visual</span>
+                        </button>
+                    </div>
+
+                    <!-- Kalender Visual Interaktif dengan Deteksi Bookingan -->
+                    <div id="interactiveCalendar" class="p-3.5 sm:p-5 rounded-2xl bg-slate-50/90 border border-wukirsari-border space-y-3 transition-all">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-sm sm:text-base text-merapiText-primary font-display" id="calMonthTitle">November 2026</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <button type="button" id="calPrevBtn" class="w-8 h-8 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 flex items-center justify-center transition-all cursor-pointer" title="Bulan Sebelumnya">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+                                </button>
+                                <button type="button" id="calTodayBtn" class="px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-[11px] font-bold text-slate-700 transition-all cursor-pointer">
+                                    Hari Ini
+                                </button>
+                                <button type="button" id="calNextBtn" class="w-8 h-8 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 flex items-center justify-center transition-all cursor-pointer" title="Bulan Berikutnya">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Baris Nama Hari -->
+                        <div class="grid grid-cols-7 gap-1 text-center text-[10px] sm:text-xs font-bold text-merapiText-muted pb-1 border-b border-slate-200/60">
+                            <div class="text-rose-500">Min</div><div>Sen</div><div>Sel</div><div>Rab</div><div>Kam</div><div>Jum</div><div class="text-emerald-700">Sab</div>
+                        </div>
+
+                        <!-- Grid Tanggal Bulanan -->
+                        <div class="grid grid-cols-7 gap-1 sm:gap-1.5" id="calGrid">
+                            <!-- Dihasilkan dinamis oleh JavaScript -->
+                        </div>
+
+                        <!-- Legenda Warna Kalender -->
+                        <div class="pt-2 border-t border-slate-200/60 flex flex-wrap items-center justify-between text-[10px] sm:text-[11px] text-merapiText-secondary gap-2">
+                            <div class="flex items-center gap-3 flex-wrap">
+                                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Tersedia</span>
+                                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-500"></span> Ada Bookingan</span>
+                                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-slate-300"></span> Lewat</span>
+                            </div>
+                            <span class="text-[10px] text-slate-400">Klik tanggal pada kalender untuk memilih trip</span>
                         </div>
                     </div>
  
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div class="space-y-1.5 relative" id="dateWrap">
-                            <label for="dateBtn" class="block text-xs font-bold text-merapiText-primary">Tanggal Kunjungan *</label>
-                            <!-- Nilai tanggal (YYYY-MM-DD) disimpan di input tersembunyi; dipilih lewat kalender di bawah -->
-                            <input id="date" type="hidden" value="{{ $defaultDate ?? '' }}">
-                            <button type="button" id="dateBtn" aria-haspopup="dialog" aria-expanded="false" class="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-2xl border border-wukirsari-border bg-white text-merapiText-primary text-sm font-semibold text-left cursor-pointer focus:outline-none focus:border-wukirsari-primary focus:ring-2 focus:ring-wukirsari-primary/15 transition-all">
-                                <span id="dateText">Pilih tanggal</span>
-                                <svg class="w-4 h-4 text-wukirsari-primary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                            </button>
-
-                            <!-- Kalender ketersediaan -->
-                            <div id="cal" class="hidden absolute left-0 right-0 sm:right-auto sm:w-[22rem] top-full mt-2 z-40 bg-white border border-wukirsari-border rounded-2xl shadow-2xl p-4" role="dialog" aria-label="Pilih tanggal kunjungan">
-                                <div class="flex items-center justify-between mb-3">
-                                    <button type="button" id="calPrev" class="w-9 h-9 rounded-lg hover:bg-wukirsari-sage text-merapiText-primary font-bold flex items-center justify-center cursor-pointer" aria-label="Bulan sebelumnya">‹</button>
-                                    <strong id="calTitle" class="text-sm font-bold text-merapiText-primary font-display capitalize"></strong>
-                                    <button type="button" id="calNext" class="w-9 h-9 rounded-lg hover:bg-wukirsari-sage text-merapiText-primary font-bold flex items-center justify-center cursor-pointer" aria-label="Bulan berikutnya">›</button>
-                                </div>
-                                <div class="grid grid-cols-7 gap-1 text-center text-[11px] font-bold text-merapiText-muted mb-1">
-                                    <span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span><span>Min</span>
-                                </div>
-                                <div id="calGrid" class="grid grid-cols-7 gap-1"></div>
-                                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 pt-3 border-t border-wukirsari-border/70 text-[11px] text-merapiText-secondary">
-                                    <span class="inline-flex items-center gap-1.5"><i class="w-2 h-2 rounded-full bg-green-600 inline-block"></i>Tersedia</span>
-                                    <span class="inline-flex items-center gap-1.5"><i class="w-2 h-2 rounded-full bg-amber-500 inline-block"></i>Sebagian sesi penuh/lewat</span>
-                                    <span class="inline-flex items-center gap-1.5"><i class="w-2 h-2 rounded-full bg-red-500 inline-block"></i>Penuh</span>
-                                </div>
-                                <p class="text-[11px] text-merapiText-muted mt-2" id="calNote">Status mengikuti paket, jumlah jeep, dan jam sesi (WIB).</p>
-                            </div>
+                        <div class="space-y-1.5">
+                            <label for="date" class="block text-xs font-bold text-merapiText-primary">Tanggal Kunjungan (Input Kalender) *</label>
+                            <input id="date" type="date" value="{{ $defaultDate ?? '' }}" class="w-full px-4 py-3 rounded-2xl border border-wukirsari-border bg-white text-merapiText-primary text-sm font-semibold focus:outline-none focus:border-wukirsari-primary focus:ring-2 focus:ring-wukirsari-primary/15 transition-all">
                         </div>
                         <div class="space-y-1.5">
                             <label for="session" class="block text-xs font-bold text-merapiText-primary">Sesi Waktu Keberangkatan *</label>
                             <select id="session" class="w-full px-4 py-3 rounded-2xl border border-wukirsari-border bg-white text-merapiText-primary text-sm font-semibold focus:outline-none focus:border-wukirsari-primary focus:ring-2 focus:ring-wukirsari-primary/15 transition-all"></select>
                             <span class="block text-[11px] font-medium text-amber-600" id="sessHint"></span>
+                        </div>
+                    </div>
+
+                    <!-- Panel Deteksi Jadwal & Reservasi Tanggal Ini -->
+                    <div id="dateDetectionBox" class="p-4 sm:p-5 rounded-2xl bg-slate-50/70 border border-wukirsari-border space-y-3.5 transition-all">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-slate-200/70">
+                            <div class="flex items-center gap-2.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" id="detStatusDot"></span>
+                                <div>
+                                    <h4 class="text-xs sm:text-sm font-bold text-merapiText-primary font-display" id="detDateTitle">Deteksi Jadwal Tanggal: ...</h4>
+                                    <p class="text-[11px] text-merapiText-secondary" id="detDateSub">Memeriksa ketersediaan armada...</p>
+                                </div>
+                            </div>
+                            <span id="detStatusBadge" class="self-start sm:self-auto text-[11px] font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                                Memuat...
+                            </span>
+                        </div>
+
+                        <!-- Kartu Interaktif Seluruh Jadwal Sesi -->
+                        <div>
+                            <span class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-2">Pilih Sesi Keberangkatan (Klik Sesi yang Tersedia):</span>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5" id="detSessionsCards">
+                                <!-- Diisi dinamis oleh JavaScript -->
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -183,10 +229,16 @@
                             <label for="name" class="block text-xs font-bold text-merapiText-primary">Nama Lengkap Pemesan *</label>
                             <input id="name" class="w-full px-4 py-3 rounded-2xl border border-wukirsari-border bg-white text-merapiText-primary text-sm focus:outline-none focus:border-wukirsari-primary focus:ring-2 focus:ring-wukirsari-primary/15 transition-all" placeholder="Contoh: Budi Santoso" autocomplete="name">
                         </div>
-                        <div class="space-y-1.5">
-                            <label for="wa" class="block text-xs font-bold text-merapiText-primary">Nomor WhatsApp Aktif *</label>
-                            <input id="wa" class="w-full px-4 py-3 rounded-2xl border border-wukirsari-border bg-white text-merapiText-primary text-sm focus:outline-none focus:border-wukirsari-primary focus:ring-2 focus:ring-wukirsari-primary/15 transition-all" inputmode="tel" placeholder="Contoh: 081234567890" autocomplete="tel">
-                            <span class="block text-[11px] text-merapiText-muted">*E-Tiket resmi & rincian dikirim ke nomor ini.</span>
+                        <div class="space-y-1.5" id="waGroup">
+                            <div class="flex items-center justify-between">
+                                <label for="wa" class="block text-xs font-bold text-merapiText-primary">Nomor WhatsApp Aktif *</label>
+                                <span id="waStatusBadge" class="hidden text-[10px] sm:text-[11px] font-bold px-2.5 py-0.5 rounded-full transition-all"></span>
+                            </div>
+                            <div class="relative">
+                                <input id="wa" class="w-full pl-4 pr-11 py-3 rounded-2xl border border-wukirsari-border bg-white text-merapiText-primary text-sm focus:outline-none focus:border-wukirsari-primary focus:ring-2 focus:ring-wukirsari-primary/15 transition-all" inputmode="tel" placeholder="Contoh: 081234567890" autocomplete="tel">
+                                <div id="waStatusIcon" class="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center justify-center transition-all pointer-events-none"></div>
+                            </div>
+                            <span id="waFeedback" class="hidden text-[11px] text-rose-600 font-medium transition-colors"></span>
                         </div>
                     </div>
  
@@ -220,10 +272,6 @@
                             <span id="lJeep">Sewa Jeep</span>
                             <strong class="text-merapiText-primary font-bold" id="vJeep">Rp 0</strong>
                         </div>
-                        <div class="flex justify-between items-center text-merapiText-secondary">
-                            <span>BBM, Driver & Asuransi</span>
-                            <strong class="text-emerald-700 font-bold">Gratis (Termasuk)</strong>
-                        </div>
                     </div>
  
                     <!-- Total Amount -->
@@ -243,8 +291,7 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                     </button>
  
-                    <!-- Trust Badges -->
-                    
+    
                 </div>
             </div>
  
@@ -278,21 +325,6 @@
     background-color: #E8EFE9 !important;
     box-shadow: 0 0 0 2px rgba(30, 63, 32, 0.2) !important;
 }
-.st.on {
-    background-color: #1E3F20 !important;
-    color: #ffffff !important;
-}
-.st.on i {
-    background-color: #ffffff !important;
-    color: #1E3F20 !important;
-}
-.st.done {
-    color: #1E3F20 !important;
-}
-.st.done i {
-    background-color: #1E3F20 !important;
-    color: #ffffff !important;
-}
 .err {
     border-color: #ef4444 !important;
     box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2) !important;
@@ -321,8 +353,6 @@ html,body{overflow-x:clip}
   #pay::-webkit-scrollbar{display:none}
 }
 .mbar{padding-bottom:calc(.75rem + env(safe-area-inset-bottom))}
-#stepper{-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}
-#stepper .st{scroll-snap-align:center}
 @media (max-width:640px){
   /* 16px mencegah iOS/Android zoom otomatis saat mengetuk input */
   input,select,textarea{font-size:16px!important}
@@ -443,151 +473,328 @@ if (pkgsEl && PACKAGES.length) {
 }
  
 /* ====== 2. TANGGAL & SESI ====== */
-dateEl.min = wibNow().date;
+const dateEl = $('#date');
+const iso = d => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+dateEl.min = iso(new Date());
+function getSmartDefaultDate(pkg){
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const isSunrise = pkg && (pkg.is_sunrise || /sunrise/i.test(pkg.slug || '') || /sunrise/i.test(pkg.name || ''));
 
-// Tanggal awal: dari server jika masih valid untuk paket terpilih, jika tidak hitung sendiri (WIB)
-(function initDate(){
-  const p = curPkg();
-  const cand = D.defaultDate || dateEl.value;
-  const ok = cand && cand >= wibNow().date && slotsFor(p).some(s => !isPassed(s, cand));
-  dateEl.value = ok ? cand : firstValidDate(p);
-})();
-
-/* ====== KALENDER KETERSEDIAAN ======
-   Tiap tanggal dinilai dari: tipe paket (Sunrise / reguler), jumlah jeep, sisa kuota per sesi
-   (dari server), dan jam sesi yang sudah lewat (WIB). */
-const dateBtn = $('#dateBtn');
-const calEl   = $('#cal');
-const MONTH_LOADING = {};
-let calYm = null;   // bulan yang sedang ditampilkan, 'YYYY-MM'
-
-function dayInfo(date){
-  const list = slotsFor(curPkg());
-  if(date < wibNow().date) return { st: 'past', dot: '', tip: 'Tanggal sudah lewat' };
-  if(list.length === 0)   return { st: 'full', dot: '', tip: 'Tidak ada sesi untuk paket ini' };
-
-  const av = AVAIL[date];
-  let ok = 0, passedN = 0;
-  const lines = list.map(s => {
-    const rem = av ? av[s.id] : undefined;
-    const known = typeof rem === 'number';
-    if(isPassed(s, date))            { passedN++; return `${s.time} WIB — sudah lewat`; }
-    if(known && rem < state.qty)     return `${s.time} WIB — ${rem <= 0 ? 'penuh' : 'sisa ' + rem + ' jeep (kurang)'}`;
-    ok++;
-    return `${s.time} WIB — ${known ? 'sisa ' + rem + ' jeep' : 'tersedia'}`;
-  });
-
-  if(ok === 0){
-    return passedN === list.length
-      ? { st: 'past', dot: '', tip: 'Semua sesi hari ini sudah lewat' }
-      : { st: 'full', dot: '', tip: 'Kuota penuh\n' + lines.join('\n') };
+  if(isSunrise){
+    if(nowMin >= (4 * 60 + 30)){
+      const def = new Date();
+      def.setDate(def.getDate() + 1);
+      return iso(def);
+    }
+    return iso(now);
+  } else {
+    if(nowMin >= (13 * 60 + 30)){
+      const def = new Date();
+      def.setDate(def.getDate() + 1);
+      return iso(def);
+    }
+    return iso(now);
   }
-  if(!av) return { st: 'unk', dot: '', tip: 'Memeriksa ketersediaan…' };
-  return { st: ok < list.length ? 'part' : 'ok', dot: ok < list.length ? 'part' : 'ok', tip: lines.join('\n') };
 }
 
-// Tanggal terdekat (setelah `from`) yang masih punya sesi tersedia
-function nextOpenDate(from){
-  for(let i = 0; i < 90; i++){
-    const d = addDays(from, i);
-    if(['ok', 'part', 'unk'].includes(dayInfo(d).st)) return d;
-  }
-  return from;
+// Inisialisasi tanggal otomatis cerdas
+if (D.defaultDate) {
+  dateEl.value = D.defaultDate;
+} else if (!dateEl.value || dateEl.value < iso(new Date())) {
+  dateEl.value = getSmartDefaultDate(curPkg());
 }
 
-function loadMonth(ym){
-  if(MONTH_LOADING[ym]) return;
-  MONTH_LOADING[ym] = true;
-  fetch(`{{ route('booking.slot_availability') }}?month=${encodeURIComponent(ym)}`)
-    .then(r => r.ok ? r.json() : null)
-    .then(data => {
-      MONTH_LOADING[ym] = false;
-      if(!data || !data.dates) return;
-      Object.keys(data.dates).forEach(d => {
-        AVAIL[d] = {};
-        data.dates[d].forEach(x => { AVAIL[d][x.id] = x.remaining; });
-      });
-      renderCalendar();
-      if(dateEl.value){ renderSessionOptions(); update(); }
-    })
-    .catch(() => { MONTH_LOADING[ym] = false; });
+function formatIndoDate(dateStr) {
+  if (!dateStr) return '-';
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) return dateStr;
+  const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+  return d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-function renderCalendar(){
-  if(!calEl || calEl.classList.contains('hidden') || !calYm) return;
-  const [y, m] = calYm.split('-').map(Number);
-  const first = new Date(Date.UTC(y, m - 1, 1));
-  const startDow = (first.getUTCDay() + 6) % 7;            // minggu dimulai Senin
-  const days = new Date(Date.UTC(y, m, 0)).getUTCDate();
-  const today = wibNow().date;
+let cachedMonthBookings = {};
+let latestAvailabilityData = null;
+let calViewDate = new Date();
+if (dateEl.value) {
+  const p = dateEl.value.split('-').map(Number);
+  calViewDate = new Date(p[0], p[1] - 1, p[2]);
+}
+let isCalOpen = true;
 
-  $('#calTitle').textContent = first.toLocaleDateString('id-ID', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+const MONTH_NAMES = [
+  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+];
+
+const toggleCalBtn = $('#toggleCalBtn');
+const interactiveCal = $('#interactiveCalendar');
+const toggleCalText = $('#toggleCalText');
+if (toggleCalBtn && interactiveCal) {
+  toggleCalBtn.onclick = () => {
+    isCalOpen = !isCalOpen;
+    if (isCalOpen) {
+      interactiveCal.classList.remove('hidden');
+      toggleCalText.textContent = 'Tutup Kalender Visual';
+    } else {
+      interactiveCal.classList.add('hidden');
+      toggleCalText.textContent = 'Buka Kalender Visual';
+    }
+  };
+}
+
+function renderInteractiveCalendar() {
+  const calTitle = $('#calMonthTitle');
+  const calGrid = $('#calGrid');
+  if (!calTitle || !calGrid) return;
+
+  const year = calViewDate.getFullYear();
+  const month = calViewDate.getMonth();
+  calTitle.textContent = `${MONTH_NAMES[month]} ${year}`;
+
+  const today = new Date();
+  const todayIso = iso(today);
+  const selectedDate = dateEl.value;
+
+  const firstDayIndex = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   let html = '';
-  for(let i = 0; i < startDow; i++) html += '<span></span>';
-  for(let d = 1; d <= days; d++){
-    const ds = `${calYm}-${String(d).padStart(2, '0')}`;
-    const info = dayInfo(ds);
-    const disabled = info.st === 'past' || info.st === 'full';
-    const cls = ['cd', info.st === 'past' ? 'past' : '', info.st === 'full' ? 'full' : '',
-                 ds === dateEl.value ? 'sel' : '', ds === today ? 'today' : ''].join(' ').replace(/\s+/g, ' ').trim();
-    html += `<button type="button" class="${cls}" data-d="${ds}" ${disabled ? 'disabled' : ''} title="${esc(info.tip)}">${d}${info.dot ? `<i class="${info.dot}"></i>` : ''}</button>`;
+
+  for (let i = 0; i < firstDayIndex; i++) {
+    html += `<div class="h-10 sm:h-12 rounded-xl bg-transparent"></div>`;
   }
-  $('#calGrid').innerHTML = html;
 
-  const atFirst = calYm <= today.slice(0, 7);
-  $('#calPrev').disabled = atFirst;
-  $('#calPrev').classList.toggle('opacity-40', atFirst);
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const isPast = dStr < todayIso;
+    const isToday = dStr === todayIso;
+    const isSelected = dStr === selectedDate;
+    const bookingInfo = cachedMonthBookings[dStr];
+    const hasBooking = bookingInfo && bookingInfo.total_jeeps > 0;
+
+    let btnClass = 'flex flex-col items-center justify-between p-1 sm:p-1.5 h-10 sm:h-12 rounded-xl border text-xs font-semibold transition-all relative select-none ';
+    let indicatorHtml = '';
+
+    if (isPast) {
+      btnClass += 'border-transparent bg-slate-100/60 text-slate-300 cursor-not-allowed';
+      indicatorHtml = '<span class="text-[8px] text-slate-300">Lewat</span>';
+    } else if (isSelected) {
+      btnClass += 'border-[#0c2314] bg-[#0c2314] text-white shadow-sm ring-2 ring-emerald-500 cursor-pointer';
+      if (hasBooking) {
+        indicatorHtml = `<span class="text-[8px] font-bold text-amber-300 truncate">${bookingInfo.total_jeeps} Jeep</span>`;
+      } else {
+        indicatorHtml = '<span class="text-[8px] font-medium text-emerald-300 truncate">Pilih</span>';
+      }
+    } else if (hasBooking) {
+      btnClass += 'border-amber-300 bg-amber-50/80 hover:bg-amber-100/80 text-amber-950 cursor-pointer';
+      indicatorHtml = `<span class="inline-flex items-center gap-0.5 text-[8px] font-bold text-amber-700 truncate"><span class="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>${bookingInfo.total_jeeps} Jp</span>`;
+    } else {
+      btnClass += 'border-slate-200/90 bg-white hover:border-emerald-500 hover:bg-emerald-50/40 text-slate-800 cursor-pointer';
+      indicatorHtml = '<span class="inline-flex items-center gap-0.5 text-[8px] text-emerald-600 truncate"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>Ada</span>';
+    }
+
+    if (isToday && !isSelected) {
+      btnClass += ' ring-1 ring-blue-400';
+    }
+
+    html += `
+      <button type="button" class="${btnClass}" data-date="${dStr}" ${isPast ? 'disabled' : ''}>
+        <span class="text-[11px] sm:text-xs font-bold leading-none">${day}</span>
+        ${indicatorHtml}
+      </button>
+    `;
+  }
+
+  calGrid.innerHTML = html;
+
+  calGrid.querySelectorAll('button[data-date]:not([disabled])').forEach(btn => {
+    btn.onclick = () => {
+      const picked = btn.getAttribute('data-date');
+      dateEl.value = picked;
+      const p = picked.split('-').map(Number);
+      calViewDate = new Date(p[0], p[1] - 1, p[2]);
+      renderSessions();
+      update();
+      setStep(2);
+    };
+  });
 }
 
-function showMonth(ym){
-  calYm = ym;
-  loadMonth(ym);        // selalu ambil data terbaru agar kuota akurat
-  renderCalendar();
+if ($('#calPrevBtn')) {
+  $('#calPrevBtn').onclick = () => {
+    calViewDate.setMonth(calViewDate.getMonth() - 1);
+    const mStr = `${calViewDate.getFullYear()}-${String(calViewDate.getMonth() + 1).padStart(2, '0')}-01`;
+    fetchSlotAvailability(mStr, state.qty, false);
+    renderInteractiveCalendar();
+  };
 }
-function shiftMonth(delta){
-  const [y, m] = calYm.split('-').map(Number);
-  const d = new Date(Date.UTC(y, m - 1 + delta, 1));
-  const ym = d.toISOString().slice(0, 7);
-  if(ym < wibNow().date.slice(0, 7)) return;
-  showMonth(ym);
+if ($('#calNextBtn')) {
+  $('#calNextBtn').onclick = () => {
+    calViewDate.setMonth(calViewDate.getMonth() + 1);
+    const mStr = `${calViewDate.getFullYear()}-${String(calViewDate.getMonth() + 1).padStart(2, '0')}-01`;
+    fetchSlotAvailability(mStr, state.qty, false);
+    renderInteractiveCalendar();
+  };
 }
-function openCal(){
-  calEl.classList.remove('hidden');
-  dateBtn.setAttribute('aria-expanded', 'true');
-  showMonth((dateEl.value || wibNow().date).slice(0, 7));
-}
-function closeCal(){
-  calEl.classList.add('hidden');
-  dateBtn.setAttribute('aria-expanded', 'false');
+if ($('#calTodayBtn')) {
+  $('#calTodayBtn').onclick = () => {
+    const now = new Date();
+    calViewDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    dateEl.value = iso(now);
+    renderSessions();
+    update();
+    setStep(2);
+  };
 }
 
-dateBtn.addEventListener('click', () => calEl.classList.contains('hidden') ? openCal() : closeCal());
-document.addEventListener('click', e => { if(!$('#dateWrap').contains(e.target)) closeCal(); });
-document.addEventListener('keydown', e => { if(e.key === 'Escape') closeCal(); });
-$('#calPrev').addEventListener('click', () => shiftMonth(-1));
-$('#calNext').addEventListener('click', () => shiftMonth(1));
-$('#calGrid').addEventListener('click', e => {
-  const b = e.target.closest('.cd');
-  if(!b || b.disabled) return;
-  dateEl.value = b.dataset.d;
-  closeCal();
-  dateEl.dispatchEvent(new Event('change'));   // memakai handler 'change' yang sudah ada
-});
-loadMonth(wibNow().date.slice(0, 7));          // ambil kuota bulan ini sejak awal
+function renderDateDetectionPanel(data) {
+  const titleEl = $('#detDateTitle');
+  const subEl = $('#detDateSub');
+  const badgeEl = $('#detStatusBadge');
+  const dotEl = $('#detStatusDot');
+  const cardsEl = $('#detSessionsCards');
+  if (!titleEl || !cardsEl) return;
 
-function fetchSlotAvailability(date){
+  const curDate = data?.date || dateEl.value;
+  titleEl.textContent = `Deteksi Jadwal Tanggal: ${formatIndoDate(curDate)}`;
+
+  const pkg = curPkg();
+  const isSunrisePkg = pkg && (pkg.is_sunrise || /sunrise/i.test(pkg.slug || '') || /sunrise/i.test(pkg.name || ''));
+
+  const hasBookings = data?.has_bookings ?? false;
+  const totalBooked = data?.total_booked_jeeps ?? 0;
+
+  if (hasBookings) {
+    if (dotEl) dotEl.className = 'w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0';
+    if (subEl) subEl.textContent = `Terdeteksi ${totalBooked} armada Jeep telah dipesan pada tanggal ini.`;
+    if (badgeEl) {
+      badgeEl.className = 'self-start sm:self-auto text-[11px] font-bold px-3 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-300';
+      badgeEl.textContent = `🟡 Ada Bookingan (${totalBooked} Jeep Terisi)`;
+    }
+  } else {
+    if (dotEl) dotEl.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0';
+    if (subEl) subEl.textContent = 'Belum ada bookingan pada tanggal ini. Seluruh sesi keberangkatan tersedia penuh.';
+    if (badgeEl) {
+      badgeEl.className = 'self-start sm:self-auto text-[11px] font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300';
+      badgeEl.textContent = '🟢 Bebas Bookingan (100% Tersedia)';
+    }
+  }
+
+  const slots = data?.slots || SESSIONS || [];
+  if (!slots.length) {
+    cardsEl.innerHTML = '<div class="col-span-2 text-xs text-slate-400">Tidak ada jadwal sesi tersedia.</div>';
+    return;
+  }
+
+  cardsEl.innerHTML = slots.map(s => {
+    const isSunSlot = s.is_sunrise || s.time === '04:30' || /sunrise/i.test(s.label);
+    const isMismatched = isSunrisePkg ? !isSunSlot : isSunSlot;
+    const isSelected = String(s.id) === String(state.session);
+    const passed = s.passed ?? false;
+    const booked = s.booked_jeeps ?? 0;
+    const remaining = typeof s.remaining === 'number' ? s.remaining : (s.max_jeeps - booked);
+    const isFull = remaining < state.qty;
+    const isDisabled = passed || isFull || isMismatched;
+
+    let cardBorder = 'border-slate-200 bg-white hover:border-emerald-400';
+    let statusTag = '';
+
+    if (passed) {
+      cardBorder = 'border-slate-200 bg-slate-50/70 opacity-60 cursor-not-allowed';
+      statusTag = '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600">Jam Lewat</span>';
+    } else if (isMismatched) {
+      cardBorder = 'border-slate-200 bg-slate-50/50 opacity-50 cursor-not-allowed';
+      statusTag = `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">${isSunrisePkg ? 'Khusus Reguler' : 'Khusus Sunrise'}</span>`;
+    } else if (isFull) {
+      cardBorder = 'border-rose-200 bg-rose-50/50 opacity-70 cursor-not-allowed';
+      statusTag = '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">Penuh (0 Sisa)</span>';
+    } else if (isSelected) {
+      cardBorder = 'border-emerald-600 bg-emerald-50/90 shadow-xs ring-2 ring-emerald-600/20';
+      statusTag = '<span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-600 text-white">✓ Sesi Terpilih</span>';
+    } else if (booked > 0) {
+      cardBorder = 'border-amber-300 bg-amber-50/40 hover:bg-amber-50 text-slate-800 cursor-pointer';
+      statusTag = `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">Ada Booking (${booked} Jeep)</span>`;
+    } else {
+      cardBorder = 'border-slate-200 bg-white hover:border-emerald-500 hover:bg-emerald-50/30 text-slate-800 cursor-pointer';
+      statusTag = `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Tersedia (${remaining} Jeep)</span>`;
+    }
+
+    let quotaDetail = '';
+    if (passed) {
+      quotaDetail = '<span class="text-[11px] text-slate-400">Jadwal sesi ini sudah terlewati hari ini.</span>';
+    } else if (isMismatched) {
+      quotaDetail = `<span class="text-[11px] text-slate-400">${isSunrisePkg ? 'Pilih Paket Reguler untuk sesi ini.' : 'Pilih Paket Sunrise untuk sesi 04:30.'}</span>`;
+    } else if (booked > 0) {
+      quotaDetail = `<span class="text-[11px] text-amber-900 font-medium">Terpesan: <strong>${booked} Jeep</strong> · Sisa Kuota: <strong>${remaining} Jeep</strong></span>`;
+    } else {
+      quotaDetail = `<span class="text-[11px] text-emerald-800 font-medium">Belum ada pesanan · Kuota: <strong>${remaining} Jeep Tersedia</strong></span>`;
+    }
+
+    return `
+      <div class="p-3 sm:p-3.5 rounded-xl border ${cardBorder} transition-all flex flex-col justify-between gap-2" data-slot-id="${s.id}" ${isDisabled ? 'data-disabled="1"' : ''}>
+        <div class="flex items-start justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full ${isSelected ? 'bg-emerald-600' : (booked > 0 ? 'bg-amber-500' : (isDisabled ? 'bg-slate-300' : 'bg-emerald-500'))}"></span>
+            <span class="font-bold text-xs sm:text-sm text-merapiText-primary font-display">${esc(s.label)}</span>
+          </div>
+          ${statusTag}
+        </div>
+        <div>${quotaDetail}</div>
+      </div>
+    `;
+  }).join('');
+
+  cardsEl.querySelectorAll('[data-slot-id]:not([data-disabled="1"])').forEach(card => {
+    card.onclick = () => {
+      const slotId = card.getAttribute('data-slot-id');
+      state.session = slotId;
+      const sel = $('#session');
+      if (sel) sel.value = slotId;
+      renderSessionOptions();
+      renderDateDetectionPanel(latestAvailabilityData || data);
+      update();
+      setStep(3);
+    };
+  });
+}
+
+let fetchTimer = null;
+function fetchSlotAvailability(date, jeeps, updateDateSelection = true){
   if(!date) return;
-  fetch(`{{ route('booking.slot_availability') }}?trip_date=${encodeURIComponent(date)}&jeep_quantity=1`)
-    .then(r => r.ok ? r.json() : null)
-    .then(data => {
-      if(!data || !Array.isArray(data.slots)) return;
-      AVAIL[date] = {};
-      data.slots.forEach(x => { AVAIL[date][x.id] = x.remaining; });
-      // Abaikan respons lama jika pengguna sudah pindah tanggal
-      if(dateEl.value === date){ renderSessionOptions(); update(); }
-    })
-    .catch(() => { /* abaikan jika offline */ });
+  clearTimeout(fetchTimer);
+  fetchTimer = setTimeout(async () => {
+    try {
+      const res = await fetch(`{{ route('booking.slot_availability') }}?trip_date=${encodeURIComponent(date)}&jeep_quantity=${encodeURIComponent(jeeps)}`);
+      if(res.ok){
+        const data = await res.json();
+        latestAvailabilityData = data;
+        if(data && Array.isArray(data.slots)){
+          if (data.month_bookings) {
+            cachedMonthBookings = { ...cachedMonthBookings, ...data.month_bookings };
+          }
+          if (updateDateSelection) {
+            SESSIONS = SESSIONS.map(s => {
+              const found = data.slots.find(x => x.id === s.id);
+              return found ? { 
+                ...s, 
+                remaining: found.remaining, 
+                booked_jeeps: found.booked_jeeps ?? 0,
+                available: found.available, 
+                passed: found.passed 
+              } : s;
+            });
+            renderSessionOptions();
+            renderDateDetectionPanel(data);
+            update();
+          }
+          renderInteractiveCalendar();
+        }
+      }
+    } catch(e) {
+      // Abaikan jika error jaringan/offline
+    }
+  }, 100);
 }
 
 function renderSessionOptions(){
@@ -653,14 +860,22 @@ function renderSessions(){
 function refresh(){ renderSessionOptions(); update(); renderCalendar(); }
 
 dateEl.addEventListener('change', () => {
-  const today = wibNow().date;
-  if(!dateEl.value || dateEl.value < today){
-    dateEl.value = firstValidDate(curPkg());
-    toast('Tanggal yang sudah lewat tidak bisa dipilih.');
+  if (dateEl.value) {
+    const p = dateEl.value.split('-').map(Number);
+    calViewDate = new Date(p[0], p[1] - 1, p[2]);
   }
-  renderSessions(); update(); renderCalendar(); setStep(2);
+  renderSessions();
+  update();
+  setStep(2);
 });
-$('#session').addEventListener('change', e => { state.session = e.target.value; update(); setStep(3); });
+$('#session').addEventListener('change', e => {
+  state.session = e.target.value;
+  if (latestAvailabilityData) {
+    renderDateDetectionPanel(latestAvailabilityData);
+  }
+  update();
+  setStep(3);
+});
  
 /* ====== 3. KAPASITAS & ARMADA ====== */
 $('#paxPlus').onclick = () => {
@@ -707,24 +922,9 @@ function update(){
   $('#vDue').textContent = rp(due);
 }
  
-/* ====== STEPPER INTERACTION ====== */
 function setStep(n){
-  document.querySelectorAll('.st').forEach(s => {
-    const k = +s.dataset.s;
-    s.classList.toggle('on', k === n);
-    s.classList.toggle('done', k < n);
-    s.querySelector('i').textContent = k < n ? '✓' : k;
-  });
+  // Stepper UI telah dihapus sesuai permintaan
 }
- 
-document.querySelectorAll('.st').forEach(s => s.onclick = () => {
-  const n = +s.dataset.s;
-  const sec = document.querySelector(`[data-sec="${n}"]`);
-  if (sec) {
-    sec.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    setStep(n);
-  }
-});
  
 /* ====== TOAST ====== */
 let tt;
@@ -735,7 +935,141 @@ function toast(msg){
   clearTimeout(tt);
   tt = setTimeout(() => t.classList.remove('show'), 3200);
 }
- 
+
+/* ====== DETEKSI & VALIDASI NOMOR WHATSAPP AKTIF ====== */
+const INDO_OPERATORS = [
+  { name: 'Telkomsel', prefixes: ['0811', '0812', '0813', '0821', '0822', '0823', '0851', '0852', '0853'] },
+  { name: 'Indosat Ooredoo', prefixes: ['0814', '0815', '0816', '0855', '0856', '0857', '0858'] },
+  { name: 'XL Axiata', prefixes: ['0817', '0818', '0819', '0859', '0877', '0878'] },
+  { name: 'Axis', prefixes: ['0831', '0832', '0833', '0838'] },
+  { name: 'Tri (3)', prefixes: ['0895', '0896', '0897', '0898', '0899'] },
+  { name: 'Smartfren', prefixes: ['0881', '0882', '0883', '0884', '0885', '0886', '0887', '0888', '0889'] }
+];
+
+function checkWhatsAppNumber(raw) {
+  if (!raw || !raw.trim()) {
+    return { status: 'empty' };
+  }
+  
+  let cleaned = raw.trim().replace(/[\s\-\.]/g, '');
+  if (cleaned.startsWith('+62')) {
+    cleaned = '0' + cleaned.substring(3);
+  } else if (cleaned.startsWith('62')) {
+    cleaned = '0' + cleaned.substring(2);
+  }
+  
+  const digits = cleaned.replace(/\D/g, '');
+  
+  // Deteksi Telepon Rumah / PSTN (bukan seluler WhatsApp)
+  const pstn = ['021', '022', '024', '031', '0274', '0271', '0281', '0251', '0267', '0282', '0291'];
+  for (let p of pstn) {
+    if (digits.startsWith(p)) {
+      return {
+        status: 'invalid',
+        reason: 'Telepon Rumah (Bukan WA)',
+        detail: 'Nomor telepon rumah/kantor tidak dapat menerima WhatsApp e-tiket.'
+      };
+    }
+  }
+  
+  if (!digits.startsWith('08')) {
+    return {
+      status: 'invalid',
+      reason: 'Bukan Nomor Seluler',
+      detail: 'Gunakan nomor seluler diawali 08xx atau +628xx.'
+    };
+  }
+  
+  const prefix4 = digits.substring(0, 4);
+  let opName = null;
+  for (let op of INDO_OPERATORS) {
+    if (op.prefixes.includes(prefix4)) {
+      opName = op.name;
+      break;
+    }
+  }
+  
+  if (!opName) {
+    return {
+      status: 'invalid',
+      reason: 'Prefix Tidak Dikenal',
+      detail: 'Prefix operator seluler belum terdaftar di Indonesia.'
+    };
+  }
+  
+  if (digits.length < 10) {
+    return {
+      status: 'typing',
+      reason: `Format Nomor (${digits.length}/10-13 digit)`,
+      detail: `Lengkapi nomor WhatsApp Anda (${digits.length} digit). Minimal 10 digit.`
+    };
+  }
+  
+  if (digits.length > 13) {
+    return {
+      status: 'invalid',
+      reason: 'Nomor Terlalu Panjang',
+      detail: `Nomor melebihi batas maksimal seluler Indonesia (${digits.length} digit).`
+    };
+  }
+  
+  const intlNumber = '62' + digits.substring(1);
+  return {
+    status: 'valid',
+    localNumber: digits,
+    intlNumber: intlNumber,
+    reason: '✓ WhatsApp Aktif',
+    detail: '*Nomor WhatsApp terverifikasi. E-tiket siap dikirim ke nomor ini.'
+  };
+}
+
+function updateWhatsAppUI() {
+  const waInput = $('#wa');
+  const badge = $('#waStatusBadge');
+  const icon = $('#waStatusIcon');
+  const feedback = $('#waFeedback');
+  if (!waInput || !badge) return;
+  
+  const res = checkWhatsAppNumber(waInput.value);
+  
+  if (res.status === 'empty') {
+    badge.className = 'hidden';
+    icon.innerHTML = '';
+    waInput.classList.remove('border-emerald-500', 'ring-2', 'ring-emerald-500/15', 'border-rose-400', 'ring-rose-400/15');
+    feedback.className = 'hidden';
+    feedback.textContent = '';
+    return;
+  }
+  
+  if (res.status === 'valid') {
+    badge.className = 'text-[10px] sm:text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 transition-all';
+    badge.textContent = res.reason;
+    icon.innerHTML = `<svg class="w-5 h-5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>`;
+    waInput.classList.remove('border-rose-400', 'ring-rose-400/15', 'err');
+    waInput.classList.add('border-emerald-500', 'ring-2', 'ring-emerald-500/15');
+    feedback.className = 'hidden';
+    feedback.textContent = '';
+  } else if (res.status === 'typing') {
+    badge.className = 'text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 transition-all';
+    badge.textContent = res.reason;
+    icon.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>`;
+    waInput.classList.remove('border-emerald-500', 'ring-emerald-500/15', 'border-rose-400', 'ring-rose-400/15', 'err');
+    feedback.className = 'hidden';
+    feedback.textContent = '';
+  } else {
+    badge.className = 'text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 border border-rose-200 transition-all';
+    badge.textContent = res.reason;
+    icon.innerHTML = `<svg class="w-4 h-4 text-rose-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>`;
+    waInput.classList.remove('border-emerald-500', 'ring-emerald-500/15');
+    waInput.classList.add('border-rose-400', 'ring-2', 'ring-rose-400/15');
+    feedback.className = 'block text-[11px] text-rose-600 font-medium transition-colors mt-1';
+    feedback.textContent = res.detail;
+  }
+}
+
+$('#wa').addEventListener('input', updateWhatsAppUI);
+$('#wa').addEventListener('blur', updateWhatsAppUI);
+
 /* ====== SUBMIT FORM ====== */
 $('#submit').onclick = () => {
   const name = $('#name'), wa = $('#wa');
@@ -761,9 +1095,12 @@ $('#submit').onclick = () => {
     toast('Isi nama lengkap pemesan.');
     return name.focus();
   }
-  if(!/^(\+?62|0)8\d{7,12}$/.test(wa.value.replace(/[\s-]/g, ''))){
+  
+  const waCheck = checkWhatsAppNumber(wa.value);
+  if(waCheck.status !== 'valid'){
     wa.classList.add('err');
-    toast('Nomor WhatsApp belum valid (gunakan format 08xx / 628xx).');
+    updateWhatsAppUI();
+    toast(waCheck.detail || 'Nomor WhatsApp belum valid (harus nomor seluler aktif 10-13 digit).');
     return wa.focus();
   }
  
@@ -777,8 +1114,8 @@ $('#submit').onclick = () => {
   set('jeep_quantity', state.qty);
   set('arrival_type', 'self_drive');
   set('customer_name', name.value.trim());
-  set('customer_phone', wa.value.trim());
-  set('payment_mode', 'FULL');
+  set('customer_phone', waCheck.localNumber || wa.value.trim());
+  set('payment_mode', state.pay === 'dp' ? 'DP' : 'FULL');
   set('notes', $('#notes').value.trim());
  
   const btn = $('#submit');

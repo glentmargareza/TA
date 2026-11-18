@@ -55,7 +55,7 @@
     <style>
         html {
             scroll-behavior: smooth;
-            overflow-x: hidden;
+            overflow-x: clip;
             max-width: 100vw;
             width: 100%;
         }
@@ -64,10 +64,15 @@
             background-color: #F7F7F2;
             color: #374151;
             -webkit-tap-highlight-color: transparent;
-            overflow-x: hidden;
+            overflow-x: clip;
             max-width: 100vw;
             width: 100%;
-            position: relative;
+        }
+        #mainNavbar {
+            position: -webkit-sticky;
+            position: sticky;
+            top: 0;
+            z-index: 50;
         }
         h1, h2, h3, h4, h5, h6 { 
             font-family: 'Poppins', 'Inter', sans-serif; 
@@ -75,13 +80,13 @@
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col selection:bg-wukirsari-sage selection:text-wukirsari-primary pb-20 md:pb-0 overflow-x-hidden w-full max-w-full relative">
+<body class="min-h-screen flex flex-col selection:bg-wukirsari-sage selection:text-wukirsari-primary pb-20 md:pb-0 overflow-x-clip w-full max-w-full relative">
 
     <!-- NAVBAR HEADER -->
     @hasSection('header')
         @yield('header')
     @else
-    <header id="mainNavbar" class="{{ request()->routeIs('home') ? 'sticky top-0 z-50 bg-[#0c2314] border-b border-emerald-900/60 text-white shadow-md transition-all' : 'sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-wukirsari-border text-merapiText-secondary transition-all' }}">
+    <header id="mainNavbar" class="{{ request()->routeIs('home') ? 'sticky top-0 z-50 bg-[#0c2314]/95 backdrop-blur-md border-b border-emerald-900/60 text-white shadow-md transition-all' : 'sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-wukirsari-border text-merapiText-secondary shadow-xs transition-all' }}">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16 sm:h-20 gap-3 xl:gap-6">
                 
@@ -236,7 +241,7 @@
                         <svg class="w-4 h-4 fill-none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
                     </a>
 
-                    <a href="{{ route('booking.create') }}" class="px-3 sm:px-4 py-1.5 rounded-full bg-[#245329] hover:bg-[#2d6633] border border-white/20 text-white text-xs font-bold shadow-xs transition-all shrink-0">
+                    <a href="{{ route('booking.create') }}" class="px-3.5 sm:px-4 py-1.5 rounded-full {{ request()->routeIs('home') ? 'bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-sm' : 'bg-[#245329] hover:bg-[#2d6633] text-white' }} border border-white/20 text-xs font-bold transition-all shrink-0 active:scale-95">
                         Booking
                     </a>
 
@@ -512,15 +517,14 @@
 
                     <!-- Status Operasional Pill -->
                     <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 text-xs">
-                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        
                         <span class="font-medium">Buka Setiap Hari: 06.00 – 18.00 WIB</span>
                     </div>
                 </div>
 
                 <!-- Kolom 2: Navigasi Cepat (lg:col-span-3) -->
                 <div class="lg:col-span-3">
-                    <h4 class="text-white font-bold text-xs sm:text-sm tracking-wider mb-4 font-display flex items-center gap-2">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    <h4 class="text-white font-bold text-xs sm:text-sm tracking-wider mb-4 font-display flex items-center gap-2">   
                         <span>Navigasi</span>
                     </h4>
                     <ul class="space-y-2.5 text-xs sm:text-sm text-white/75">
@@ -561,7 +565,6 @@
                 <!-- Kolom 3: Basecamp & Media Sosial (lg:col-span-4) -->
                 <div class="lg:col-span-4 space-y-4">
                     <h4 class="text-white font-bold text-xs sm:text-sm tracking-wider mb-4 font-display flex items-center gap-2">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                         <span>Basecamp & Kontak</span>
                     </h4>
                     
@@ -572,16 +575,7 @@
                                     <path d="M20 15.5c-1.2 0-2.4-.2-3.6-.6-.3-.1-.7 0-1 .2l-2.2 2.2c-2.8-1.4-5.1-3.8-6.6-6.6l2.2-2.2c.3-.3.4-.7.2-1-.3-1.1-.5-2.3-.5-3.5 0-.6-.4-1-1-1H4c-.6 0-1 .4-1 1 0 9.4 7.6 17 17 17 .6 0 1-.4 1-1v-3.5c0-.6-.4-1-1-1z"/>
                                 </svg>
                             </div>
-                            <a href="https://wa.me/6281234567890" target="_blank" class="hover:text-emerald-300 transition-colors font-medium">+62 812-3456-7890</a>
-                        </li>
-
-                        <li class="flex items-center gap-2.5">
-                            <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
-                                <svg class="w-4 h-4 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                                </svg>
-                            </div>
-                            <a href="mailto:jeepwukirsari@gmail.com" class="hover:text-emerald-300 transition-colors font-medium">jeepwukirsari@gmail.com</a>
+                            <a href="https://wa.me/+6281228677843" target="_blank" class="hover:text-emerald-300 transition-colors font-medium">+62 812-2867‑7843</a>
                         </li>
 
                         <li class="flex items-start gap-2.5">
@@ -607,12 +601,8 @@
                             <a href="https://www.tiktok.com/@antocingoh.26?_r=1&_t=ZS-9BJ4ZkjdNwK" target="_blank" class="w-10 h-10 rounded-2xl bg-white/5 hover:bg-emerald-500 hover:text-white border border-white/10 flex items-center justify-center text-white/80 transition-all hover:-translate-y-1 shadow-sm" title="TikTok">
                                 <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.24 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
                             </a>
-                            <!-- YouTube -->
-                            <a href="https://www.youtube.com/@jeepwukirsari" target="_blank" class="w-10 h-10 rounded-2xl bg-white/5 hover:bg-emerald-500 hover:text-white border border-white/10 flex items-center justify-center text-white/80 transition-all hover:-translate-y-1 shadow-sm" title="YouTube">
-                                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-                            </a>
                             <!-- WhatsApp -->
-                            <a href="https://wa.me/6281234567890" target="_blank" class="w-10 h-10 rounded-2xl bg-white/5 hover:bg-emerald-500 hover:text-white border border-white/10 flex items-center justify-center text-white/80 transition-all hover:-translate-y-1 shadow-sm" title="WhatsApp">
+                            <a href="https://wa.me/6281228677843" target="_blank" class="w-10 h-10 rounded-2xl bg-white/5 hover:bg-emerald-500 hover:text-white border border-white/10 flex items-center justify-center text-white/80 transition-all hover:-translate-y-1 shadow-sm" title="WhatsApp">
                                 <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12.004 2C6.48 2 2 6.48 2 12c0 1.97.57 3.81 1.56 5.37L2.1 21.9l4.67-1.42A9.95 9.95 0 0 0 12 22c5.52 0 10-4.48 10-10S17.52 2 12.004 2zm5.82 14.28c-.24.68-1.2 1.25-1.68 1.33-.45.07-1.04.1-3.03-.72-2.54-1.05-4.18-3.64-4.31-3.81-.13-.17-1.03-1.37-1.03-2.61s.65-1.85.88-2.1c.23-.25.5-.31.67-.31.17 0 .34 0 .49.01.15.01.36-.06.56.43.21.5.72 1.76.78 1.89.06.13.1.28.02.45-.09.17-.13.28-.26.43-.13.15-.27.33-.39.45-.13.13-.27.27-.12.53.15.26.68 1.12 1.46 1.81 1 .89 1.84 1.17 2.1 1.3.26.13.41.11.56-.06.15-.17.65-.76.82-1.02.17-.26.35-.22.59-.13.24.09 1.52.72 1.78.85.26.13.43.2.49.31.06.11.06.64-.18 1.32z"/></svg>
                             </a>
                         </div>
@@ -639,7 +629,7 @@
 
     <!-- STICKY BOTTOM BAR (MOBILE ONLY - DISEMBUNYIKAN DI FORM BOOKING / ADMIN) -->
     @if(!View::hasSection('hide_floating_cta') && !request()->routeIs('admin.*'))
-    <div class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-wukirsari-border px-4 py-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom,0px))] shadow-lg flex items-center justify-between gap-3">
+    <div id="mobileStickyBottomBar" class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-wukirsari-border px-4 py-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom,0px))] shadow-lg flex items-center justify-between gap-3 {{ request()->routeIs('home') ? 'transform translate-y-full opacity-0 pointer-events-none transition-all duration-300' : '' }}">
         <div>
             <span class="block text-[10px] font-medium text-merapiText-muted uppercase tracking-wider">Mulai dari</span>
             <span class="text-sm font-extrabold text-merapiText-primary leading-tight">Rp 450.000<span class="text-[11px] font-normal text-merapiText-secondary">/jeep</span></span>
@@ -649,6 +639,25 @@
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
         </a>
     </div>
+    @if(request()->routeIs('home'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const bar = document.getElementById('mobileStickyBottomBar');
+            if (!bar) return;
+            const heroSection = document.querySelector('section');
+            function updateBarVisibility() {
+                const threshold = heroSection ? (heroSection.offsetHeight - 140) : 320;
+                if (window.scrollY > threshold) {
+                    bar.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none');
+                } else {
+                    bar.classList.add('translate-y-full', 'opacity-0', 'pointer-events-none');
+                }
+            }
+            window.addEventListener('scroll', updateBarVisibility, { passive: true });
+            updateBarVisibility();
+        });
+    </script>
+    @endif
     @endif
 
     <!-- MODAL EDIT ULASAN WISATAWAN -->
