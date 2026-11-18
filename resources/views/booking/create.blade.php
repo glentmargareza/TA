@@ -19,14 +19,11 @@
  
         <!-- Judul Halaman -->
         <div class="space-y-1.5">
-            <span class="text-xs font-bold uppercase tracking-wider text-wukirsari-primary font-display block">
-                FORMULIR RESERVASI ONLINE
-            </span>
             <h1 class="text-2xl sm:text-4xl font-extrabold text-merapiText-primary font-display tracking-tight">
                 Pemesanan Jeep Wukirsari
             </h1>
             <p class="text-merapiText-secondary text-xs sm:text-sm max-w-2xl">
-                Pilih paket wisata lereng Merapi, tentukan jadwal keberangkatan, dan nikmati opsi pembayaran instan (Lunas 100% atau Uang Muka DP 30%).
+                Pilih paket wisata lereng Merapi, tentukan jadwal keberangkatan, dan nikmati kemudahan pembayaran instan.
             </p>
         </div>
  
@@ -51,7 +48,7 @@
             <div class="lg:col-span-8 space-y-6">
                 
                 <!-- Stepper Progress Bar -->
-                <div class="bg-white border border-wukirsari-border rounded-2xl p-2 shadow-xs flex items-center justify-between gap-1 sm:gap-2 overflow-x-auto scrollbar-none sticky top-16 sm:top-20 z-30 backdrop-blur-md bg-white/95" id="stepper">
+                <div class="bg-white border border-wukirsari-border rounded-2xl p-2 shadow-xs flex items-center justify-between gap-1 sm:gap-2 overflow-x-auto scrollbar-none" id="stepper">
                     <button type="button" class="st on flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-merapiText-secondary hover:text-merapiText-primary transition-all shrink-0 cursor-pointer" data-s="1">
                         <i class="w-6 h-6 rounded-lg bg-wukirsari-sage text-wukirsari-primary flex items-center justify-center text-xs font-bold not-italic">1</i>
                         <span>1. Paket</span>
@@ -99,9 +96,33 @@
                     </div>
  
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div class="space-y-1.5">
-                            <label for="date" class="block text-xs font-bold text-merapiText-primary">Tanggal Kunjungan *</label>
-                            <input id="date" type="date" value="{{ $defaultDate ?? '' }}" class="w-full px-4 py-3 rounded-2xl border border-wukirsari-border bg-white text-merapiText-primary text-sm font-semibold focus:outline-none focus:border-wukirsari-primary focus:ring-2 focus:ring-wukirsari-primary/15 transition-all">
+                        <div class="space-y-1.5 relative" id="dateWrap">
+                            <label for="dateBtn" class="block text-xs font-bold text-merapiText-primary">Tanggal Kunjungan *</label>
+                            <!-- Nilai tanggal (YYYY-MM-DD) disimpan di input tersembunyi; dipilih lewat kalender di bawah -->
+                            <input id="date" type="hidden" value="{{ $defaultDate ?? '' }}">
+                            <button type="button" id="dateBtn" aria-haspopup="dialog" aria-expanded="false" class="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-2xl border border-wukirsari-border bg-white text-merapiText-primary text-sm font-semibold text-left cursor-pointer focus:outline-none focus:border-wukirsari-primary focus:ring-2 focus:ring-wukirsari-primary/15 transition-all">
+                                <span id="dateText">Pilih tanggal</span>
+                                <svg class="w-4 h-4 text-wukirsari-primary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            </button>
+
+                            <!-- Kalender ketersediaan -->
+                            <div id="cal" class="hidden absolute left-0 right-0 sm:right-auto sm:w-[22rem] top-full mt-2 z-40 bg-white border border-wukirsari-border rounded-2xl shadow-2xl p-4" role="dialog" aria-label="Pilih tanggal kunjungan">
+                                <div class="flex items-center justify-between mb-3">
+                                    <button type="button" id="calPrev" class="w-9 h-9 rounded-lg hover:bg-wukirsari-sage text-merapiText-primary font-bold flex items-center justify-center cursor-pointer" aria-label="Bulan sebelumnya">‹</button>
+                                    <strong id="calTitle" class="text-sm font-bold text-merapiText-primary font-display capitalize"></strong>
+                                    <button type="button" id="calNext" class="w-9 h-9 rounded-lg hover:bg-wukirsari-sage text-merapiText-primary font-bold flex items-center justify-center cursor-pointer" aria-label="Bulan berikutnya">›</button>
+                                </div>
+                                <div class="grid grid-cols-7 gap-1 text-center text-[11px] font-bold text-merapiText-muted mb-1">
+                                    <span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span><span>Min</span>
+                                </div>
+                                <div id="calGrid" class="grid grid-cols-7 gap-1"></div>
+                                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 pt-3 border-t border-wukirsari-border/70 text-[11px] text-merapiText-secondary">
+                                    <span class="inline-flex items-center gap-1.5"><i class="w-2 h-2 rounded-full bg-green-600 inline-block"></i>Tersedia</span>
+                                    <span class="inline-flex items-center gap-1.5"><i class="w-2 h-2 rounded-full bg-amber-500 inline-block"></i>Sebagian sesi penuh/lewat</span>
+                                    <span class="inline-flex items-center gap-1.5"><i class="w-2 h-2 rounded-full bg-red-500 inline-block"></i>Penuh</span>
+                                </div>
+                                <p class="text-[11px] text-merapiText-muted mt-2" id="calNote">Status mengikuti paket, jumlah jeep, dan jam sesi (WIB).</p>
+                            </div>
                         </div>
                         <div class="space-y-1.5">
                             <label for="session" class="block text-xs font-bold text-merapiText-primary">Sesi Waktu Keberangkatan *</label>
@@ -211,28 +232,9 @@
                         <strong class="text-2xl sm:text-3xl font-extrabold text-wukirsari-primary font-display" id="vTotal">Rp 0</strong>
                     </div>
  
-                    <!-- Skema Pembayaran -->
-                    <div class="space-y-2 pt-2">
-                        <label class="block text-xs font-bold text-merapiText-primary">Pilihan Skema Pembayaran</label>
-                        <div class="grid grid-cols-2 gap-2.5 pay">
-                            <button type="button" class="po sel p-3 rounded-2xl border text-left transition-all cursor-pointer" data-p="full">
-                                <strong class="block text-xs font-bold text-merapiText-primary">Lunas (100%)</strong>
-                                <span class="block text-[10px] text-merapiText-secondary mt-0.5">Langsung beres</span>
-                            </button>
-                            <button type="button" class="po p-3 rounded-2xl border text-left transition-all cursor-pointer" data-p="dp">
-                                <strong class="block text-xs font-bold text-merapiText-primary">Uang Muka (DP 30%)</strong>
-                                <span class="block text-[10px] text-merapiText-secondary mt-0.5">Sisa di basecamp</span>
-                            </button>
-                        </div>
-                    </div>
- 
                     <!-- Box Tagihan Sekarang -->
                     <div class="bg-wukirsari-dark text-white rounded-2xl p-4 flex items-center justify-between shadow-xs">
-                        <div>
-                            <span class="block text-[11px] text-wukirsari-sage font-medium" id="dueLbl">Wajib Dibayar Sekarang</span>
-                            <strong class="text-xl sm:text-2xl font-extrabold font-display" id="vDue">Rp 0</strong>
-                        </div>
-                        <span class="text-xs text-wukirsari-sage font-semibold" id="dueSub">Lunas</span>
+                        <strong class="text-xl sm:text-2xl font-extrabold font-display" id="vDue">Rp 0</strong>
                     </div>
  
                     <!-- Tombol Lanjutkan -->
@@ -242,13 +244,7 @@
                     </button>
  
                     <!-- Trust Badges -->
-                    <div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] text-merapiText-muted font-medium pt-1">
-                        <span>🛡️ Pembayaran Resmi</span>
-                        <span>•</span>
-                        <span>🔄 Reschedule H-2</span>
-                        <span>•</span>
-                        <span>⚡ Konfirmasi Instan</span>
-                    </div>
+                    
                 </div>
             </div>
  
@@ -306,10 +302,24 @@
     transform: translate(-50%, 0) !important;
 }
  
+/* Kalender ketersediaan */
+#cal .cd{height:2.5rem;display:flex;align-items:center;justify-content:center;position:relative;border-radius:.75rem;font-size:.8125rem;font-weight:700;color:#1f2a20;cursor:pointer;transition:background .15s}
+#cal .cd:hover:not(:disabled){background:#E8EFE9}
+#cal .cd:disabled{cursor:not-allowed}
+#cal .cd.past{color:#c5c9c6}
+#cal .cd.full{color:#b91c1c;background:#fef2f2;text-decoration:line-through}
+#cal .cd.today{box-shadow:inset 0 0 0 1.5px #1E3F20}
+#cal .cd.sel,#cal .cd.sel:hover{background:#1E3F20;color:#fff}
 
 /* ===== RESPONSIF HP ===== */
 html{-webkit-text-size-adjust:100%}
-body{overflow-x:hidden}
+/* clip (bukan hidden) agar tidak membuat scroll container yang mematikan position: sticky */
+html,body{overflow-x:clip}
+/* Ringkasan ikut menempel saat scroll; jika lebih tinggi dari layar, bisa di-scroll sendiri */
+@media (min-width:1024px){
+  #pay{position:sticky;top:6rem;align-self:start;max-height:calc(100vh - 7rem);overflow-y:auto;scrollbar-width:none}
+  #pay::-webkit-scrollbar{display:none}
+}
 .mbar{padding-bottom:calc(.75rem + env(safe-area-inset-bottom))}
 #stepper{-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}
 #stepper .st{scroll-snap-align:center}
@@ -320,7 +330,7 @@ body{overflow-x:hidden}
   #paxMinus,#paxPlus,#minus,#plus{width:44px!important;height:44px!important;font-size:1.25rem!important}
   .po,.pkg{min-height:56px}
   #submit{min-height:52px}
-  input[type=date]{min-height:48px;-webkit-appearance:none;appearance:none}
+  input[type=date]{min-height:48px}
   #name,#wa,#session,#date{min-height:48px}
   h1{line-height:1.2}
 }
@@ -342,7 +352,8 @@ const D              = bookingDataEl ? JSON.parse(bookingDataEl.textContent || '
 window.BOOKING_DATA  = D;
 const PER_JEEP       = 4;
 const PACKAGES       = D.packages || [];
-let SESSIONS         = D.slots || [];
+const SESSIONS       = D.slots || [];
+const TZ             = 'Asia/Jakarta';   // semua jadwal mengikuti WIB, bukan jam perangkat
  
 const $ = s => document.querySelector(s);
 const rp = n => 'Rp ' + Number(n).toLocaleString('id-ID');
@@ -353,7 +364,49 @@ const state = {
 };
 const curPkg = () => PACKAGES.find(x => String(x.id) === String(state.pkg)) || PACKAGES[0];
  
+/* ====== UTILITAS WAKTU (WIB) ====== */
+function wibNow(){
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+  }).formatToParts(new Date());
+  const g = t => parts.find(p => p.type === t).value;
+  return { date: `${g('year')}-${g('month')}-${g('day')}`, min: (+g('hour')) * 60 + (+g('minute')) };
+}
+const addDays = (dateStr, n) => {
+  const d = new Date(dateStr + 'T00:00:00Z');
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+};
+const toMin = t => { const [h, m] = String(t).split(':').map(Number); return h * 60 + m; };
+const fmtDate = ds => new Date(ds + 'T00:00:00').toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+/* ====== UTILITAS JADWAL ====== */
+const isSunrisePkg  = p => !!p && (p.is_sunrise || /sunrise/i.test(p.slug || '') || /sunrise/i.test(p.name || ''));
+const isSunriseSlot = s => !!s.is_sunrise || s.time === '04:30' || /sunrise/i.test(s.label || '');
+// Paket Sunrise hanya sesi 04:30; paket reguler hanya sesi reguler.
+const slotsFor = p => SESSIONS.filter(s => isSunrisePkg(p) ? isSunriseSlot(s) : !isSunriseSlot(s));
+// Sesi dianggap lewat jika tanggalnya sudah lewat, atau hari ini dan jamnya sudah lewat (WIB).
+const isPassed = (s, date) => {
+  const n = wibNow();
+  if(date < n.date) return true;
+  return date === n.date && toMin(s.time) <= n.min;
+};
+// Tanggal paling awal (hari ini s/d 30 hari ke depan) yang masih punya sesi belum lewat.
+function firstValidDate(pkg, from){
+  const start = from || wibNow().date;
+  const list = slotsFor(pkg);
+  for(let i = 0; i < 30; i++){
+    const d = addDays(start, i);
+    if(list.some(s => !isPassed(s, d))) return d;
+  }
+  return start;
+}
+// Cache kuota per tanggal: AVAIL[tanggal][slotId] = sisa jeep
+const AVAIL = {};
+ 
 /* ====== 1. PAKET ====== */
+const dateEl = $('#date');
 const pkgsEl = $('#pkgs');
 if (pkgsEl && PACKAGES.length) {
   pkgsEl.innerHTML = PACKAGES.map(p => `
@@ -371,18 +424,16 @@ if (pkgsEl && PACKAGES.length) {
     state.pkg = b.dataset.id;
     pkgsEl.querySelectorAll('.pkg').forEach(x => x.classList.toggle('sel', x === b));
 
+    // Jika tanggal terpilih tidak punya sesi tersisa untuk tipe paket ini
+    // (mis. Sunrise 04:30 sudah lewat hari ini), pindah ke tanggal terdekat yang tersedia.
     const p = curPkg();
-    const isSunrise = p && (p.is_sunrise || /sunrise/i.test(p.slug || '') || /sunrise/i.test(p.name || ''));
-    const isToday = dateEl.value === iso(new Date());
-    const now = new Date();
-    const nowMin = now.getHours() * 60 + now.getMinutes();
-
-    // Jika beralih ke Sunrise dan tanggal masih hari ini tetapi jam 04:30 WIB sudah lewat:
-    // Otomatis sesuaikan tanggal ke besok (H+1)
-    if(isSunrise && isToday && nowMin >= (4 * 60 + 30)){
-      const def = new Date();
-      def.setDate(def.getDate() + 1);
-      dateEl.value = iso(def);
+    const hasSlot = dateEl.value && slotsFor(p).some(s => !isPassed(s, dateEl.value));
+    if(!hasSlot){
+      const nd = firstValidDate(p);
+      if(nd !== dateEl.value){
+        dateEl.value = nd;
+        toast('Tanggal disesuaikan ke ' + fmtDate(nd) + ' karena sesi paket ini hari ini sudah lewat.');
+      }
     }
 
     renderSessions();
@@ -392,104 +443,187 @@ if (pkgsEl && PACKAGES.length) {
 }
  
 /* ====== 2. TANGGAL & SESI ====== */
-const dateEl = $('#date');
-const iso = d => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
-dateEl.min = iso(new Date());
-function getSmartDefaultDate(pkg){
-  const now = new Date();
-  const nowMin = now.getHours() * 60 + now.getMinutes();
-  const isSunrise = pkg && (pkg.is_sunrise || /sunrise/i.test(pkg.slug || '') || /sunrise/i.test(pkg.name || ''));
+dateEl.min = wibNow().date;
 
-  if(isSunrise){
-    if(nowMin >= (4 * 60 + 30)){
-      const def = new Date();
-      def.setDate(def.getDate() + 1);
-      return iso(def);
-    }
-    return iso(now);
-  } else {
-    if(nowMin >= (13 * 60 + 30)){
-      const def = new Date();
-      def.setDate(def.getDate() + 1);
-      return iso(def);
-    }
-    return iso(now);
+// Tanggal awal: dari server jika masih valid untuk paket terpilih, jika tidak hitung sendiri (WIB)
+(function initDate(){
+  const p = curPkg();
+  const cand = D.defaultDate || dateEl.value;
+  const ok = cand && cand >= wibNow().date && slotsFor(p).some(s => !isPassed(s, cand));
+  dateEl.value = ok ? cand : firstValidDate(p);
+})();
+
+/* ====== KALENDER KETERSEDIAAN ======
+   Tiap tanggal dinilai dari: tipe paket (Sunrise / reguler), jumlah jeep, sisa kuota per sesi
+   (dari server), dan jam sesi yang sudah lewat (WIB). */
+const dateBtn = $('#dateBtn');
+const calEl   = $('#cal');
+const MONTH_LOADING = {};
+let calYm = null;   // bulan yang sedang ditampilkan, 'YYYY-MM'
+
+function dayInfo(date){
+  const list = slotsFor(curPkg());
+  if(date < wibNow().date) return { st: 'past', dot: '', tip: 'Tanggal sudah lewat' };
+  if(list.length === 0)   return { st: 'full', dot: '', tip: 'Tidak ada sesi untuk paket ini' };
+
+  const av = AVAIL[date];
+  let ok = 0, passedN = 0;
+  const lines = list.map(s => {
+    const rem = av ? av[s.id] : undefined;
+    const known = typeof rem === 'number';
+    if(isPassed(s, date))            { passedN++; return `${s.time} WIB — sudah lewat`; }
+    if(known && rem < state.qty)     return `${s.time} WIB — ${rem <= 0 ? 'penuh' : 'sisa ' + rem + ' jeep (kurang)'}`;
+    ok++;
+    return `${s.time} WIB — ${known ? 'sisa ' + rem + ' jeep' : 'tersedia'}`;
+  });
+
+  if(ok === 0){
+    return passedN === list.length
+      ? { st: 'past', dot: '', tip: 'Semua sesi hari ini sudah lewat' }
+      : { st: 'full', dot: '', tip: 'Kuota penuh\n' + lines.join('\n') };
   }
+  if(!av) return { st: 'unk', dot: '', tip: 'Memeriksa ketersediaan…' };
+  return { st: ok < list.length ? 'part' : 'ok', dot: ok < list.length ? 'part' : 'ok', tip: lines.join('\n') };
 }
 
-// Inisialisasi tanggal otomatis cerdas
-if (D.defaultDate) {
-  dateEl.value = D.defaultDate;
-} else if (!dateEl.value || dateEl.value < iso(new Date())) {
-  dateEl.value = getSmartDefaultDate(curPkg());
+// Tanggal terdekat (setelah `from`) yang masih punya sesi tersedia
+function nextOpenDate(from){
+  for(let i = 0; i < 90; i++){
+    const d = addDays(from, i);
+    if(['ok', 'part', 'unk'].includes(dayInfo(d).st)) return d;
+  }
+  return from;
 }
-let fetchTimer = null;
-function fetchSlotAvailability(date, jeeps){
+
+function loadMonth(ym){
+  if(MONTH_LOADING[ym]) return;
+  MONTH_LOADING[ym] = true;
+  fetch(`{{ route('booking.slot_availability') }}?month=${encodeURIComponent(ym)}`)
+    .then(r => r.ok ? r.json() : null)
+    .then(data => {
+      MONTH_LOADING[ym] = false;
+      if(!data || !data.dates) return;
+      Object.keys(data.dates).forEach(d => {
+        AVAIL[d] = {};
+        data.dates[d].forEach(x => { AVAIL[d][x.id] = x.remaining; });
+      });
+      renderCalendar();
+      if(dateEl.value){ renderSessionOptions(); update(); }
+    })
+    .catch(() => { MONTH_LOADING[ym] = false; });
+}
+
+function renderCalendar(){
+  if(!calEl || calEl.classList.contains('hidden') || !calYm) return;
+  const [y, m] = calYm.split('-').map(Number);
+  const first = new Date(Date.UTC(y, m - 1, 1));
+  const startDow = (first.getUTCDay() + 6) % 7;            // minggu dimulai Senin
+  const days = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  const today = wibNow().date;
+
+  $('#calTitle').textContent = first.toLocaleDateString('id-ID', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+
+  let html = '';
+  for(let i = 0; i < startDow; i++) html += '<span></span>';
+  for(let d = 1; d <= days; d++){
+    const ds = `${calYm}-${String(d).padStart(2, '0')}`;
+    const info = dayInfo(ds);
+    const disabled = info.st === 'past' || info.st === 'full';
+    const cls = ['cd', info.st === 'past' ? 'past' : '', info.st === 'full' ? 'full' : '',
+                 ds === dateEl.value ? 'sel' : '', ds === today ? 'today' : ''].join(' ').replace(/\s+/g, ' ').trim();
+    html += `<button type="button" class="${cls}" data-d="${ds}" ${disabled ? 'disabled' : ''} title="${esc(info.tip)}">${d}${info.dot ? `<i class="${info.dot}"></i>` : ''}</button>`;
+  }
+  $('#calGrid').innerHTML = html;
+
+  const atFirst = calYm <= today.slice(0, 7);
+  $('#calPrev').disabled = atFirst;
+  $('#calPrev').classList.toggle('opacity-40', atFirst);
+}
+
+function showMonth(ym){
+  calYm = ym;
+  loadMonth(ym);        // selalu ambil data terbaru agar kuota akurat
+  renderCalendar();
+}
+function shiftMonth(delta){
+  const [y, m] = calYm.split('-').map(Number);
+  const d = new Date(Date.UTC(y, m - 1 + delta, 1));
+  const ym = d.toISOString().slice(0, 7);
+  if(ym < wibNow().date.slice(0, 7)) return;
+  showMonth(ym);
+}
+function openCal(){
+  calEl.classList.remove('hidden');
+  dateBtn.setAttribute('aria-expanded', 'true');
+  showMonth((dateEl.value || wibNow().date).slice(0, 7));
+}
+function closeCal(){
+  calEl.classList.add('hidden');
+  dateBtn.setAttribute('aria-expanded', 'false');
+}
+
+dateBtn.addEventListener('click', () => calEl.classList.contains('hidden') ? openCal() : closeCal());
+document.addEventListener('click', e => { if(!$('#dateWrap').contains(e.target)) closeCal(); });
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeCal(); });
+$('#calPrev').addEventListener('click', () => shiftMonth(-1));
+$('#calNext').addEventListener('click', () => shiftMonth(1));
+$('#calGrid').addEventListener('click', e => {
+  const b = e.target.closest('.cd');
+  if(!b || b.disabled) return;
+  dateEl.value = b.dataset.d;
+  closeCal();
+  dateEl.dispatchEvent(new Event('change'));   // memakai handler 'change' yang sudah ada
+});
+loadMonth(wibNow().date.slice(0, 7));          // ambil kuota bulan ini sejak awal
+
+function fetchSlotAvailability(date){
   if(!date) return;
-  clearTimeout(fetchTimer);
-  fetchTimer = setTimeout(async () => {
-    try {
-      const res = await fetch(`{{ route('booking.slot_availability') }}?trip_date=${encodeURIComponent(date)}&jeep_quantity=${encodeURIComponent(jeeps)}`);
-      if(res.ok){
-        const data = await res.json();
-        if(data && Array.isArray(data.slots)){
-          SESSIONS = SESSIONS.map(s => {
-            const found = data.slots.find(x => x.id === s.id);
-            return found ? { ...s, remaining: found.remaining, available: found.available, passed: found.passed } : s;
-          });
-          renderSessionOptions();
-          update();
-        }
-      }
-    } catch(e) {
-      // Abaikan jika error jaringan/offline
-    }
-  }, 120);
+  fetch(`{{ route('booking.slot_availability') }}?trip_date=${encodeURIComponent(date)}&jeep_quantity=1`)
+    .then(r => r.ok ? r.json() : null)
+    .then(data => {
+      if(!data || !Array.isArray(data.slots)) return;
+      AVAIL[date] = {};
+      data.slots.forEach(x => { AVAIL[date][x.id] = x.remaining; });
+      // Abaikan respons lama jika pengguna sudah pindah tanggal
+      if(dateEl.value === date){ renderSessionOptions(); update(); }
+    })
+    .catch(() => { /* abaikan jika offline */ });
 }
 
 function renderSessionOptions(){
   const sel = $('#session');
   if(!sel) return;
   const pkg = curPkg();
-  const isSunrisePkg = pkg && (pkg.is_sunrise || /sunrise/i.test(pkg.slug || '') || /sunrise/i.test(pkg.name || ''));
-
-  const isToday = dateEl.value === iso(new Date());
-  const now = new Date();
-  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const sunrise = isSunrisePkg(pkg);
+  const date = dateEl.value;
   const prev = state.session;
+  const list = slotsFor(pkg);
 
-  // Filter aturan sesi keberangkatan:
-  // - Paket Sunrise: HANYA sesi 04:30 WIB yang tampil / dapat dipilih. Sesi lain otomatis tidak bisa.
-  // - Paket Reguler: Sesi 04:30 WIB dilarang/disembunyikan. Wisatawan bebas memilih sesi reguler (08:00, 10:30, 13:30 WIB).
-  const filteredSlots = SESSIONS.filter(s => {
-    const isSunSlot = s.is_sunrise || s.time === '04:30' || /sunrise/i.test(s.label);
-    return isSunrisePkg ? isSunSlot : !isSunSlot;
-  });
-
-  if(filteredSlots.length === 0){
+  if(!date){
+    sel.innerHTML = '<option value="" disabled selected>Pilih tanggal dulu</option>';
+    state.session = null;
+    $('#sessHint').textContent = 'Pilih tanggal kunjungan terlebih dahulu.';
+    return;
+  }
+  if(list.length === 0){
     sel.innerHTML = '<option value="" disabled selected>Tidak ada sesi yang tersedia</option>';
     state.session = null;
     $('#sessHint').textContent = 'Tidak ada sesi yang tersedia untuk paket ini.';
     return;
   }
 
-  sel.innerHTML = filteredSlots.map(s => {
-    let passed = s.passed ?? false;
-    if(isToday && s.time){
-      const [h, m] = s.time.split(':').map(Number);
-      if((h * 60 + m) <= nowMin) passed = true;
-    }
-    const isFull = (typeof s.remaining === 'number' && s.remaining < state.qty);
+  const avail = AVAIL[date] || {};
+  sel.innerHTML = list.map(s => {
+    const passed = isPassed(s, date);
+    const rem = avail[s.id];
+    const known = typeof rem === 'number';
+    const isFull = known && rem < state.qty;
     const disabled = passed || isFull;
 
     let badge = '';
-    if(passed){
-      badge = ' — (Sudah Lewat)';
-    } else if(isFull){
-      badge = ' — (Kuota Penuh)';
-    } else if(typeof s.remaining === 'number'){
-      badge = ` (Sisa ${s.remaining} Jeep)`;
-    }
+    if(passed) badge = ' — (Sudah Lewat)';
+    else if(isFull) badge = rem <= 0 ? ' — (Kuota Penuh)' : ` — (Sisa ${rem} Jeep, kurang)`;
+    else if(known) badge = ` (Sisa ${rem} Jeep)`;
 
     return `<option value="${s.id}" ${disabled ? 'disabled' : ''}>${esc(s.label)}${badge}</option>`;
   }).join('');
@@ -500,24 +634,32 @@ function renderSessionOptions(){
   state.session = sel.value || null;
 
   if(!firstOk){
-    if(isSunrisePkg){
-      $('#sessHint').textContent = 'Sesi Sunrise (04:30 WIB) untuk tanggal ini tidak dapat dipilih (sudah lewat atau kuota habis). Silakan pilih tanggal berikutnya.';
-    } else {
-      $('#sessHint').textContent = 'Semua sesi jadwal reguler untuk tanggal ini sudah lewat atau penuh. Silakan pilih tanggal berikutnya.';
-    }
+    const next = nextOpenDate(addDays(date, 1));
+    const tip = ' Coba tanggal ' + fmtDate(next) + '.';
+    $('#sessHint').textContent = sunrise
+      ? 'Sesi Sunrise (04:30 WIB) pada tanggal ini sudah lewat atau kuota tidak cukup.' + tip
+      : 'Semua sesi pada tanggal ini sudah lewat atau kuota tidak cukup.' + tip;
   } else {
-    $('#sessHint').textContent = isSunrisePkg ? '✓ Paket Sunrise Tour khusus beroperasi pada sesi Sunrise (04:30 WIB).' : '';
+    $('#sessHint').textContent = sunrise ? '✓ Paket Sunrise hanya berjalan pada sesi 04:30 WIB.' : '';
   }
 }
 
 function renderSessions(){
   renderSessionOptions();
-  if(dateEl.value){
-    fetchSlotAvailability(dateEl.value, state.qty);
-  }
+  if(dateEl.value) fetchSlotAvailability(dateEl.value);
 }
 
-dateEl.addEventListener('change', () => { renderSessions(); update(); setStep(2); });
+// Muat ulang daftar sesi (tanpa fetch) lalu hitung ulang ringkasan
+function refresh(){ renderSessionOptions(); update(); renderCalendar(); }
+
+dateEl.addEventListener('change', () => {
+  const today = wibNow().date;
+  if(!dateEl.value || dateEl.value < today){
+    dateEl.value = firstValidDate(curPkg());
+    toast('Tanggal yang sudah lewat tidak bisa dipilih.');
+  }
+  renderSessions(); update(); renderCalendar(); setStep(2);
+});
 $('#session').addEventListener('change', e => { state.session = e.target.value; update(); setStep(3); });
  
 /* ====== 3. KAPASITAS & ARMADA ====== */
@@ -525,41 +667,35 @@ $('#paxPlus').onclick = () => {
   if(state.pax < 40){
     state.pax++;
     state.qty = Math.max(state.qty, Math.ceil(state.pax / PER_JEEP));
-    update(); setStep(3);
+    refresh(); setStep(3);
   }
 };
 $('#paxMinus').onclick = () => {
-  if(state.pax > 1){ state.pax--; update(); setStep(3); }
+  if(state.pax > 1){ state.pax--; refresh(); setStep(3); }
 };
 $('#plus').onclick = () => {
-  if(state.qty < 10){ state.qty++; update(); setStep(3); }
+  if(state.qty < 10){ state.qty++; refresh(); setStep(3); }
 };
 $('#minus').onclick = () => {
   const minJeep = Math.ceil(state.pax / PER_JEEP);
-  if(state.qty > minJeep){ state.qty--; update(); }
+  if(state.qty > minJeep){ state.qty--; refresh(); }
   else toast('Minimal butuh ' + minJeep + ' jeep untuk ' + state.pax + ' orang penumpang (maksimal 4 orang per jeep).');
 };
- 
-/* ====== SKEMA PEMBAYARAN ====== */
-document.querySelectorAll('.po').forEach(b => b.onclick = () => {
-  state.pay = b.dataset.p;
-  document.querySelectorAll('.po').forEach(x => x.classList.toggle('sel', x === b));
-  update();
-});
  
 /* ====== UPDATE RINGKASAN TAGIHAN ====== */
 function update(){
   const p = curPkg();
   if(!p) return;
   const total = p.price * state.qty;
-  const due = state.pay === 'dp' ? Math.round(total * 0.3) : total;
+  const due = total;
  
   $('#qty').textContent = state.qty;
   $('#pax').textContent = state.pax;
   $('#jeepHint').textContent = state.qty + ' Jeep × ' + rp(p.price);
   $('#tPkg').textContent = p.name + ' (' + state.qty + ' Jeep · ' + state.pax + ' Orang)';
  
-  const d = dateEl.value ? new Date(dateEl.value + 'T00:00:00').toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : 'Belum pilih tanggal';
+  const d = dateEl.value ? fmtDate(dateEl.value) : 'Belum pilih tanggal';
+  $('#dateText').textContent = dateEl.value ? fmtDate(dateEl.value) : 'Pilih tanggal';
   const sObj = SESSIONS.find(s => String(s.id) === String(state.session));
   $('#tDate').textContent = d + (sObj ? ' · ' + sObj.label : '');
  
@@ -569,8 +705,6 @@ function update(){
   $('#vTotal').textContent = rp(total);
   $('#mTotal').textContent = rp(total);
   $('#vDue').textContent = rp(due);
-  $('#dueLbl').textContent = state.pay === 'dp' ? 'Wajib Dibayar Sekarang (DP 30%)' : 'Wajib Dibayar Sekarang (Lunas)';
-  $('#dueSub').textContent = state.pay === 'dp' ? 'Sisa ' + rp(total - due) : 'Lunas (100%)';
 }
  
 /* ====== STEPPER INTERACTION ====== */
@@ -609,10 +743,17 @@ $('#submit').onclick = () => {
  
   if(!dateEl.value){
     toast('Pilih tanggal kunjungan trip terlebih dahulu.');
-    return dateEl.focus();
+    return dateBtn.focus();
   }
   if(!state.session){
     toast('Pilih sesi waktu keberangkatan yang tersedia.');
+    return $('#session').focus();
+  }
+  // Cek ulang saat submit: sesi bisa saja baru lewat sejak halaman dibuka
+  const chosen = SESSIONS.find(s => String(s.id) === String(state.session));
+  if(chosen && isPassed(chosen, dateEl.value)){
+    renderSessionOptions(); update();
+    toast('Sesi yang dipilih sudah lewat. Pilih sesi atau tanggal lain.');
     return $('#session').focus();
   }
   if(name.value.trim().length < 3){
@@ -637,7 +778,7 @@ $('#submit').onclick = () => {
   set('arrival_type', 'self_drive');
   set('customer_name', name.value.trim());
   set('customer_phone', wa.value.trim());
-  set('payment_mode', state.pay === 'dp' ? 'DP' : 'FULL');
+  set('payment_mode', 'FULL');
   set('notes', $('#notes').value.trim());
  
   const btn = $('#submit');
@@ -650,6 +791,19 @@ $('#notes').addEventListener('input', e => {
   $('#notesCount').textContent = e.target.value.length;
 });
  
+/* ====== PERBAIKAN STICKY RINGKASAN ======
+   position: sticky mati jika ada induk (di layout) ber-overflow:hidden.
+   'clip' tetap memotong konten seperti 'hidden' tetapi tidak membuat scroll container. */
+(function fixStickyAncestors(){
+  let el = $('#pay') ? $('#pay').parentElement : null;
+  while(el && el !== document.documentElement){
+    const cs = getComputedStyle(el);
+    if(cs.overflowX === 'hidden') el.style.overflowX = 'clip';
+    if(cs.overflowY === 'hidden') el.style.overflowY = 'clip';
+    el = el.parentElement;
+  }
+})();
+
 renderSessions();
 update();
 </script>

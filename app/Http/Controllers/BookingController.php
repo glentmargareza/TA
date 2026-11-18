@@ -60,28 +60,23 @@ class BookingController extends Controller
 
         $slots = ScheduleSlot::where('is_active', true)->orderBy('start_time')->get();
 
-        $now = now();
+        $now = now('Asia/Jakarta');
+        $today = $now->format('Y-m-d');
         $isSunriseSelected = str_contains(strtolower($selectedPackage?->slug . ' ' . $selectedPackage?->name), 'sunrise');
 
         // Otomatis tentukan tanggal kunjungan awal yang cerdas & tersedia
         $requestedDate = old('trip_date', $request->query('date', $request->query('trip_date')));
 
-        if (!$requestedDate) {
-            $startDate = $now->copy();
-            // Jika paket sunrise dan waktu saat ini >= 04:30 WIB, hari ini sudah tidak bisa -> mulai besok
-            if ($isSunriseSelected && $now->format('H:i') >= '04:30') {
-                $startDate = $startDate->addDay();
-            } else if (!$isSunriseSelected && $now->format('H:i') >= '13:30') {
-                // Jika paket reguler dan waktu saat ini >= 13:30 WIB, semua sesi hari ini sudah selesai -> mulai besok
-                $startDate = $startDate->addDay();
-            }
+        // Tanggal yang diminta tidak boleh di masa lalu
+        if (!$requestedDate || $requestedDate < $today) {
+            $foundDate = null;   // tanggal pertama yang masih punya kuota
+            $fallback  = null;   // tanggal pertama yang masih punya sesi (kuota belum dicek)
+            $testDate  = $now->copy();
 
-            // Cari tanggal yang masih memiliki sisa kuota armada (hingga 14 hari ke depan)
-            $foundDate = null;
-            $testDate = $startDate->copy();
-            for ($i = 0; $i < 14; $i++) {
+            // Tanpa jam hardcode (04:30 / 13:30): cukup lihat sesi yang benar-benar belum lewat
+            for ($i = 0; $i < 30; $i++) {
                 $dateStr = $testDate->format('Y-m-d');
-                $isToday = $dateStr === $now->format('Y-m-d');
+                $isToday = $dateStr === $today;
 
                 $candidateSlots = $slots->filter(function ($s) use ($isSunriseSelected, $isToday, $now) {
                     $time = substr((string) $s->start_time, 0, 5);
@@ -95,6 +90,10 @@ class BookingController extends Controller
                     return true;
                 });
 
+                if ($candidateSlots->isNotEmpty() && $fallback === null) {
+                    $fallback = $dateStr;
+                }
+
                 foreach ($candidateSlots as $cSlot) {
                     if ($cSlot->remainingJeepsFor($dateStr) > 0) {
                         $foundDate = $dateStr;
@@ -105,7 +104,7 @@ class BookingController extends Controller
                 $testDate->addDay();
             }
 
-            $defaultDate = $foundDate ?? $startDate->format('Y-m-d');
+            $defaultDate = $foundDate ?? $fallback ?? $today;
         } else {
             $defaultDate = $requestedDate;
         }
@@ -147,24 +146,26 @@ class BookingController extends Controller
         $date = $request->query('trip_date');
         $jeeps = max(1, (int) $request->query('jeep_quantity', 1));
 
-        if (!$date) {
-            return response()->json(['error' => 'Tanggal wajib disertakan'], 422);
+        if (!$date || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+            return response()->json(['error' => 'Tanggal wajib disertakan (YYYY-MM-DD)'], 422);
         }
 
-        $now = now();
-        $isToday = $date === $now->format('Y-m-d');
+        $now = now('Asia/Jakarta');
+        $today = $now->format('Y-m-d');
+        $isToday = $date === $today;
+        $isPast = $date < $today;
         $nowTime = $now->format('H:i');
 
         $slots = ScheduleSlot::where('is_active', true)->orderBy('start_time')->get();
 
-        $data = $slots->map(function ($s) use ($date, $isToday, $nowTime, $jeeps) {
+        $data = $slots->map(function ($s) use ($date, $isToday, $isPast, $nowTime, $jeeps) {
             $time = substr((string) $s->start_time, 0, 5);
             $label = trim((string) $s->slot_label) ?: ('Sesi ' . $s->id);
             $cleanLabel = preg_match('/\(\d{2}:\d{2}\s*WIB\)/i', $label) ? $label : ($label . ' (' . $time . ' WIB)');
             $isSunrise = str_contains(strtolower($s->slot_label), 'sunrise') || $time === '04:30';
 
             $remaining = $s->remainingJeepsFor($date);
-            $passed = $isToday && ($time <= $nowTime);
+            $passed = $isPast || ($isToday && $time <= $nowTime);
             $available = !$passed && ($remaining >= $jeeps);
 
             return [
@@ -251,11 +252,11 @@ class BookingController extends Controller
             ]);
         }
 
-        // Validasi jam sesi tidak boleh di waktu yang sudah lewat jika memesan untuk hari ini
-        $today = now()->format('Y-m-d');
+        // Validasi jam sesi tidak boleh di waktu yang sudah lewat jika memesan untuk hari ini (WIB)
+        $today = now('Asia/Jakarta')->format('Y-m-d');
         if ($validated['trip_date'] === $today) {
             $slotTime = substr((string) $slot->start_time, 0, 5);
-            $nowTime = now()->format('H:i');
+            $nowTime = now('Asia/Jakarta')->format('H:i');
             if ($slotTime <= $nowTime) {
                 return back()->withInput()->withErrors([
                     'slot_id' => "Sesi {$slot->slot_label} untuk hari ini sudah lewat. Silakan pilih sesi jadwal lain atau tanggal besok."
@@ -1384,10 +1385,6 @@ class BookingController extends Controller
     }
 
     /**
- * Reverse geocoding (lat, lng -> nama hotel / alamat)
- * Prioritas: Google Places Nearby (hotel terdekat) -> Photon/Nominatim
- */
-    /**
      * Reverse geocoding (lat, lng -> nama hotel / alamat)
      * Prioritas: Google Places Nearby (hotel terdekat) -> Photon/Nominatim
      */
@@ -1588,36 +1585,36 @@ class BookingController extends Controller
     }
 
     public function nearbyLodging(Request $request)
-{
-    $lat = (float) $request->query('lat');
-    $lng = (float) $request->query('lng');
-    if (!$lat || !$lng) return response()->json(['places' => []]);
+    {
+        $lat = (float) $request->query('lat');
+        $lng = (float) $request->query('lng');
+        if (!$lat || !$lng) return response()->json(['places' => []]);
 
-    $cacheKey = 'nearby_lodging_osm_' . round($lat, 2) . '_' . round($lng, 2);
-    if ($cached = Cache::get($cacheKey)) {
-        return response()->json(['places' => $cached]);
-    }
-
-    $places = [];
-    try {
-        $q = '[out:json][timeout:10];nwr(around:3000,' . $lat . ',' . $lng . ')'
-           . '[tourism~"hotel|guest_house|hostel|motel|apartment|chalet"][name];out center 40;';
-        $res = Http::timeout(12)->asForm()->post('https://overpass-api.de/api/interpreter', ['data' => $q]);
-
-        foreach (($res->json('elements') ?? []) as $e) {
-            $plat = $e['lat'] ?? ($e['center']['lat'] ?? null);
-            $plng = $e['lon'] ?? ($e['center']['lon'] ?? null);
-            $name = $e['tags']['name'] ?? null;
-            if (!$name || $plat === null || $plng === null) continue;
-            $places[] = ['name' => $name, 'address' => '', 'lat' => (float) $plat, 'lng' => (float) $plng];
+        $cacheKey = 'nearby_lodging_osm_' . round($lat, 2) . '_' . round($lng, 2);
+        if ($cached = Cache::get($cacheKey)) {
+            return response()->json(['places' => $cached]);
         }
-    } catch (\Throwable $e) {
-        Log::info('Overpass lodging error: ' . $e->getMessage());
+
+        $places = [];
+        try {
+            $q = '[out:json][timeout:10];nwr(around:3000,' . $lat . ',' . $lng . ')'
+               . '[tourism~"hotel|guest_house|hostel|motel|apartment|chalet"][name];out center 40;';
+            $res = Http::timeout(12)->asForm()->post('https://overpass-api.de/api/interpreter', ['data' => $q]);
+
+            foreach (($res->json('elements') ?? []) as $e) {
+                $plat = $e['lat'] ?? ($e['center']['lat'] ?? null);
+                $plng = $e['lon'] ?? ($e['center']['lon'] ?? null);
+                $name = $e['tags']['name'] ?? null;
+                if (!$name || $plat === null || $plng === null) continue;
+                $places[] = ['name' => $name, 'address' => '', 'lat' => (float) $plat, 'lng' => (float) $plng];
+            }
+        } catch (\Throwable $e) {
+            Log::info('Overpass lodging error: ' . $e->getMessage());
+        }
+
+        if ($places) Cache::put($cacheKey, $places, now()->addHours(12));
+
+        return response()->json(['places' => $places]);
     }
 
-    if ($places) Cache::put($cacheKey, $places, now()->addHours(12));
-
-    return response()->json(['places' => $places]);
-}
-    
 }
