@@ -98,7 +98,8 @@
                     <div class="sm:col-span-2 p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200/80">
                         <span class="text-emerald-800 text-xs font-semibold block">Armada & Driver Paguyuban:</span>
                         <span class="font-bold text-emerald-950 text-xs sm:text-sm flex items-center gap-1.5 mt-0.5">
-                            🚙 {{ $assignment->jeep?->model_name ?? 'Jeep Armada' }} &bull; Driver: {{ $assignment->driver?->full_name ?? 'Driver Paguyuban' }}
+                            <svg class="w-4 h-4 text-emerald-800 shrink-0 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
+                            <span>{{ $assignment->jeep?->model_name ?? 'Jeep Armada' }} &bull; Driver: {{ $assignment->driver?->full_name ?? 'Driver Paguyuban' }}</span>
                         </span>
                     </div>
                     @endif
@@ -123,14 +124,31 @@
                 </div>
 
                 <!-- QR Code Display -->
-                <div class="flex flex-col sm:flex-row items-center justify-between p-4 border border-wukirsari-border rounded-2xl gap-4">
-                    <div class="flex items-center gap-4">
-                        <div class="w-20 h-20 bg-slate-100 rounded-xl border border-wukirsari-border flex items-center justify-center p-2">
-                            <svg class="w-10 h-10 text-wukirsari-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+                <div class="flex flex-col sm:flex-row items-center justify-between p-4 sm:p-5 border border-wukirsari-border rounded-2xl gap-4 bg-emerald-50/40">
+                    <div class="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
+                        <div id="qrcode" class="w-24 h-24 bg-white rounded-xl border border-wukirsari-border flex items-center justify-center p-1.5 shadow-2xs shrink-0">
+                            <!-- Fallback QR code -->
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={{ urlencode($booking->qr_token ?? $booking->booking_code) }}" alt="QR E-Tiket" class="w-full h-full object-contain">
                         </div>
-                        <div class="text-xs text-merapiText-secondary">
-                            <span class="font-bold text-merapiText-primary block text-sm">Validasi Loket Check-in</span>
-                            <span>Tunjukkan tiket ini kepada petugas loket pangkalan Jeep Wukirsari untuk pelunasan & naik armada.</span>
+                        <div class="space-y-1">
+                            <div class="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+                                <span class="font-bold text-merapiText-primary text-sm">Validasi Loket Check-in</span>
+                                @if($booking->booking_status === 'FULL_PAID')
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-600 text-white shadow-2xs">LUNAS 100%</span>
+                                @elseif($booking->booking_status === 'DP_PAID')
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500 text-white shadow-2xs">DP TERVERIFIKASI</span>
+                                @endif
+                            </div>
+                            <p class="text-xs text-merapiText-secondary max-w-sm leading-relaxed">
+                                @if($booking->booking_status === 'DP_PAID')
+                                Tunjukkan QR Code ini kepada petugas loket kasir Basecamp Jeep Wukirsari untuk pelunasan sisa tagihan <strong class="text-slate-900 font-extrabold">Rp {{ number_format($booking->remaining_amount, 0, ',', '.') }}</strong> sebelum keberangkatan.
+                                @else
+                                Tunjukkan QR Code ini kepada petugas loket pangkalan Jeep Wukirsari untuk verifikasi check-in dan keberangkatan armada.
+                                @endif
+                            </p>
+                            <span class="inline-block text-[10px] font-mono font-bold text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200">
+                                Token: {{ $booking->qr_token ?? $booking->booking_code }}
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -178,4 +196,23 @@
 
     </div>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const qrContainer = document.getElementById('qrcode');
+        const token = "{{ $booking->qr_token ?? $booking->booking_code }}";
+        if (qrContainer && typeof QRCode !== 'undefined' && token) {
+            qrContainer.innerHTML = '';
+            new QRCode(qrContainer, {
+                text: token,
+                width: 84,
+                height: 84,
+                colorDark : "#0D2714",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.M
+            });
+        }
+    });
+</script>
 @endsection

@@ -88,6 +88,21 @@
                 @endif
             </div>
 
+            @if(in_array($booking->booking_status, ['FULL_PAID', 'DP_PAID']))
+            <div class="p-4 rounded-2xl bg-emerald-50/50 border border-wukirsari-border flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ urlencode($booking->qr_token ?? $booking->booking_code) }}" alt="QR Code" class="w-16 h-16 rounded-xl border border-slate-200 bg-white p-1 shrink-0">
+                    <div class="text-xs">
+                        <span class="font-bold text-merapiText-primary block">QR E-Tiket Resmi</span>
+                        <span class="text-merapiText-muted text-[11px]">Tunjukkan QR Code ini kepada petugas loket pangkalan saat tiba di basecamp.</span>
+                    </div>
+                </div>
+                <a href="{{ route('booking.success', $booking->booking_code) }}" class="shrink-0 px-4 py-2 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-xs font-semibold transition-colors">
+                    Lihat E-Tiket Penuh →
+                </a>
+            </div>
+            @endif
+
             <div class="text-center pt-2">
                 @if(in_array($booking->booking_status, ['FULL_PAID', 'DP_PAID']))
                 <a href="{{ route('booking.success', $booking->booking_code) }}" class="inline-block px-6 py-2.5 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-xs font-semibold transition-colors">

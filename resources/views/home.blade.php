@@ -78,9 +78,9 @@
 
                 <!-- 2 Modern Action Buttons Responsive Row on Mobile -->
                 <div class="pt-1.5 sm:pt-4 flex flex-row items-center gap-2.5 sm:gap-4 w-full sm:w-auto">
-                    <a href="{{ route('booking.create') }}" class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 sm:px-8 py-3 sm:py-3.5 rounded-full bg-gradient-to-r from-emerald-600 via-emerald-700 to-[#194821] hover:from-emerald-500 hover:to-[#225d2b] text-white text-xs sm:text-sm font-bold border border-emerald-400/40 shadow-xl shadow-black/30 hover:scale-[1.02] active:scale-95 transition-all text-center">
+                    <a href="{{ route('booking.create') }}" class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 sm:px-8 py-3 sm:py-3.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-bold border border-emerald-400/40 shadow-xl shadow-black/30 hover:scale-[1.02] active:scale-95 transition-all text-center">
                         <span>Booking Sekarang</span>
-                        <svg class="w-3.5 h-3.5 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                        <svg class="w-3.5 h-3.5 text-emerald-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                     </a>
 
                     <a href="#paket" class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 sm:px-7 py-3 sm:py-3.5 rounded-full bg-[#091D10]/65 hover:bg-[#142B16] backdrop-blur-md border border-emerald-400/35 hover:border-emerald-300 text-white text-xs sm:text-sm font-semibold shadow-lg transition-all active:scale-95 text-center">
@@ -339,10 +339,6 @@
                     <h2 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#142B16] font-display leading-tight">Paket Wisata Populer</h2>
                     <p class="text-[#5E7264] text-xs sm:text-base mt-1.5 max-w-xl">Pilihan terbaik untuk pengalaman tak terlupakan di setiap perjalanan.</p>
                 </div>
-                <a href="{{ route('home') }}#paket" class="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#142B16] hover:text-[#265029] transition-colors self-start md:self-end">
-                    <span>Lihat Semua</span>
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                </a>
             </div>
 
             <!-- Loop Paket dari Model Package Database -->
@@ -389,7 +385,7 @@
 
                             <div class="grid grid-cols-2 gap-2.5">
                                 <a href="{{ route('packages.show', $pkg->slug) }}" class="py-2.5 px-3 rounded-full border border-wukirsari-border text-merapiText-primary hover:border-wukirsari-primary hover:text-wukirsari-primary text-xs font-semibold text-center transition-all">
-                                    Lihat Detail →
+                                    Lihat Detail
                                 </a>
                                 <a href="{{ route('booking.create', ['package' => $pkg->slug]) }}" class="py-2.5 px-3 rounded-full bg-[#1E3F20] hover:bg-[#285736] text-white text-xs font-semibold text-center transition-all shadow-sm">
                                     Booking Sekarang
@@ -695,15 +691,6 @@
                             <p class="text-white/85 text-xs sm:text-sm leading-relaxed max-w-sm font-normal">
                                 Kami berkomitmen memberikan pengalaman terbaik untuk setiap perjalanan Anda. Dengan pelayanan profesional, fasilitas lengkap dan rute yang aman, liburan Anda akan menjadi lebih berkesan.
                             </p>
-
-                            <div class="pt-1">
-                                <button type="button" onclick="openAboutModal()" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white hover:bg-emerald-50 text-[#142B16] font-bold text-xs sm:text-sm shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer">
-                                    <span>Tentang Kami</span>
-                                    <svg class="w-4 h-4 text-[#142B16]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
-                                    </svg>
-                                </button>
-                            </div>
                         </div>
 
                         <!-- Right Column: 4 Frosted Glass Feature Cards -->
@@ -798,53 +785,6 @@
         </div>
     </section>
 
-    <!-- Modal Informasi Tentang Kami (Basecamp Jeep Wukirsari) -->
-    <div id="aboutBasecampModal" class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 hidden transition-opacity duration-200">
-        <div class="relative bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
-            <button type="button" onclick="closeAboutModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors cursor-pointer">
-                ✕
-            </button>
-            
-            <div class="flex items-center gap-3 mb-5">
-                <div class="w-12 h-12 rounded-2xl bg-[#143B1E]/10 p-1.5 flex items-center justify-center border border-[#143B1E]/20">
-                    <img src="{{ asset('img/logo.png') }}" alt="Jeep Wukirsari Logo" class="w-full h-full object-contain">
-                </div>
-                <div>
-                    <h3 class="font-display font-extrabold text-base sm:text-lg text-slate-900 leading-tight">Jeep Wukirsari Adventure</h3>
-                    <p class="text-xs text-emerald-700 font-semibold">Basecamp Resmi Offroad Lereng Merapi</p>
-                </div>
-            </div>
-
-            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed mb-5">
-                <strong>Jeep Wukirsari</strong> merupakan paguyuban penyedia wisata petualangan offroad resmi di kawasan lereng Gunung Merapi, Yogyakarta. Dikelola langsung oleh pemuda dan komunitas driver lokal desa wisata Wukirsari yang ramah, berlisensi, dan berpengalaman puluhan tahun menaklukkan rute lava tour.
-            </p>
-
-            <div class="space-y-3 mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                <div class="flex items-start gap-2.5 text-xs text-slate-700">
-                    <span class="text-emerald-700 font-bold">📍</span>
-                    <span><strong>Lokasi Basecamp:</strong> Dusun Pusung, Wukirsari, Cangkringan, Sleman, D.I. Yogyakarta 55583</span>
-                </div>
-                <div class="flex items-start gap-2.5 text-xs text-slate-700">
-                    <span class="text-emerald-700 font-bold">⏰</span>
-                    <span><strong>Jam Operasional:</strong> Setiap Hari, 04.30 - 17.00 WIB (Termasuk Sunrise Trip)</span>
-                </div>
-                <div class="flex items-start gap-2.5 text-xs text-slate-700">
-                    <span class="text-emerald-700 font-bold">🛡️</span>
-                    <span><strong>Jaminan Keamanan:</strong> Armada terawat berkala, driver bersertifikat, dan asuransi Jasa Raharja</span>
-                </div>
-            </div>
-
-            <div class="flex flex-col sm:flex-row gap-2.5">
-                <a href="#paket" onclick="closeAboutModal()" class="flex-1 py-3 px-4 rounded-full bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs text-center transition-all shadow-md">
-                    Lihat Paket Wisata →
-                </a>
-                <a href="https://wa.me/6281234567890?text=Halo%20Admin%20Jeep%20Wukirsari,%20saya%20ingin%20tanya%20seputar%20tour%20merapi" target="_blank" class="py-3 px-5 rounded-full border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs text-center transition-all">
-                    Chat WhatsApp CS
-                </a>
-            </div>
-        </div>
-    </div>
-
     <script>
         function openAboutModal() {
             const modal = document.getElementById('aboutBasecampModal');
@@ -914,7 +854,7 @@
     </section>
 
     <!-- 6. TESTIMONI (APA KATA MEREKA?) -->
-    <section class="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-wukirsari-cream via-white to-wukirsari-cream border-t border-wukirsari-border">
+    <section id="ulasan" class="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-wukirsari-cream via-white to-wukirsari-cream border-t border-wukirsari-border">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="mb-8 sm:mb-12">
                 <h2 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-merapiText-primary font-display">Apa Kata Mereka?</h2>
@@ -923,70 +863,107 @@
                 </p>
             </div>
 
-            <!-- 3 Testimonial Cards Matching Mockup -->
+            <!-- 3 Testimonial Cards from Database (Real Reviews) -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <!-- Card 1: Andi Pratama -->
-                <div class="bg-white p-6 sm:p-7 rounded-3xl border border-wukirsari-border shadow-xs hover:shadow-lg transition-all flex flex-col justify-between space-y-4">
-                    <div class="space-y-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-11 h-11 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm font-display shrink-0 border border-emerald-200">
-                                AP
+                @forelse($reviews->take(3) as $review)
+                    @php
+                        $name = $review->user->name ?? 'Wisatawan';
+                        $words = explode(' ', trim($name));
+                        $initials = '';
+                        foreach (array_slice($words, 0, 2) as $w) {
+                            $initials .= strtoupper(substr($w, 0, 1));
+                        }
+                    @endphp
+                    <div class="bg-white p-6 sm:p-7 rounded-3xl border border-wukirsari-border shadow-xs hover:shadow-lg transition-all flex flex-col justify-between space-y-4">
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-11 h-11 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm font-display shrink-0 border border-emerald-200">
+                                    {{ $initials ?: 'W' }}
+                                </div>
+                                <div class="min-w-0">
+                                    <h4 class="text-sm font-bold text-slate-900 font-display truncate">{{ $name }}</h4>
+                                    <span class="text-xs text-slate-500 block truncate">{{ $review->city ?? ($review->package->name ?? 'Wisatawan') }}</span>
+                                </div>
                             </div>
-                            <div>
-                                <h4 class="text-sm font-bold text-slate-900 font-display">Andi Pratama</h4>
-                                <span class="text-xs text-slate-500 block">Yogyakarta</span>
-                            </div>
+                            <p class="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
+                                "{{ $review->comment }}"
+                            </p>
                         </div>
-                        <p class="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
-                            "Pengalaman yang luar biasa! Driver-nya ramah dan sangat berpengalaman. Pemandangannya keren banget!"
-                        </p>
+                        <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+                            <div class="flex items-center gap-1 text-amber-400 text-base">
+                                @for($i = 1; $i <= 5; $i++)
+                                    <span>{{ $i <= $review->rating ? '★' : '☆' }}</span>
+                                @endfor
+                            </div>
+                            @if($review->package)
+                            <span class="text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100 truncate max-w-[140px]">
+                                {{ $review->package->name }}
+                            </span>
+                            @endif
+                        </div>
                     </div>
-                    <div class="pt-3 border-t border-slate-100 flex items-center gap-1 text-amber-400 text-base">
-                        ★★★★★
+                @empty
+                    <!-- Fallback Dummy jika database ulasan kosong -->
+                    <div class="bg-white p-6 sm:p-7 rounded-3xl border border-wukirsari-border shadow-xs hover:shadow-lg transition-all flex flex-col justify-between space-y-4">
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-11 h-11 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm font-display shrink-0 border border-emerald-200">
+                                    AP
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-900 font-display">Andi Pratama</h4>
+                                    <span class="text-xs text-slate-500 block">Yogyakarta</span>
+                                </div>
+                            </div>
+                            <p class="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
+                                "Pengalaman yang luar biasa! Driver-nya ramah dan sangat berpengalaman. Pemandangannya keren banget!"
+                            </p>
+                        </div>
+                        <div class="pt-3 border-t border-slate-100 flex items-center gap-1 text-amber-400 text-base">
+                            ★★★★★
+                        </div>
                     </div>
-                </div>
 
-                <!-- Card 2: Siti Nurhaliza -->
-                <div class="bg-white p-6 sm:p-7 rounded-3xl border border-wukirsari-border shadow-xs hover:shadow-lg transition-all flex flex-col justify-between space-y-4">
-                    <div class="space-y-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-11 h-11 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm font-display shrink-0 border border-emerald-200">
-                                SN
+                    <div class="bg-white p-6 sm:p-7 rounded-3xl border border-wukirsari-border shadow-xs hover:shadow-lg transition-all flex flex-col justify-between space-y-4">
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-11 h-11 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm font-display shrink-0 border border-emerald-200">
+                                    SN
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-900 font-display">Siti Nurhaliza</h4>
+                                    <span class="text-xs text-slate-500 block">Sleman</span>
+                                </div>
                             </div>
-                            <div>
-                                <h4 class="text-sm font-bold text-slate-900 font-display">Siti Nurhaliza</h4>
-                                <span class="text-xs text-slate-500 block">Sleman</span>
-                            </div>
+                            <p class="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
+                                "Sunrise di Merapi benar-benar magical. Timnya profesional dan semua sesuai dengan yang dijanjikan."
+                            </p>
                         </div>
-                        <p class="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
-                            "Sunrise di Merapi benar-benar magical. Timnya profesional dan semua sesuai dengan yang dijanjikan."
-                        </p>
+                        <div class="pt-3 border-t border-slate-100 flex items-center gap-1 text-amber-400 text-base">
+                            ★★★★★
+                        </div>
                     </div>
-                    <div class="pt-3 border-t border-slate-100 flex items-center gap-1 text-amber-400 text-base">
-                        ★★★★★
-                    </div>
-                </div>
 
-                <!-- Card 3: Rizky Maulana -->
-                <div class="bg-white p-6 sm:p-7 rounded-3xl border border-wukirsari-border shadow-xs hover:shadow-lg transition-all flex flex-col justify-between space-y-4">
-                    <div class="space-y-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-11 h-11 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm font-display shrink-0 border border-emerald-200">
-                                RM
+                    <div class="bg-white p-6 sm:p-7 rounded-3xl border border-wukirsari-border shadow-xs hover:shadow-lg transition-all flex flex-col justify-between space-y-4">
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-11 h-11 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm font-display shrink-0 border border-emerald-200">
+                                    RM
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-900 font-display">Rizky Maulana</h4>
+                                    <span class="text-xs text-slate-500 block">Bandung</span>
+                                </div>
                             </div>
-                            <div>
-                                <h4 class="text-sm font-bold text-slate-900 font-display">Rizky Maulana</h4>
-                                <span class="text-xs text-slate-500 block">Bandung</span>
-                            </div>
+                            <p class="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
+                                "Booking-nya mudah, adminnya responsif, dan semuanya sesuai dengan yang dijanjikan."
+                            </p>
                         </div>
-                        <p class="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
-                            "Booking-nya mudah, adminnya responsif, dan semuanya sesuai dengan yang dijanjikan."
-                        </p>
+                        <div class="pt-3 border-t border-slate-100 flex items-center gap-1 text-amber-400 text-base">
+                            ★★★★★
+                        </div>
                     </div>
-                    <div class="pt-3 border-t border-slate-100 flex items-center gap-1 text-amber-400 text-base">
-                        ★★★★★
-                    </div>
-                </div>
+                @endforelse
             </div>
 
             <!-- Link to Full Reviews / Form -->

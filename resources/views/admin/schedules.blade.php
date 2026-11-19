@@ -23,9 +23,9 @@
         }
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap');
         body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-        .font-display, h1, h2, h3, h4, h5, h6 { font-family: 'Poppins', 'Inter', sans-serif; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Poppins', 'Inter', sans-serif; }
     </style>
 </head>
 <body class="bg-[#F4F6F8] text-slate-800 min-h-screen flex flex-col md:flex-row antialiased">
@@ -38,7 +38,7 @@
         <!-- Header Banner -->
         <header class="bg-white border-b border-slate-200 px-4 sm:px-8 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-0 z-20 shadow-2xs">
             <div>
-                <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight font-display">
+                <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
                     Kelola Jadwal & Sesi Keberangkatan
                 </h1>
                 <p class="text-xs text-slate-500 mt-0.5">Atur jam operasional trip dan ketersediaan waktu pemesanan tiket wisatawan.</p>
@@ -58,7 +58,9 @@
             @if(session('success'))
             <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs sm:text-sm font-semibold flex items-center justify-between shadow-xs">
                 <div class="flex items-center gap-2.5">
-                    <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm shrink-0">✓</span>
+                    <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm shrink-0">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </span>
                     <span>{{ session('success') }}</span>
                 </div>
                 <button type="button" onclick="this.parentElement.remove()" class="text-emerald-700 hover:text-emerald-950 font-bold text-sm cursor-pointer">&times;</button>
@@ -68,7 +70,9 @@
             @if(isset($errors) && $errors->any())
             <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 text-xs sm:text-sm shadow-xs space-y-1">
                 <div class="font-bold flex items-center gap-2">
-                    <span class="w-6 h-6 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center font-bold text-sm shrink-0">⚠</span>
+                    <span class="w-6 h-6 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center font-bold text-sm shrink-0">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    </span>
                     <span>Gagal memproses data jadwal sesi:</span>
                 </div>
                 <ul class="list-disc list-inside space-y-0.5 text-rose-800 pl-8 text-xs font-medium">
@@ -85,67 +89,68 @@
                 $activeSlots = $slots->where('is_active', true)->count();
                 $inactiveSlots = $slots->where('is_active', false)->count();
             @endphp
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
+            <div class="grid grid-cols-3 gap-2 sm:gap-4 md:gap-5">
                 <!-- 1. Total Sesi Keberangkatan -->
-                <div class="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs relative overflow-hidden flex items-center justify-between">
-                    <div>
-                        <span class="text-xs font-semibold text-slate-500 block">Total Sesi Keberangkatan</span>
-                        <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 block mt-1 tracking-tight font-display">
-                            {{ $totalSlots }} <span class="text-xs font-normal text-slate-400">Sesi</span>
+                <div class="bg-white p-3 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden flex items-center justify-between min-w-0">
+                    <div class="min-w-0">
+                        <span class="text-[11px] sm:text-xs font-semibold text-slate-500 block truncate">Total Sesi</span>
+                        <span class="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 block mt-0.5 sm:mt-1 tracking-tight">
+                            {{ $totalSlots }} <span class="text-[10px] sm:text-xs font-normal text-slate-400">Sesi</span>
                         </span>
-                       
+                        <span class="inline-flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-[11px] text-slate-600 font-semibold mt-1 sm:mt-2 truncate">
+                            Slot Terdaftar
+                        </span>
                     </div>
-                    
                 </div>
 
                 <!-- 2. Sesi Buka (Aktif) -->
-                <div class="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs relative overflow-hidden flex items-center justify-between">
-                    <div>
-                        <span class="text-xs font-semibold text-slate-500 block">Sesi Buka (Aktif)</span>
-                        <span class="text-2xl sm:text-3xl font-extrabold text-emerald-800 block mt-1 tracking-tight font-display">
-                            {{ $activeSlots }} <span class="text-xs font-normal text-slate-400">Sesi</span>
+                <div class="bg-white p-3 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden flex items-center justify-between min-w-0">
+                    <div class="min-w-0">
+                        <span class="text-[11px] sm:text-xs font-semibold text-slate-500 block truncate">Sesi Aktif</span>
+                        <span class="text-xl sm:text-2xl md:text-3xl font-extrabold text-emerald-800 block mt-0.5 sm:mt-1 tracking-tight">
+                            {{ $activeSlots }} <span class="text-[10px] sm:text-xs font-normal text-slate-400">Sesi</span>
                         </span>
-                        
+                        <span class="inline-flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-[11px] text-emerald-700 font-semibold mt-1 sm:mt-2 truncate">
+                            Buka Pemesanan
+                        </span>
                     </div>
-                    
                 </div>
 
                 <!-- 3. Sesi Tutup / Libur -->
-                <div class="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs relative overflow-hidden flex items-center justify-between">
-                    <div>
-                        <span class="text-xs font-semibold text-slate-500 block">Sesi Tutup / Libur</span>
-                        <span class="text-2xl sm:text-3xl font-extrabold text-amber-700 block mt-1 tracking-tight font-display">
-                            {{ $inactiveSlots }} <span class="text-xs font-normal text-slate-400">Sesi</span>
+                <div class="bg-white p-3 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden flex items-center justify-between min-w-0">
+                    <div class="min-w-0">
+                        <span class="text-[11px] sm:text-xs font-semibold text-slate-500 block truncate">Sesi Tutup</span>
+                        <span class="text-xl sm:text-2xl md:text-3xl font-extrabold text-amber-700 block mt-0.5 sm:mt-1 tracking-tight">
+                            {{ $inactiveSlots }} <span class="text-[10px] sm:text-xs font-normal text-slate-400">Sesi</span>
                         </span>
-                        
+                        <span class="inline-flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-[11px] text-amber-700 font-semibold mt-1 sm:mt-2 truncate">
+                            Nonaktif / Libur
+                        </span>
                     </div>
-                    
                 </div>
             </div>
 
             <!-- TABEL DAFTAR SESI JADWAL -->
-            <div class="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
-                <div class="p-5 sm:p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-slate-50 to-white">
+            <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
+                <div class="p-4 sm:p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-slate-50 to-white">
                     <div class="flex items-center gap-3">
-                        
                         <div>
-                            <h3 class="text-base font-extrabold text-slate-900 font-display tracking-tight">Daftar Slot Waktu Keberangkatan Jeep</h3>
+                            <h3 class="text-base font-bold text-slate-800">Daftar Slot Waktu Keberangkatan</h3>
                             <p class="text-xs text-slate-500 mt-0.5">Wisatawan hanya dapat memilih sesi yang berstatus aktif saat melakukan pemesanan tiket.</p>
                         </div>
                     </div>
-                    
                 </div>
 
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs text-slate-700 min-w-[640px]">
-                        <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase text-[11px] tracking-wider select-none">
+                        <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider text-[10px] border-b border-slate-200">
                             <tr>
-                                <th class="py-4 px-4 w-12 text-center">No</th>
-                                <th class="py-4 px-5 min-w-[220px]">Nama Sesi</th>
-                                <th class="py-4 px-5 min-w-[180px] whitespace-nowrap">Rentang Waktu (WIB)</th>
-                                <th class="py-4 px-5 text-center min-w-[130px] whitespace-nowrap">Total Reservasi</th>
-                                <th class="py-4 px-5 text-center whitespace-nowrap">Status Operasional</th>
-                                <th class="py-4 px-5 text-right whitespace-nowrap">Aksi</th>
+                                <th class="py-3.5 px-4 w-12 text-center">No</th>
+                                <th class="py-3.5 px-4 text-center whitespace-nowrap">Aksi</th>
+                                <th class="py-3.5 px-5 min-w-[220px]">Nama Sesi</th>
+                                <th class="py-3.5 px-5 min-w-[180px] whitespace-nowrap">Rentang Waktu (WIB)</th>
+                                <th class="py-3.5 px-5 text-center min-w-[130px] whitespace-nowrap">Total Reservasi</th>
+                                <th class="py-3.5 px-5 text-center whitespace-nowrap">Status Operasional</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
@@ -162,64 +167,19 @@
                                         </span>
                                     </td>
 
-                                    <!-- Nama Sesi -->
-                                    <td class="py-4 px-5">
-                                        <div class="flex items-center gap-3">
-                                           
-                                            <div>
-                                                <span class="font-extrabold text-slate-900 text-sm font-display block leading-tight">{{ $slot->slot_label }}</span>
-                                                <span class="text-[11px] text-slate-400 font-mono block mt-0.5">ID Sesi: #{{ $slot->id }}</span>
-                                            </div>
-                                        </div>
-                                    </td>
-
-                                    <!-- Rentang Waktu -->
-                                    <td class="py-4 px-5 whitespace-nowrap">
-                                        <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100/80 border border-slate-200/80 font-bold text-slate-800 text-xs">
-                                            
-                                            <span>{{ $startTimeFormatted }}</span>
-                                            <span class="text-slate-400">&ndash;</span>
-                                            <span>{{ $endTimeFormatted }} WIB</span>
-                                        </div>
-                                    </td>
-
-                                    <!-- Total Reservasi -->
-                                    <td class="py-4 px-5 text-center whitespace-nowrap">
-                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200/80 shadow-2xs">
-                                            
-                                            <span>{{ $slot->bookings_count ?? 0 }} Tiket</span>
-                                        </span>
-                                    </td>
-
-                                    <!-- Status Operasional -->
-                                    <td class="py-4 px-5 text-center whitespace-nowrap">
-                                        <form action="{{ route('admin.schedules.toggle', $slot->id) }}" method="POST" class="inline-block"
-                                              data-confirm-title="{{ $slot->is_active ? 'Tutup Sesi Jadwal' : 'Buka Sesi Jadwal' }}"
-                                              data-confirm-message="Ubah status operasional sesi keberangkatan <strong class='text-slate-800 font-bold'>{{ $slot->slot_label }}</strong> menjadi <strong class='{{ $slot->is_active ? 'text-amber-700' : 'text-emerald-700' }} font-bold'>{{ $slot->is_active ? 'TUTUP (LIBUR)' : 'BUKA (AKTIF)' }}</strong>?"
-                                              data-confirm-type="{{ $slot->is_active ? 'warning' : 'success' }}"
-                                              data-confirm-text="{{ $slot->is_active ? 'Ya, Tutup Sesi' : 'Ya, Buka Sesi' }}"
-                                              data-confirm-cancel="Batal">
-                                            @csrf
-                                            <button type="submit" title="Klik untuk mengubah status buka/tutup sesi" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer shadow-2xs {{ $slot->is_active ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100' : 'bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200' }}">
-                                                
-                                                <span>{{ $slot->is_active ? 'Buka (Aktif)' : 'Tutup (Libur)' }}</span>
-                                            </button>
-                                        </form>
-                                    </td>
-
                                     <!-- Aksi (Edit & Hapus) -->
-                                    <td class="py-4 px-5 text-right whitespace-nowrap">
-                                        <div class="flex items-center justify-end gap-1.5">
+                                    <td class="py-4 px-4 text-center whitespace-nowrap">
+                                        <div class="flex items-center justify-center gap-1.5">
                                             <button type="button"
-                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-emerald-50 hover:border-emerald-300 text-slate-700 hover:text-emerald-800 text-xs font-bold shadow-2xs transition-all cursor-pointer"
+                                                class="p-1.5 rounded-xl border border-slate-200 bg-white hover:bg-emerald-50 hover:border-emerald-300 text-slate-500 hover:text-emerald-700 text-xs shadow-2xs transition-all cursor-pointer"
+                                                title="Edit Sesi Jadwal"
                                                 data-id="{{ $slot->id }}"
                                                 data-label="{{ $slot->slot_label }}"
                                                 data-start="{{ $startTimeFormatted }}"
                                                 data-end="{{ $endTimeFormatted }}"
                                                 data-max="{{ $slot->max_jeeps }}"
                                                 onclick="handleEditScheduleClick(this)">
-                                                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                                
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                             </button>
                                             
                                             <!-- Tombol Hapus dengan Konfirmasi Modal Kustom -->
@@ -236,6 +196,45 @@
                                                 </button>
                                             </form>
                                         </div>
+                                    </td>
+
+                                    <!-- Nama Sesi -->
+                                    <td class="py-3.5 px-5">
+                                        <div class="space-y-0.5">
+                                            <span class="font-bold text-slate-800 text-sm block leading-tight">{{ $slot->slot_label }}</span>
+                                            <span class="text-[11px] text-slate-400 font-medium block">ID Sesi: #{{ $slot->id }}</span>
+                                        </div>
+                                    </td>
+
+                                    <!-- Rentang Waktu -->
+                                    <td class="py-3.5 px-5 whitespace-nowrap">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 font-bold text-xs">
+                                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                            <span>{{ $startTimeFormatted }} &ndash; {{ $endTimeFormatted }} WIB</span>
+                                        </span>
+                                    </td>
+
+                                    <!-- Total Reservasi -->
+                                    <td class="py-3.5 px-5 text-center whitespace-nowrap">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200/80 shadow-2xs">
+                                            <span>{{ $slot->bookings_count ?? 0 }} Tiket</span>
+                                        </span>
+                                    </td>
+
+                                    <!-- Status Operasional -->
+                                    <td class="py-3.5 px-5 text-center whitespace-nowrap">
+                                        <form action="{{ route('admin.schedules.toggle', $slot->id) }}" method="POST" class="inline-block"
+                                              data-confirm-title="{{ $slot->is_active ? 'Tutup Sesi Jadwal' : 'Buka Sesi Jadwal' }}"
+                                              data-confirm-message="Ubah status operasional sesi keberangkatan <strong class='text-slate-800 font-bold'>{{ $slot->slot_label }}</strong> menjadi <strong class='{{ $slot->is_active ? 'text-amber-700' : 'text-emerald-700' }} font-bold'>{{ $slot->is_active ? 'TUTUP (LIBUR)' : 'BUKA (AKTIF)' }}</strong>?"
+                                              data-confirm-type="{{ $slot->is_active ? 'warning' : 'success' }}"
+                                              data-confirm-text="{{ $slot->is_active ? 'Ya, Tutup Sesi' : 'Ya, Buka Sesi' }}"
+                                              data-confirm-cancel="Batal">
+                                            @csrf
+                                            <button type="submit" title="Klik untuk mengubah status buka/tutup sesi" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer shadow-2xs {{ $slot->is_active ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100' : 'bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200' }}">
+                                                
+                                                <span>{{ $slot->is_active ? 'Aktif' : 'Tutup' }}</span>
+                                            </button>
+                                        </form>
                                     </td>
                                 </tr>
                             @empty
@@ -264,7 +263,7 @@
                         <svg class="w-5 h-5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                     </div>
                     <div>
-                        <h3 class="font-extrabold text-slate-900 text-base font-display">Tambah Sesi Baru</h3>
+                        <h3 class="font-bold text-slate-800 text-base">Tambah Sesi Baru</h3>
                         <p class="text-xs text-slate-500">Tentukan jam operasional keberangkatan</p>
                     </div>
                 </div>
@@ -312,7 +311,7 @@
                         <svg class="w-5 h-5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                     </div>
                     <div>
-                        <h3 class="font-extrabold text-slate-900 text-base font-display">Edit Sesi Jadwal</h3>
+                        <h3 class="font-bold text-slate-800 text-base">Edit Sesi Jadwal</h3>
                         <p class="text-xs text-slate-500">Perbarui jam operasional keberangkatan</p>
                     </div>
                 </div>

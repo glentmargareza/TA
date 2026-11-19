@@ -613,14 +613,14 @@ function renderDateDetectionPanel(data) {
     if (subEl) subEl.textContent = `Terdeteksi ${totalBooked} armada Jeep telah dipesan pada tanggal ini.`;
     if (badgeEl) {
       badgeEl.className = 'self-start sm:self-auto text-[11px] font-bold px-3 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-300';
-      badgeEl.textContent = `🟡 Ada Bookingan (${totalBooked} Jeep Terisi)`;
+      badgeEl.textContent = `Ada Bookingan (${totalBooked} Jeep Terisi)`;
     }
   } else {
     if (dotEl) dotEl.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0';
     if (subEl) subEl.textContent = 'Belum ada bookingan pada tanggal ini. Seluruh sesi keberangkatan tersedia penuh.';
     if (badgeEl) {
       badgeEl.className = 'self-start sm:self-auto text-[11px] font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300';
-      badgeEl.textContent = '🟢 Bebas Bookingan (100% Tersedia)';
+      badgeEl.textContent = 'Bebas Bookingan (100% Tersedia)';
     }
   }
 

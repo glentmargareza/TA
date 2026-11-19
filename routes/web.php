@@ -51,6 +51,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/armada', [AdminController::class, 'armada'])->name('armada');
     Route::get('/notifikasi', [AdminController::class, 'notifications'])->name('notifications');
 
+    // QR Scanner E-Tiket untuk Pelunasan & Check-in Loket
+    Route::get('/scanner', [AdminController::class, 'qrScanner'])->name('scanner');
+    Route::post('/scanner/lookup', [AdminController::class, 'scanQrLookup'])->name('scanner.lookup');
+    Route::post('/scanner/settle', [AdminController::class, 'scanQrSettle'])->name('scanner.settle');
+
     Route::post('/bookings/{id}/settle', [AdminController::class, 'settleDp'])->name('settle');
     Route::post('/bookings/{id}/assign', [AdminController::class, 'assignDriver'])->name('assign');
     Route::post('/bookings/{id}/reschedule', [AdminController::class, 'rescheduleBooking'])->name('reschedule');
@@ -72,6 +77,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/paket', [AdminController::class, 'packages'])->name('packages');
     Route::post('/paket', [AdminController::class, 'storePackage'])->name('packages.store');
     Route::put('/paket/{id}', [AdminController::class, 'updatePackage'])->name('packages.update');
+    Route::post('/paket/{id}/photos', [AdminController::class, 'updatePackagePhotos'])->name('packages.updatePhotos');
     Route::post('/paket/{id}/toggle', [AdminController::class, 'togglePackage'])->name('packages.toggle');
     Route::delete('/paket/{id}', [AdminController::class, 'destroyPackage'])->name('packages.destroy');
 
@@ -81,6 +87,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::put('/jadwal/{id}', [AdminController::class, 'updateSchedule'])->name('schedules.update');
     Route::post('/jadwal/{id}/toggle', [AdminController::class, 'toggleSchedule'])->name('schedules.toggle');
     Route::delete('/jadwal/{id}', [AdminController::class, 'destroySchedule'])->name('schedules.destroy');
+
+    // Manajemen Pengeluaran Operasional
+    Route::get('/pengeluaran', [AdminController::class, 'expenses'])->name('expenses');
+    Route::post('/pengeluaran', [AdminController::class, 'storeExpense'])->name('expenses.store');
+    Route::get('/pengeluaran/{id}', [AdminController::class, 'showExpense'])->name('expenses.show');
+    Route::put('/pengeluaran/{id}', [AdminController::class, 'updateExpense'])->name('expenses.update');
+    Route::delete('/pengeluaran/{id}', [AdminController::class, 'destroyExpense'])->name('expenses.destroy');
 
     // Manajemen Ulasan
     Route::get('/ulasan', [AdminController::class, 'reviews'])->name('reviews');
