@@ -22,6 +22,8 @@ class Payment extends Model
         'qr_url',
         'qr_string',
         'deeplink_url',
+        'base_amount',
+        'admin_fee',
         'gross_amount',
         'payment_status',
         'snap_token',
@@ -35,6 +37,8 @@ class Payment extends Model
     ];
 
     protected $casts = [
+        'base_amount' => 'decimal:2',
+        'admin_fee' => 'decimal:2',
         'gross_amount' => 'decimal:2',
         'expires_at' => 'datetime',
         'payload_response' => 'array',

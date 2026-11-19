@@ -5,12 +5,12 @@
 @section('content')
 @php
     $payableAmount = (int) round($booking->paid_amount);
-    $activeManualPayment = $booking->payments->where('payment_type', 'MANUAL_BPD_DIY')->where('payment_status', 'PENDING')->first();
     $activeCashPayment = $booking->payments->where('payment_type', 'CASH')->where('payment_status', 'PENDING')->first();
-    $latestFailedManualPayment = $booking->payments->where('payment_type', 'MANUAL_BPD_DIY')->where('payment_status', 'FAILED')->sortByDesc('id')->first();
-    $bpdConfig = config('services.bpd_diy');
-    $isWaiting = ($booking->booking_status === 'WAITING_CONFIRMATION');
     $isCashActive = ($activeCashPayment !== null);
+    $briFee  = \App\Services\PaymentFeeService::calculate('bri_va', $payableAmount);
+    $danaFee = \App\Services\PaymentFeeService::calculate('dana', $payableAmount);
+    $cashFee = \App\Services\PaymentFeeService::calculate('cash', $payableAmount);
+    $frontendFeeRates = \App\Services\PaymentFeeService::getFrontendRates();
 @endphp
 
 <div class="py-10 sm:py-14 bg-wukirsari-cream min-h-screen">
@@ -37,7 +37,7 @@
                         <span class="w-7 h-7 rounded-full bg-wukirsari-primary text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-sm shadow-wukirsari-primary/30">
                             2
                         </span>
-                        <span>{{ $isWaiting ? 'Verifikasi Pembayaran' : 'Pembayaran' }}</span>
+                        <span>Pembayaran</span>
                     </div>
 
                     <div class="w-8 sm:w-16 h-0.5 bg-wukirsari-border"></div>
@@ -96,7 +96,7 @@
                 <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-                <span>Mohon periksa kembali formulir unggah bukti:</span>
+                <span>Terdapat kesalahan:</span>
             </div>
             <ul class="list-disc list-inside space-y-0.5 text-rose-800">
                 @foreach($errors->all() as $error)
@@ -111,7 +111,7 @@
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                     <h1 class="text-2xl sm:text-3xl font-extrabold text-merapiText-primary font-display">
-                        {{ $isWaiting ? 'Pemeriksaan Pembayaran' : 'Pembayaran Reservasi' }}
+                        Pembayaran Reservasi
                     </h1>
                     <p class="text-merapiText-secondary text-sm mt-1">
                         Selesaikan pembayaran dengan aman melalui metode pembayaran resmi Paguyuban Jeep Wukirsari.
@@ -126,30 +126,6 @@
             </div>
         </div>
 
-
-        @if(session('error'))
-        <div class="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 text-red-900 text-sm flex items-start gap-3">
-            <svg class="w-5 h-5 text-red-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            <div>
-                <p class="font-bold">Perhatian</p>
-                <p class="text-xs text-red-800 mt-0.5">{{ session('error') }}</p>
-            </div>
-        </div>
-        @endif
-
-        @if($errors->any())
-        <div class="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 text-red-900 text-sm">
-            <p class="font-bold mb-1">Terdapat kesalahan pengisian formulir:</p>
-            <ul class="list-disc pl-5 text-xs text-red-800 space-y-1">
-                @foreach($errors->all() as $err)
-                    <li>{{ $err }}</li>
-                @endforeach
-            </ul>
-        </div>
-        @endif
-
         <!-- TATA LETAK 2 KOLOM (DESKTOP) / BERTUMPUK (MOBILE) -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
@@ -158,338 +134,112 @@
             <!-- ========================================== -->
             <div class="lg:col-span-7 space-y-6">
                 
-                <!-- PILIHAN 4 METODE PEMBAYARAN UTAMA -->
-                <div class="space-y-3">
+                <!-- PILIHAN METODE PEMBAYARAN -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
 
-                    <!-- BARIS 1: BPD DIY + BRI VA -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-
-                        <!-- TAB 1: BANK BPD DIY (UTAMA) -->
-                        <div id="tabBtnBpd" onclick="switchTab('bpd')"
-                             class="p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer text-left bg-white border-slate-900 ring-2 ring-slate-900/10 shadow-sm flex items-start gap-3.5">
-                            <div class="w-11 h-11 rounded-xl bg-slate-900 text-white font-extrabold flex items-center justify-center text-xs tracking-wider shrink-0 shadow-xs">
-                                BPD
-                            </div>
-                            <div class="min-w-0 flex-1">
-                                <div class="flex items-center gap-2 flex-wrap">
-                                    <span class="font-bold text-sm text-merapiText-primary">Bank BPD DIY</span>
-                                    <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-900 text-white">
-                                        Utama
-                                    </span>
-                                </div>
-                                <p class="text-xs text-merapiText-secondary mt-1 line-clamp-1">
-                                    Transfer manual & upload bukti
-                                </p>
-                            </div>
+                    <!-- TAB 1: BRI VIRTUAL ACCOUNT -->
+                    <div id="tabBtnBri" onclick="switchTab('bri')"
+                         class="p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer text-left bg-white border-[#00529C] ring-2 ring-blue-200 shadow-sm flex items-start gap-3.5">
+                        <div class="w-11 h-11 rounded-xl bg-[#00529C] text-white font-extrabold flex items-center justify-center text-xs tracking-wider shrink-0 shadow-xs">
+                            BRI
                         </div>
-
-                        <!-- TAB 2: BRI VIRTUAL ACCOUNT (MIDTRANS) -->
-                        <div id="tabBtnBri" onclick="switchTab('bri')"
-                             class="p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer text-left bg-white border-wukirsari-border hover:border-blue-400 flex items-start gap-3.5">
-                            <div class="w-11 h-11 rounded-xl bg-[#00529C] text-white font-extrabold flex items-center justify-center text-xs tracking-wider shrink-0 shadow-xs">
-                                BRI
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="font-bold text-sm text-merapiText-primary">BRI Virtual Account</span>
                             </div>
-                            <div class="min-w-0 flex-1">
-                                <div class="flex items-center gap-2 flex-wrap">
-                                    <span class="font-bold text-sm text-merapiText-primary">BRI Virtual Account</span>
-                                    <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
-                                        Midtrans
-                                    </span>
-                                </div>
-                                <p class="text-xs text-merapiText-secondary mt-1 line-clamp-1">
-                                    Verifikasi otomatis instan
-                                </p>
-                            </div>
+                            <p class="text-xs text-merapiText-secondary mt-1 line-clamp-1">
+                                Verifikasi otomatis instan
+                            </p>
                         </div>
-
                     </div>
 
-                    <!-- BARIS 2: DANA + CASH -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-
-                        <!-- TAB 3: DANA MIDTRANS (NONAKTIF SEMENTARA) -->
-                        <div id="tabBtnDana" onclick="switchTab('dana')"
-                             class="p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer text-left bg-white border-wukirsari-border hover:border-slate-300 opacity-90 flex items-start gap-3.5">
-                            <div class="w-11 h-11 rounded-xl bg-sky-500 text-white font-extrabold flex items-center justify-center text-xs tracking-wider shrink-0 shadow-xs">
-                                DANA
-                            </div>
-                            <div class="min-w-0 flex-1">
-                                <div class="flex items-center gap-2 flex-wrap">
-                                    <span class="font-bold text-sm text-merapiText-primary">DANA Midtrans</span>
-                                    <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
-                                        Nonaktif
-                                    </span>
-                                </div>
-                                <p class="text-xs text-merapiText-secondary mt-1 line-clamp-1">
-                                    E-Wallet Digital Instan
-                                </p>
-                            </div>
+                    <!-- TAB 2: DANA -->
+                    <div id="tabBtnDana" onclick="switchTab('dana')"
+                         class="p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer text-left bg-white border-wukirsari-border hover:border-slate-300 opacity-90 flex items-start gap-3.5">
+                        <div class="w-11 h-11 rounded-xl bg-sky-500 text-white font-extrabold flex items-center justify-center text-xs tracking-wider shrink-0 shadow-xs">
+                            DANA
                         </div>
-
-                        <!-- TAB 4: BAYAR TUNAI DI LOKET KASIR -->
-                        <div id="tabBtnCash" onclick="switchTab('cash')"
-                             class="p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer text-left bg-white border-wukirsari-border hover:border-slate-300 flex items-start gap-3.5">
-                            <div class="w-11 h-11 rounded-xl bg-emerald-700 text-white font-extrabold flex items-center justify-center text-xs tracking-wider shrink-0 shadow-xs">
-                                CASH
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="font-bold text-sm text-merapiText-primary">DANA</span>
                             </div>
-                            <div class="min-w-0 flex-1">
-                                <div class="flex items-center gap-2 flex-wrap">
-                                    <span class="font-bold text-sm text-merapiText-primary">Bayar Tunai di Loket</span>
-                                    <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                                        Lokasi Basecamp
-                                    </span>
-                                </div>
-                                <p class="text-xs text-merapiText-secondary mt-1 line-clamp-1">
-                                    Tunai saat tiba di basecamp
-                                </p>
-                            </div>
+                            <p class="text-xs text-merapiText-secondary mt-1 line-clamp-1">
+                                E-Wallet Digital Instan
+                            </p>
                         </div>
+                    </div>
 
+                    <!-- TAB 3: BAYAR TUNAI DI LOKET KASIR -->
+                    <div id="tabBtnCash" onclick="switchTab('cash')"
+                         class="p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer text-left bg-white border-wukirsari-border hover:border-slate-300 flex items-start gap-3.5 sm:col-span-2">
+                        <div class="w-11 h-11 rounded-xl bg-emerald-700 text-white font-extrabold flex items-center justify-center text-xs tracking-wider shrink-0 shadow-xs">
+                            CASH
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="font-bold text-sm text-merapiText-primary">Bayar Tunai di Loket</span>
+                            </div>
+                            <p class="text-xs text-merapiText-secondary mt-1 line-clamp-1">
+                                Tunai saat tiba di basecamp
+                            </p>
+                        </div>
                     </div>
 
                 </div>
 
                 <!-- ========================================== -->
-                <!-- PANEL METODE 1: BANK BPD DIY (UTAMA)       -->
+                <!-- PANEL METODE 1: BRI VIRTUAL ACCOUNT        -->
                 <!-- ========================================== -->
-                <div id="panelBpd" class="bg-white rounded-3xl border border-wukirsari-border p-6 sm:p-7 shadow-xs space-y-6">
-                    
-                    <!-- REKENING RESMI PAGUYUBAN -->
-                    <div>
-                        <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-merapiText-secondary mb-4">
-                            <span class="w-2.5 h-2.5 rounded-full bg-slate-900"></span>
-                            <span>REKENING RESMI PAGUYUBAN</span>
-                        </div>
-
-                        <!-- Baris No. Rekening & Tombol Salin -->
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-wukirsari-border">
-                            <div>
-                                <span class="text-xs text-merapiText-muted block">Nomor Rekening Bank BPD DIY:</span>
-                                <span class="text-2xl sm:text-3xl font-mono font-extrabold text-merapiText-primary tracking-wider block mt-0.5" id="rekDisplay">
-                                    069211001060
-                                </span>
-                            </div>
-                            <button type="button" onclick="copyToClipboard('069211001060', 'btnCopyRekText')" 
-                                    class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-300 hover:border-slate-400 bg-white hover:bg-slate-50 text-xs sm:text-sm font-semibold text-merapiText-primary shadow-xs transition-all active:scale-95">
-                                <svg class="w-4 h-4 text-merapiText-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                                </svg>
-                                <span id="btnCopyRekText">Salin Rekening</span>
-                            </button>
-                        </div>
-
-                        <!-- Baris Atas Nama & Nominal Transfer Wajib -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 py-5 border-b border-wukirsari-border">
-                            <div>
-                                <span class="text-xs text-merapiText-muted block">Atas Nama Pemilik Rekening:</span>
-                                <span class="text-base sm:text-lg font-bold text-merapiText-primary block mt-0.5 font-display">
-                                    Ariyanto
-                                </span>
-                            </div>
-                            <div>
-                                <span class="text-xs text-merapiText-muted block">Nominal Transfer Wajib:</span>
-                                <div class="flex items-center gap-2.5 mt-0.5">
-                                    <span class="text-xl sm:text-2xl font-extrabold text-wukirsari-primary font-display" id="nominalDisplay">
-                                        Rp {{ number_format($booking->paid_amount, 0, ',', '.') }}
-                                    </span>
-                                    <button type="button" onclick="copyToClipboard('{{ (int)$booking->paid_amount }}', 'btnCopyNominalText')" 
-                                            class="text-xs font-semibold text-wukirsari-primary bg-wukirsari-sage/60 hover:bg-wukirsari-sage px-2.5 py-1 rounded-lg transition-all active:scale-95">
-                                        <span id="btnCopyNominalText">Salin</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Catatan Peringatan Transfer -->
-                        <div class="p-3.5 rounded-2xl bg-amber-50/80 border border-amber-200/80 text-xs text-amber-900 leading-relaxed mt-5">
-                            Pastikan melakukan transfer tepat hingga nominal tagihan di atas. Setelah transfer berhasil, unggah foto bukti transfer pada formulir di bawahnya.
-                        </div>
-                    </div>
-
-                    @if($isWaiting && $activeManualPayment)
-                    <!-- KOTAK STATUS BUKTI SEDANG DALAM PENINJAUAN ADMIN -->
-                    <div class="pt-3">
-                        <div class="p-5 sm:p-6 rounded-2xl bg-blue-50/90 border border-blue-200 space-y-4">
-                            <div class="flex items-start gap-3.5">
-                                <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 shadow-xs">
-                                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h4 class="text-sm font-bold text-blue-950">Bukti Pembayaran Sedang Diverifikasi Admin</h4>
-                                    <p class="text-xs text-blue-900 mt-1 leading-relaxed">
-                                        Bukti transfer Anda telah diterima oleh sistem dan saat ini sedang dalam antrean peninjauan oleh <strong>Admin Loket Paguyuban</strong>. E-Tiket resmi akan aktif secara otomatis setelah pembayaran disetujui.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div class="p-4 rounded-xl bg-white border border-blue-100 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                                <div>
-                                    <span class="text-slate-400 block text-[11px]">Nama Pengirim Rekening:</span>
-                                    <span class="font-bold text-slate-800">{{ $activeManualPayment->sender_name ?? '-' }}</span>
-                                </div>
-                                <div>
-                                    <span class="text-slate-400 block text-[11px]">Bank Asal Pengirim:</span>
-                                    <span class="font-bold text-slate-800">{{ $activeManualPayment->sender_bank ?? '-' }}</span>
-                                </div>
-                                <div>
-                                    <span class="text-slate-400 block text-[11px]">Nominal Transfer:</span>
-                                    <span class="font-bold text-emerald-800">Rp {{ number_format($activeManualPayment->gross_amount, 0, ',', '.') }}</span>
-                                </div>
-                                <div>
-                                    <span class="text-slate-400 block text-[11px]">Waktu Pengiriman:</span>
-                                    <span class="font-medium text-slate-700">{{ $activeManualPayment->created_at ? $activeManualPayment->created_at->translatedFormat('d M Y, H:i') : '-' }} WIB</span>
-                                </div>
-                            </div>
-
-                            <div class="flex items-center gap-2 pt-1 text-[11px] text-blue-800 font-medium">
-                                <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-                                <span>Sistem aktif memantau status persetujuan admin. Anda dapat mengecek halaman ini secara berkala.</span>
-                            </div>
-                        </div>
-                    </div>
-                    @else
-                    <!-- FORMULIR KONFIRMASI PENGIRIMAN BUKTI -->
-                    @if($latestFailedManualPayment && $booking->booking_status === 'PENDING')
-                    <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 text-xs space-y-1">
-                        <div class="flex items-center gap-2 font-bold text-sm text-rose-800">
-                            <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                            <span>Bukti Transfer Sebelumnya Ditolak</span>
-                        </div>
-                        <p class="leading-relaxed">
-                            <strong>Alasan Admin:</strong> {{ $latestFailedManualPayment->rejection_reason ?? 'Bukti transfer tidak valid atau tidak terbaca.' }}
-                        </p>
-                        <p class="text-[11px] text-rose-700">Silakan unggah kembali foto struk / mutasi yang sah melalui formulir di bawah ini.</p>
-                    </div>
-                    @endif
-
-                    <div class="pt-3">
-                        <div class="flex items-center gap-2 text-sm font-bold text-merapiText-primary mb-4">
-                            <svg class="w-4 h-4 text-wukirsari-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
-                            </svg>
-                            <span>Formulir Konfirmasi Pengiriman Bukti</span>
-                        </div>
-
-                        <form action="{{ route('booking.confirm_transfer', $booking->booking_code) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
-                            @csrf
-                            
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-xs font-semibold text-merapiText-secondary mb-1">
-                                        Nama Pengirim (Sesuai Rekening / Struk) <span class="text-red-500">*</span>
-                                    </label>
-                                    <input type="text" name="sender_name" value="{{ old('sender_name', $booking->customer_name) }}" required 
-                                           placeholder="Contoh: Budi Santoso" 
-                                           class="w-full px-4 py-2.5 rounded-xl border border-wukirsari-border focus:ring-2 focus:ring-wukirsari-primary focus:border-wukirsari-primary text-sm bg-white">
-                                </div>
-
-                                <div>
-                                    <label class="block text-xs font-semibold text-merapiText-secondary mb-1">
-                                        Bank Asal Transfer <span class="text-red-500">*</span>
-                                    </label>
-                                    <select name="sender_bank" required 
-                                            class="w-full px-4 py-2.5 rounded-xl border border-wukirsari-border focus:ring-2 focus:ring-wukirsari-primary focus:border-wukirsari-primary text-sm bg-white">
-                                        <option value="">Pilih Bank Asal</option>
-                                        <option value="Bank BCA" {{ old('sender_bank') === 'Bank BCA' ? 'selected' : '' }}>Bank BCA</option>
-                                        <option value="Bank Mandiri" {{ old('sender_bank') === 'Bank Mandiri' ? 'selected' : '' }}>Bank Mandiri</option>
-                                        <option value="Bank BNI" {{ old('sender_bank') === 'Bank BNI' ? 'selected' : '' }}>Bank BNI</option>
-                                        <option value="Bank BRI" {{ old('sender_bank') === 'Bank BRI' ? 'selected' : '' }}>Bank BRI</option>
-                                        <option value="Bank BPD DIY" {{ old('sender_bank') === 'Bank BPD DIY' ? 'selected' : '' }}>Bank BPD DIY</option>
-                                        <option value="Bank Syariah Indonesia (BSI)" {{ old('sender_bank') === 'Bank Syariah Indonesia (BSI)' ? 'selected' : '' }}>Bank Syariah Indonesia (BSI)</option>
-                                        <option value="Bank CIMB Niaga" {{ old('sender_bank') === 'Bank CIMB Niaga' ? 'selected' : '' }}>Bank CIMB Niaga</option>
-                                        <option value="Bank Permata" {{ old('sender_bank') === 'Bank Permata' ? 'selected' : '' }}>Bank Permata</option>
-                                        <option value="Bank Lainnya / E-Wallet" {{ old('sender_bank') === 'Bank Lainnya / E-Wallet' ? 'selected' : '' }}>Bank Lainnya / E-Wallet</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-semibold text-merapiText-secondary mb-1">
-                                    Unggah Foto Struk / Tangkapan Layar Mutasi <span class="text-red-500">*</span>
-                                </label>
-                                <div class="relative border-2 border-dashed border-slate-300 hover:border-wukirsari-primary rounded-2xl p-6 text-center cursor-pointer transition-all bg-slate-50/50 hover:bg-white" id="dropzoneProof">
-                                    <input type="file" name="payment_proof" id="fileProof" accept="image/jpeg,image/png,image/jpg,image/webp" required 
-                                           class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                                    
-                                    <div id="previewDefault" class="space-y-2 pointer-events-none">
-                                        <svg class="w-8 h-8 text-merapiText-muted mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                        </svg>
-                                        <div class="text-sm font-semibold text-merapiText-primary">
-                                             Pilih berkas atau seret foto ke sini
-                                        </div>
-                                        <div class="text-xs text-merapiText-muted">
-                                            Format JPG, JPEG, PNG, atau WEBP (Maksimal 5MB)
-                                        </div>
-                                    </div>
-
-                                    <div id="previewSelected" class="hidden pointer-events-none items-center justify-center gap-3.5">
-                                        <img id="imgThumbnail" class="w-14 h-14 object-cover rounded-xl border border-wukirsari-border shadow-xs" src="" alt="Thumbnail Bukti">
-                                        <div class="text-left">
-                                            <div id="fileNameDisplay" class="text-xs font-bold text-merapiText-primary truncate max-w-xs"></div>
-                                            <div id="fileSizeDisplay" class="text-[11px] text-merapiText-secondary"></div>
-                                            <div class="text-[11px] text-emerald-600 font-semibold mt-0.5">✓ Berkas siap diunggah</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button type="submit" 
-                                    class="w-full py-4 px-6 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-wukirsari-primary/25 transition-all active:scale-98">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                </svg>
-                                <span>Kirim Bukti Pembayaran</span>
-                            </button>
-                        </form>
-                    </div>
-                    @endif
-
-                </div>
-
-                <!-- ========================================== -->
-                <!-- PANEL METODE 2: BRI VIRTUAL ACCOUNT        -->
-                <!-- ========================================== -->
-                <div id="panelBri" class="hidden bg-white rounded-3xl border border-wukirsari-border p-6 sm:p-7 shadow-xs space-y-6">
+                <div id="panelBri" class="bg-white rounded-3xl border border-wukirsari-border p-6 sm:p-7 shadow-xs space-y-6">
 
                     <!-- Header -->
                     <div class="flex items-center justify-between border-b border-wukirsari-border pb-3">
-                        <h3 class="text-base font-bold text-merapiText-primary font-display flex items-center gap-2">
-                            <svg class="w-5 h-5 text-[#00529C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-                            </svg>
+                        <h3 class="text-base font-bold text-merapiText-primary font-display">
                             <span>BRI Virtual Account</span>
                         </h3>
-                        <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800">
-                            Midtrans
-                        </span>
                     </div>
 
                     <!-- STATE 1: Belum generate VA -->
                     <div id="boxGenerateBri">
-                        <!-- Ringkasan nominal -->
-                        <div class="p-4 rounded-2xl bg-wukirsari-sage/40 border border-wukirsari-border space-y-1.5 mb-5">
+                        <!-- Rincian Pembayaran Otomatis BRI VA -->
+                        <div class="p-4 sm:p-5 rounded-2xl bg-wukirsari-sage/40 border border-wukirsari-border space-y-2 mb-5">
                             <div class="flex items-center justify-between text-xs text-merapiText-secondary">
                                 <span>Skema Pembayaran</span>
                                 <span class="font-semibold text-wukirsari-primary">
                                     {{ $booking->payment_mode === 'FULL' ? 'Pembayaran Lunas (100%)' : 'Uang Muka (DP 30%)' }}
                                 </span>
                             </div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-xs text-merapiText-secondary">Nominal yang Dibayarkan</span>
-                                <span class="text-lg font-extrabold text-wukirsari-primary font-display">
+                            <div class="flex items-center justify-between text-xs text-merapiText-secondary">
+                                <span>Total Biaya Reservasi</span>
+                                <span class="font-semibold text-merapiText-primary">
+                                    Rp {{ number_format($booking->total_amount, 0, ',', '.') }}
+                                </span>
+                            </div>
+                            <div class="flex items-center justify-between text-xs text-merapiText-secondary">
+                                <span>Nominal Pembayaran ({{ $booking->payment_mode === 'FULL' ? 'Lunas' : 'DP' }})</span>
+                                <span class="font-semibold text-merapiText-primary">
                                     Rp {{ number_format($booking->paid_amount, 0, ',', '.') }}
+                                </span>
+                            </div>
+                            <div class="flex items-center justify-between text-xs text-merapiText-secondary">
+                                <span class="flex items-center gap-1.5">
+                                    <span>Biaya Layanan Admin</span>
+                                    <span class="text-[9px] text-[#00529C] bg-blue-100 font-bold px-1.5 py-0.5 rounded">BRI VA</span>
+                                </span>
+                                <span class="font-semibold text-merapiText-primary" id="briAdminFeeDisplay">
+                                    Rp {{ number_format($briFee['admin_fee'], 0, ',', '.') }}
+                                </span>
+                            </div>
+                            <div class="pt-2 border-t border-wukirsari-border flex items-center justify-between">
+                                <span class="text-xs font-bold text-merapiText-primary">Total Pembayaran Akhir</span>
+                                <span class="text-lg font-extrabold text-[#00529C] font-display" id="briTotalFinalDisplay">
+                                    Rp {{ number_format($briFee['total_amount'], 0, ',', '.') }}
                                 </span>
                             </div>
                         </div>
 
-                        <div class="text-xs text-merapiText-secondary leading-relaxed mb-5 space-y-1">
-                            <p>Sistem akan membuat <strong class="text-merapiText-primary">Nomor Virtual Account BRI</strong> khusus pesanan ini melalui Midtrans. Pembayaran dapat dilakukan via BRImo, ATM BRI, Internet Banking, maupun transfer antar bank.</p>
-                            <p class="text-[11px] text-merapiText-muted">VA berlaku selama 30 menit. Status tiket diperbarui otomatis setelah pembayaran diterima.</p>
+                        <div class="text-xs text-merapiText-muted leading-relaxed mb-5">
+                            <p>VA berlaku selama 30 menit. Status tiket diperbarui otomatis setelah pembayaran diterima.</p>
                         </div>
 
                         <button type="button" id="btnGenerateBriVa"
@@ -534,6 +284,9 @@
                                         <span id="btnCopyBriAmtText">Salin</span>
                                     </button>
                                 </div>
+                                <span class="text-[10px] text-slate-500 block mt-1" id="briGrossSubnote">
+                                    (Termasuk biaya admin Rp {{ number_format($briFee['admin_fee'], 0, ',', '.') }})
+                                </span>
                             </div>
                             <div class="p-3.5 rounded-2xl bg-amber-50 border border-amber-200">
                                 <span class="text-[10px] text-amber-700 block">Berlaku hingga:</span>
@@ -659,40 +412,64 @@
                 </div>
 
                 <!-- ========================================== -->
-                <!-- PANEL METODE 3: DANA MIDTRANS (NONAKTIF)   -->
+                <!-- PANEL METODE 2: DANA                       -->
                 <!-- ========================================== -->
                 <div id="panelDana" class="hidden bg-white rounded-3xl border border-wukirsari-border p-6 sm:p-7 shadow-xs space-y-5">
                     <div class="flex items-center justify-between border-b border-wukirsari-border pb-3">
-                        <h3 class="text-base font-bold text-merapiText-primary font-display flex items-center gap-2">
-                            <svg class="w-5 h-5 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-                            </svg>
-                            <span>DANA Midtrans (E-Wallet Digital)</span>
+                        <h3 class="text-base font-bold text-merapiText-primary font-display">
+                            <span>DANA (E-Wallet Digital)</span>
                         </h3>
-                        <span class="text-xs px-2.5 py-0.5 rounded-full font-semibold bg-amber-100 text-amber-800">
-                            Nonaktif Sementara
-                        </span>
+                    </div>
+
+                    <!-- Rincian Pembayaran Otomatis DANA -->
+                    <div class="p-4 sm:p-5 rounded-2xl bg-wukirsari-sage/40 border border-wukirsari-border space-y-2">
+                        <div class="flex items-center justify-between text-xs text-merapiText-secondary">
+                            <span>Skema Pembayaran</span>
+                            <span class="font-semibold text-wukirsari-primary">
+                                {{ $booking->payment_mode === 'FULL' ? 'Pembayaran Lunas (100%)' : 'Uang Muka (DP 30%)' }}
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between text-xs text-merapiText-secondary">
+                            <span>Total Biaya Reservasi</span>
+                            <span class="font-semibold text-merapiText-primary">
+                                Rp {{ number_format($booking->total_amount, 0, ',', '.') }}
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between text-xs text-merapiText-secondary">
+                            <span>Nominal Pembayaran ({{ $booking->payment_mode === 'FULL' ? 'Lunas' : 'DP' }})</span>
+                            <span class="font-semibold text-merapiText-primary">
+                                Rp {{ number_format($booking->paid_amount, 0, ',', '.') }}
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between text-xs text-merapiText-secondary">
+                            <span class="flex items-center gap-1.5">
+                                <span>Biaya Layanan Admin</span>
+                                <span class="text-[9px] text-sky-800 bg-sky-100 font-bold px-1.5 py-0.5 rounded">DANA (1,5%)</span>
+                            </span>
+                            <span class="font-semibold text-merapiText-primary" id="danaAdminFeeDisplay">
+                                Rp {{ number_format($danaFee['admin_fee'], 0, ',', '.') }}
+                            </span>
+                        </div>
+                        <div class="pt-2 border-t border-wukirsari-border flex items-center justify-between">
+                            <span class="text-xs font-bold text-merapiText-primary">Total Pembayaran Akhir</span>
+                            <span class="text-lg font-extrabold text-sky-700 font-display" id="danaTotalFinalDisplay">
+                                Rp {{ number_format($danaFee['total_amount'], 0, ',', '.') }}
+                            </span>
+                        </div>
                     </div>
 
                     <div class="p-5 rounded-2xl bg-amber-50 border border-amber-200/80 space-y-3">
-                        <div class="flex items-start gap-3">
-                            <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <h4 class="text-sm font-bold text-amber-950">Kanal Merchant Midtrans Belum Aktif</h4>
-                                <p class="text-xs text-amber-900 mt-1 leading-relaxed">
-                                    Kanal pembayaran digital instan melalui DANA saat ini masih dalam proses aktivasi izin merchant Midtrans. Demi kelancaran reservasi Anda, silakan gunakan metode transfer manual ke <strong>Bank BPD DIY</strong> atau pilih opsi <strong>Bayar Tunai di Loket Kasir</strong>.
-                                </p>
-                            </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-amber-950">Kanal Pembayaran Belum Tersedia</h4>
+                            <p class="text-xs text-amber-900 mt-1 leading-relaxed">
+                                Kanal pembayaran digital instan melalui DANA saat ini masih dalam proses aktivasi. Demi kelancaran reservasi Anda, silakan gunakan metode <strong>BRI Virtual Account</strong> atau pilih opsi <strong>Bayar Tunai di Loket Kasir</strong>.
+                            </p>
                         </div>
                         
                         <div class="pt-3 border-t border-amber-200/60 flex flex-wrap gap-2.5">
-                            <button type="button" onclick="switchTab('bpd')" 
-                                    class="px-4 py-2 rounded-xl bg-wukirsari-primary text-white text-xs font-semibold hover:bg-wukirsari-hover transition-all">
-                                ← Gunakan Bank BPD DIY
+                            <button type="button" onclick="switchTab('bri')" 
+                                    class="px-4 py-2 rounded-xl bg-[#00529C] text-white text-xs font-semibold hover:bg-[#003f7a] transition-all">
+                                ← Gunakan BRI Virtual Account
                             </button>
                             <button type="button" onclick="switchTab('cash')" 
                                     class="px-4 py-2 rounded-xl bg-white border border-slate-300 text-merapiText-primary text-xs font-semibold hover:bg-slate-50 transition-all">
@@ -707,26 +484,39 @@
                 <!-- ========================================== -->
                 <div id="panelCash" class="hidden bg-white rounded-3xl border border-wukirsari-border p-6 sm:p-7 shadow-xs space-y-6">
                     <div class="flex items-center justify-between border-b border-wukirsari-border pb-3">
-                        <h3 class="text-base font-bold text-merapiText-primary font-display flex items-center gap-2">
-                            <svg class="w-5 h-5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
-                            </svg>
+                        <h3 class="text-base font-bold text-merapiText-primary font-display">
                             <span>Bayar Tunai di Loket Kasir Basecamp</span>
                         </h3>
-                        <span class="text-xs px-2.5 py-0.5 rounded-full font-semibold bg-emerald-100 text-emerald-800">
-                            Lokasi Basecamp
-                        </span>
                     </div>
 
-                    <div class="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 space-y-3">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs text-merapiText-secondary">Kode Booking Anda:</span>
-                            <span class="font-mono font-extrabold text-sm text-wukirsari-primary bg-white px-3 py-1 rounded-lg border border-emerald-200">
+                    <!-- Rincian Pembayaran Kasir -->
+                    <div class="p-4 sm:p-5 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 space-y-2">
+                        <div class="flex items-center justify-between text-xs text-merapiText-secondary">
+                            <span>Kode Booking Anda</span>
+                            <span class="font-mono font-extrabold text-xs text-wukirsari-primary bg-white px-2.5 py-0.5 rounded border border-emerald-200">
                                 {{ $booking->booking_code }}
                             </span>
                         </div>
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs text-merapiText-secondary">Nominal Tagihan Kasir:</span>
+                        <div class="flex items-center justify-between text-xs text-merapiText-secondary">
+                            <span>Total Biaya Reservasi</span>
+                            <span class="font-semibold text-merapiText-primary">
+                                Rp {{ number_format($booking->total_amount, 0, ',', '.') }}
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between text-xs text-merapiText-secondary">
+                            <span>Nominal Pembayaran ({{ $booking->payment_mode === 'FULL' ? 'Lunas' : 'DP' }})</span>
+                            <span class="font-semibold text-merapiText-primary">
+                                Rp {{ number_format($booking->paid_amount, 0, ',', '.') }}
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between text-xs text-merapiText-secondary">
+                            <span>Biaya Layanan Admin</span>
+                            <span class="font-bold text-emerald-700 bg-emerald-100 text-[10px] px-2 py-0.5 rounded-full">
+                                Bebas Biaya (Rp 0)
+                            </span>
+                        </div>
+                        <div class="pt-2 border-t border-emerald-200/70 flex items-center justify-between">
+                            <span class="text-xs font-bold text-merapiText-primary">Total Tagihan Kasir</span>
                             <span class="font-display font-extrabold text-xl text-emerald-950">
                                 Rp {{ number_format($booking->paid_amount, 0, ',', '.') }}
                             </span>
@@ -771,23 +561,23 @@
                     <ol class="space-y-3 text-xs text-merapiText-secondary" id="paymentStepsList">
                         <li class="flex items-start gap-2.5">
                             <span class="w-5 h-5 rounded-full bg-wukirsari-sage text-wukirsari-primary flex items-center justify-center font-bold text-[11px] shrink-0 mt-0.5">1</span>
-                            <span>Buka aplikasi m-Banking atau kunjungi mesin ATM bank Anda.</span>
+                            <span>Klik tombol <strong>Terbitkan Nomor BRI Virtual Account</strong> di bawah.</span>
                         </li>
                         <li class="flex items-start gap-2.5">
                             <span class="w-5 h-5 rounded-full bg-wukirsari-sage text-wukirsari-primary flex items-center justify-center font-bold text-[11px] shrink-0 mt-0.5">2</span>
-                            <span>Pilih menu Transfer Antar Bank (Kode BPD DIY: <strong>112</strong>) atau Sesama BPD DIY.</span>
+                            <span>Catat atau salin <strong>Nomor BRIVA</strong> yang muncul.</span>
                         </li>
                         <li class="flex items-start gap-2.5">
                             <span class="w-5 h-5 rounded-full bg-wukirsari-sage text-wukirsari-primary flex items-center justify-center font-bold text-[11px] shrink-0 mt-0.5">3</span>
-                            <span>Masukkan no. rekening tujuan <strong>069211001060</strong> a.n. <strong>Ariyanto</strong>.</span>
+                            <span>Buka BRImo / ATM BRI / Internet Banking, pilih menu <strong>BRIVA</strong>.</span>
                         </li>
                         <li class="flex items-start gap-2.5">
                             <span class="w-5 h-5 rounded-full bg-wukirsari-sage text-wukirsari-primary flex items-center justify-center font-bold text-[11px] shrink-0 mt-0.5">4</span>
-                            <span>Masukkan nominal transfer tepat sebesar <strong>Rp {{ number_format($booking->paid_amount, 0, ',', '.') }}</strong>.</span>
+                            <span>Masukkan nomor BRIVA dan bayar tepat nominal yang tertera.</span>
                         </li>
                         <li class="flex items-start gap-2.5">
                             <span class="w-5 h-5 rounded-full bg-wukirsari-sage text-wukirsari-primary flex items-center justify-center font-bold text-[11px] shrink-0 mt-0.5">5</span>
-                            <span>Simpan foto struk atau screenshot mutasi rekening, lalu unggah pada formulir konfirmasi bukti transfer.</span>
+                            <span>E-Tiket akan aktif otomatis setelah pembayaran dikonfirmasi sistem.</span>
                         </li>
                     </ol>
                 </div>
@@ -879,19 +669,32 @@
 
                     <!-- Kotak Tagihan Wajib Sekarang -->
                     <div class="p-4 rounded-2xl bg-wukirsari-sage/40 border border-wukirsari-border space-y-2">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <span class="text-[11px] text-merapiText-secondary block">Skema Pembayaran:</span>
-                                <span class="font-bold text-xs text-wukirsari-primary">
-                                    {{ $booking->payment_mode === 'FULL' ? 'Pembayaran Lunas (100%)' : 'Uang Muka (DP 30%)' }}
-                                </span>
-                            </div>
-                            <div class="text-right">
-                                <span class="text-[11px] text-merapiText-secondary block">Wajib Dibayar:</span>
-                                <span class="text-lg font-extrabold text-wukirsari-primary font-display">
-                                    Rp {{ number_format($booking->paid_amount, 0, ',', '.') }}
-                                </span>
-                            </div>
+                        <div class="flex items-center justify-between text-xs text-merapiText-secondary">
+                            <span>Skema Pembayaran:</span>
+                            <span class="font-bold text-xs text-wukirsari-primary">
+                                {{ $booking->payment_mode === 'FULL' ? 'Pembayaran Lunas (100%)' : 'Uang Muka (DP 30%)' }}
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between text-xs text-merapiText-secondary">
+                            <span>Nominal Pembayaran:</span>
+                            <span class="font-semibold text-merapiText-primary">
+                                Rp {{ number_format($booking->paid_amount, 0, ',', '.') }}
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between text-xs text-merapiText-secondary" id="summaryAdminFeeRow">
+                            <span class="flex items-center gap-1">
+                                <span>Biaya Admin</span>
+                                <span id="summaryAdminMethodBadge" class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-800">BRI VA</span>:
+                            </span>
+                            <span class="font-semibold text-merapiText-primary" id="summaryAdminFeeVal">
+                                Rp {{ number_format($briFee['admin_fee'], 0, ',', '.') }}
+                            </span>
+                        </div>
+                        <div class="pt-2 border-t border-wukirsari-border flex items-baseline justify-between">
+                            <span class="text-xs font-bold text-merapiText-primary">Total Wajib Dibayar:</span>
+                            <span class="text-lg font-extrabold text-wukirsari-primary font-display" id="summaryTotalFinalVal">
+                                Rp {{ number_format($briFee['total_amount'], 0, ',', '.') }}
+                            </span>
                         </div>
 
                         @if($booking->remaining_amount > 0)
@@ -922,6 +725,8 @@
     var ACTIVE_PAYMENT_URL= '{{ route("booking.active_payment", $booking->booking_code) }}';
     var SUCCESS_URL       = '{{ route("booking.success", $booking->booking_code) }}';
     var CSRF_TOKEN        = '{{ csrf_token() }}';
+    var BASE_PAY_AMOUNT   = {{ (int) round($booking->paid_amount) }};
+    var FEE_RATES         = @json($frontendFeeRates);
 
     var _briPollInterval  = null;
     var _briCountdownInterval = null;
@@ -965,11 +770,10 @@
     }
 
     // ─────────────────────────────────────────────────────────────
-    // TAB SWITCHER  (bpd | bri | dana | cash)
+    // TAB SWITCHER  (bri | dana | cash)
     // ─────────────────────────────────────────────────────────────
     function switchTab(method) {
         var tabs = {
-            bpd:  { btn: document.getElementById('tabBtnBpd'),  panel: document.getElementById('panelBpd') },
             bri:  { btn: document.getElementById('tabBtnBri'),  panel: document.getElementById('panelBri') },
             dana: { btn: document.getElementById('tabBtnDana'), panel: document.getElementById('panelDana') },
             cash: { btn: document.getElementById('tabBtnCash'), panel: document.getElementById('panelCash') },
@@ -1000,6 +804,61 @@
 
         // Update right-column steps list
         updateStepsList(method);
+
+        // Update right-column fee calculation breakdown
+        updateSummaryFees(method);
+    }
+
+    function updateSummaryFees(method) {
+        var feeRow   = document.getElementById('summaryAdminFeeRow');
+        var feeBadge = document.getElementById('summaryAdminMethodBadge');
+        var feeVal   = document.getElementById('summaryAdminFeeVal');
+        var totalVal = document.getElementById('summaryTotalFinalVal');
+
+        if (!feeRow || !feeVal || !totalVal) return;
+
+        var base = BASE_PAY_AMOUNT;
+        var rates = FEE_RATES || {};
+        var methodKey = (method === 'bri' ? 'bri_va' : (method === 'dana' ? 'dana' : 'cash'));
+        var conf = rates[methodKey] || { type: 'flat', rate: 0, tax_percent: 0 };
+
+        var rawFee = 0;
+        if (conf.type === 'percent') {
+            rawFee = (base * conf.rate) / 100;
+        } else {
+            rawFee = conf.rate;
+        }
+        var tax = 0;
+        if (conf.tax_percent > 0) {
+            tax = (rawFee * conf.tax_percent) / 100;
+        }
+        var fee = Math.round(rawFee + tax);
+        var finalTotal = base + fee;
+
+        if (method === 'bri') {
+            if (feeBadge) {
+                feeBadge.textContent = 'BRI VA';
+                feeBadge.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-800';
+            }
+            feeVal.textContent = 'Rp ' + Number(fee).toLocaleString('id-ID');
+            feeVal.className = 'font-semibold text-merapiText-primary';
+        } else if (method === 'dana') {
+            if (feeBadge) {
+                feeBadge.textContent = 'DANA 1,5%';
+                feeBadge.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded bg-sky-100 text-sky-800';
+            }
+            feeVal.textContent = 'Rp ' + Number(fee).toLocaleString('id-ID');
+            feeVal.className = 'font-semibold text-merapiText-primary';
+        } else {
+            if (feeBadge) {
+                feeBadge.textContent = 'Loket';
+                feeBadge.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800';
+            }
+            feeVal.textContent = 'Bebas Biaya (Rp 0)';
+            feeVal.className = 'font-bold text-emerald-700';
+        }
+
+        totalVal.textContent = 'Rp ' + Number(finalTotal).toLocaleString('id-ID');
     }
 
     function updateStepsList(method) {
@@ -1007,13 +866,6 @@
         if (!list) return;
 
         var steps = {
-            bpd: [
-                'Buka aplikasi m-Banking atau kunjungi mesin ATM bank Anda.',
-                'Pilih menu Transfer Antar Bank (Kode BPD DIY: <strong>112</strong>) atau Sesama BPD DIY.',
-                'Masukkan no. rekening tujuan <strong>{{ config("services.bpd_diy.account_number", "069211001060") }}</strong> a.n. <strong>{{ config("services.bpd_diy.account_name", "Ariyanto") }}</strong>.',
-                'Masukkan nominal transfer tepat sebesar <strong>Rp {{ number_format($booking->paid_amount, 0, ",", ".") }}</strong>.',
-                'Simpan foto struk atau screenshot mutasi rekening, lalu unggah pada formulir konfirmasi bukti transfer.',
-            ],
             bri: [
                 'Klik tombol <strong>Terbitkan Nomor BRI Virtual Account</strong> di bawah.',
                 'Catat atau salin <strong>Nomor BRIVA</strong> yang muncul.',
@@ -1022,8 +874,8 @@
                 'E-Tiket akan aktif otomatis setelah pembayaran dikonfirmasi sistem.',
             ],
             dana: [
-                'Metode ini sedang nonaktif sementara.',
-                'Gunakan Bank BPD DIY atau Bayar Tunai di Loket Kasir.',
+                'Metode pembayaran DANA belum tersedia saat ini.',
+                'Gunakan BRI Virtual Account atau Bayar Tunai di Loket Kasir.',
             ],
             cash: [
                 'Datang ke Basecamp paling lambat <strong>30 menit sebelum jadwal</strong>.',
@@ -1033,7 +885,7 @@
             ],
         };
 
-        var items = steps[method] || steps['bpd'];
+        var items = steps[method] || steps['bri'];
         list.innerHTML = items.map(function (step, i) {
             return '<li class="flex items-start gap-2.5">'
                 + '<span class="w-5 h-5 rounded-full bg-wukirsari-sage text-wukirsari-primary flex items-center justify-center font-bold text-[11px] shrink-0 mt-0.5">' + (i + 1) + '</span>'
@@ -1122,6 +974,11 @@
         if (grossEl) {
             grossEl.textContent = 'Rp ' + Number(grossAmount).toLocaleString('id-ID');
         }
+        var subEl = document.getElementById('briGrossSubnote');
+        if (subEl) {
+            var adminFee = data.admin_fee || {{ (int)$briFee['admin_fee'] }};
+            subEl.textContent = '(Termasuk biaya admin Rp ' + Number(adminFee).toLocaleString('id-ID') + ')';
+        }
 
         // Switch to active box
         var boxGen    = document.getElementById('boxGenerateBri');
@@ -1189,45 +1046,9 @@
             .catch(function () { /* silently ignore on load */ });
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // FILE UPLOAD PREVIEW
-    // ─────────────────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', function () {
-        @if($isWaiting)
-        startBriPolling();
-        @endif
-
         // Load any active BRIVA session
         loadActiveBriOnLoad();
-
-        var fileInput      = document.getElementById('fileProof');
-        var previewDefault = document.getElementById('previewDefault');
-        var previewSelected= document.getElementById('previewSelected');
-        var imgThumbnail   = document.getElementById('imgThumbnail');
-        var fileNameDisplay= document.getElementById('fileNameDisplay');
-        var fileSizeDisplay= document.getElementById('fileSizeDisplay');
-
-        if (fileInput) {
-            fileInput.addEventListener('change', function () {
-                if (this.files && this.files[0]) {
-                    var file = this.files[0];
-                    fileNameDisplay.textContent = file.name;
-                    fileSizeDisplay.textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB';
-                    var reader = new FileReader();
-                    reader.onload = function (e) {
-                        imgThumbnail.src = e.target.result;
-                        previewDefault.classList.add('hidden');
-                        previewSelected.classList.remove('hidden');
-                        previewSelected.classList.add('flex');
-                    };
-                    reader.readAsDataURL(file);
-                } else {
-                    previewDefault.classList.remove('hidden');
-                    previewSelected.classList.add('hidden');
-                    previewSelected.classList.remove('flex');
-                }
-            });
-        }
     });
 </script>
 @endsection

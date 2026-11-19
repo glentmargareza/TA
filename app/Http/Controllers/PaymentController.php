@@ -19,7 +19,7 @@ class PaymentController extends Controller
     public function charge(Request $request, string $code, MidtransCoreApiService $paymentService): JsonResponse
     {
         $validated = $request->validate([
-            'payment_method' => 'required|string|in:bca_va,bni_va,bri_va,mandiri_echannel,qris,gopay,shopeepay',
+            'payment_method' => 'required|string|in:bca_va,bni_va,bri_va,mandiri_echannel,qris,gopay,shopeepay,dana',
             'custom_amount' => 'nullable|integer|min:1',
         ]);
 
@@ -93,6 +93,26 @@ class PaymentController extends Controller
             $booking->payments()->where('payment_status', 'PENDING')->update(['payment_status' => 'EXPIRED']);
         }
 
+        // Auto-sync dengan Midtrans jika booking masih PENDING dan memiliki transaksi online aktif
+        if ($booking->booking_status === 'PENDING') {
+            $activePayment = $booking->payments()
+                ->where('payment_status', 'PENDING')
+                ->whereNotNull('order_id')
+                ->latest()
+                ->first();
+
+            if ($activePayment && !empty($activePayment->order_id)) {
+                try {
+                    $syncResult = PaymentWebhookController::syncOrder($activePayment->order_id);
+                    if ($syncResult['success'] && in_array($syncResult['status'] ?? '', ['settled', 'already_settled'])) {
+                        $booking->refresh();
+                    }
+                } catch (\Exception $e) {
+                    Log::warning("Status polling auto-sync error for {$activePayment->order_id}: " . $e->getMessage());
+                }
+            }
+        }
+
         $latestPayment = $booking->payments()->latest()->first();
 
         return response()->json([
@@ -143,5 +163,40 @@ class PaymentController extends Controller
             'status' => 'success',
             'data' => $paymentService->formatPaymentResponse($activePayment),
         ]);
+    }
+
+    /**
+     * Menangani kembalinya pelanggan dari Payment Gateway Midtrans (Finish Redirect URL)
+     */
+    public function finish(Request $request)
+    {
+        $orderId = $request->query('order_id');
+        if (!$orderId) {
+            return redirect()->route('booking.create');
+        }
+
+        // Sinkronkan status transaksi jika orderId tersedia
+        try {
+            PaymentWebhookController::syncOrder($orderId);
+        } catch (\Exception $e) {
+            Log::warning("Finish redirect sync error for {$orderId}: " . $e->getMessage());
+        }
+
+        // Ekstrak kode booking
+        $codeCandidate = explode('-TRX-', $orderId)[0];
+        $booking = Booking::where('booking_code', $codeCandidate)->orWhere('booking_code', $orderId)->first();
+
+        if (!$booking) {
+            return redirect()->route('booking.create')->with('info', 'Transaksi Anda telah diproses.');
+        }
+
+        if (in_array($booking->booking_status, ['FULL_PAID', 'DP_PAID'])) {
+            return redirect()->route('booking.success', $booking->booking_code)
+                ->with('success', $booking->booking_status === 'FULL_PAID'
+                    ? 'Pembayaran berhasil! E-Tiket Anda telah terbit.'
+                    : 'Pembayaran DP berhasil diterima! E-Tiket akan terbit setelah pelunasan di loket.');
+        }
+
+        return redirect()->route('booking.payment', $booking->booking_code);
     }
 }

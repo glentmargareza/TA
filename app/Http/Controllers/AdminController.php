@@ -769,6 +769,8 @@ class AdminController extends Controller
                 'order_id' => 'CASH-' . $booking->booking_code . '-' . time(),
                 'transaction_ref' => 'CASH-BASECAMP',
                 'payment_stage' => 'SETTLEMENT',
+                'base_amount' => $remaining,
+                'admin_fee' => 0.00,
                 'gross_amount' => $remaining,
                 'payment_type' => 'CASH_BASECAMP',
                 'payment_status' => 'SETTLED',
@@ -1850,5 +1852,90 @@ class AdminController extends Controller
         }
 
         return response()->file($filePath);
+    }
+
+    /**
+     * Scan QR Code Tiket — Halaman detail booking untuk verifikasi di loket basecamp
+     * Dapat diakses admin tanpa login customer (cukup login sebagai admin)
+     */
+    public function scanTicket(string $code)
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!$user || $user->role !== 'admin') {
+            return redirect()->route('login')->with('info', 'Silakan masuk dengan akun Admin Paguyuban untuk membuka halaman verifikasi tiket.');
+        }
+
+        $booking = Booking::with([
+            'package',
+            'slot',
+            'payments',
+            'assignments.jeep',
+            'assignments.driver',
+        ])->where('booking_code', strtoupper(trim($code)))->first();
+
+        $unreadNotificationsCount = ActivityLog::unread()->count();
+
+        return view('admin.ticket_scan', compact('booking', 'code', 'unreadNotificationsCount'));
+    }
+
+    /**
+     * Proses Pelunasan Sisa Tagihan melalui Scan QR — hanya untuk DP_PAID
+     * Memanggil logika yang sama dengan settleDp() namun redirect ke halaman scan
+     */
+    public function settleTicket(Request $request, string $code)
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!$user || $user->role !== 'admin') {
+            abort(403);
+        }
+
+        $booking = Booking::where('booking_code', strtoupper(trim($code)))->firstOrFail();
+
+        // Hanya proses jika masih DP_PAID
+        if ($booking->booking_status !== 'DP_PAID') {
+            return redirect()->route('admin.scan', $code)->with('error', 'Booking ini tidak dalam status DP. Pelunasan tidak dapat diproses.');
+        }
+
+        $remaining = (float) $booking->remaining_amount;
+
+        if ($remaining <= 0) {
+            return redirect()->route('admin.scan', $code)->with('error', 'Sisa tagihan sudah nol. Tidak ada yang perlu dilunaskan.');
+        }
+
+        DB::transaction(function () use ($booking, $remaining) {
+            Payment::create([
+                'booking_id'      => $booking->id,
+                'order_id'        => 'CASH-' . $booking->booking_code . '-' . time(),
+                'transaction_ref' => 'CASH-BASECAMP-SCAN',
+                'payment_stage'   => 'SETTLEMENT',
+                'base_amount'     => $remaining,
+                'admin_fee'       => 0.00,
+                'gross_amount'    => $remaining,
+                'payment_type'    => 'CASH_BASECAMP',
+                'payment_status'  => 'SETTLED',
+                'paid_at'         => now(),
+            ]);
+
+            $booking->update([
+                'booking_status'   => 'FULL_PAID',
+                'paid_amount'      => $booking->total_amount,
+                'remaining_amount' => 0.00,
+            ]);
+
+            // Auto-assign driver & jeep jika belum
+            \App\Services\BookingAssignmentService::autoAssign($booking);
+
+            ActivityLog::logPaymentSuccess($booking, $remaining, 'Loket Kasir Basecamp (Scan QR)');
+            ActivityLog::logAdmin(
+                'Pelunasan via Scan QR Tiket',
+                "Menerima pelunasan sisa tagihan Rp " . number_format($remaining, 0, ',', '.') . " untuk booking #{$booking->booking_code} ({$booking->customer_name}) melalui scan QR di loket.",
+                'payment',
+                route('admin.scan', $booking->booking_code)
+            );
+        });
+
+        return redirect()->route('admin.scan', $booking->booking_code)->with('success', "Pelunasan untuk booking {$booking->booking_code} berhasil diterima! E-Ticket telah diterbitkan.");
     }
 }

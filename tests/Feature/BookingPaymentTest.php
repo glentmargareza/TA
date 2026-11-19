@@ -921,4 +921,159 @@ class BookingPaymentTest extends TestCase
         $homeResponse->assertSee('Aksi Menembus Kali Gendol');
         $homeResponse->assertSee('https://example.com/gallery_test_1.jpg');
     }
+
+    /**
+     * Memverifikasi kalkulasi biaya admin otomatis untuk BRI VA (flat Rp 4.000), DANA (1,5%), dan Cash (Rp 0).
+     */
+    public function test_payment_fee_service_calculates_correct_fees_for_bri_dana_and_cash(): void
+    {
+        // 1. Skema Lunas: Rp 550.000
+        $fullBri = \App\Services\PaymentFeeService::calculate('bri_va', 550000);
+        $this->assertEquals(550000, $fullBri['base_amount']);
+        $this->assertEquals(4000, $fullBri['admin_fee']);
+        $this->assertEquals(554000, $fullBri['total_amount']);
+
+        $fullDana = \App\Services\PaymentFeeService::calculate('dana', 550000);
+        $this->assertEquals(550000, $fullDana['base_amount']);
+        $this->assertEquals(8250, $fullDana['admin_fee']); // 1.5% dari 550.000 = 8.250
+        $this->assertEquals(558250, $fullDana['total_amount']);
+
+        $fullCash = \App\Services\PaymentFeeService::calculate('cash', 550000);
+        $this->assertEquals(550000, $fullCash['base_amount']);
+        $this->assertEquals(0, $fullCash['admin_fee']);
+        $this->assertEquals(550000, $fullCash['total_amount']);
+
+        // 2. Skema DP: Rp 165.000
+        $dpBri = \App\Services\PaymentFeeService::calculate('bri_va', 165000);
+        $this->assertEquals(165000, $dpBri['base_amount']);
+        $this->assertEquals(4000, $dpBri['admin_fee']);
+        $this->assertEquals(169000, $dpBri['total_amount']);
+
+        $dpDana = \App\Services\PaymentFeeService::calculate('dana', 165000);
+        $this->assertEquals(165000, $dpDana['base_amount']);
+        $this->assertEquals(2475, $dpDana['admin_fee']); // 1.5% dari 165.000 = 2.475
+        $this->assertEquals(167475, $dpDana['total_amount']);
+    }
+
+    /**
+     * Memverifikasi halaman pembayaran menampilkan rincian biaya admin sebelum pelanggan membayar.
+     */
+    public function test_payment_page_renders_admin_fee_breakdown_correctly(): void
+    {
+        $booking = $this->createIsolatedBooking([
+            'payment_mode' => 'FULL',
+            'total_amount' => 550000,
+            'paid_amount' => 550000,
+            'remaining_amount' => 0,
+        ]);
+
+        $response = $this->get(route('booking.payment', $booking->booking_code));
+        $response->assertStatus(200);
+        $response->assertSee('Biaya Layanan Admin');
+        $response->assertSee('4.000'); // Biaya admin BRI VA
+        $response->assertSee('554.000'); // Total akhir dengan admin fee
+        $response->assertSee('DANA (1,5%)');
+    }
+
+    /**
+     * Memverifikasi webhook Midtrans dengan biaya admin memperbarui booking secara akurat berdasarkan base_amount.
+     */
+    public function test_midtrans_webhook_settlement_with_admin_fee_correctly_credits_base_amount(): void
+    {
+        $booking = $this->createIsolatedBooking([
+            'payment_mode' => 'DP',
+            'total_amount' => 500000,
+            'paid_amount' => 150000,
+            'remaining_amount' => 350000,
+        ]);
+
+        $orderId = $booking->booking_code . '-TRX-TESTFEE';
+        $baseAmount = 150000;
+        $adminFee = 4000;
+        $grossAmount = 154000;
+
+        // Simpan payment record dengan base_amount dan admin_fee
+        $payment = Payment::create([
+            'booking_id' => $booking->id,
+            'order_id' => $orderId,
+            'transaction_ref' => $orderId,
+            'payment_stage' => 'DOWN_PAYMENT',
+            'payment_type' => 'bri_va',
+            'payment_method' => 'bri_va',
+            'base_amount' => $baseAmount,
+            'admin_fee' => $adminFee,
+            'gross_amount' => $grossAmount,
+            'payment_status' => 'PENDING',
+        ]);
+
+        $statusCode = '200';
+        $serverKey = config('services.midtrans.server_key');
+        $validSignature = hash('sha512', $orderId . $statusCode . ((string) $grossAmount . '.00') . $serverKey);
+
+        $payload = [
+            'order_id' => $orderId,
+            'status_code' => $statusCode,
+            'gross_amount' => (string) $grossAmount . '.00',
+            'signature_key' => $validSignature,
+            'transaction_status' => 'settlement',
+            'fraud_status' => 'accept',
+            'payment_type' => 'bank_transfer',
+            'transaction_id' => 'TRX-FEE-' . time(),
+        ];
+
+        $response = $this->postJson('/webhook/midtrans', $payload);
+        $response->assertStatus(200);
+
+        $booking->refresh();
+        $payment->refresh();
+
+        // Payment status menjadi SETTLED dan gross_amount tetap 154.000
+        $this->assertEquals('SETTLED', $payment->payment_status);
+        $this->assertEquals(154000, (int) round($payment->gross_amount));
+        $this->assertEquals(4000, (int) round($payment->admin_fee));
+        $this->assertEquals(150000, (int) round($payment->base_amount));
+
+        // Booking status menjadi DP_PAID dan sisa tagihan dihitung berdasarkan base_amount (bukan dikurangi admin fee)
+        $this->assertEquals('DP_PAID', $booking->booking_status);
+        $this->assertEquals(150000, (int) round($booking->paid_amount));
+        $this->assertEquals(350000, (int) round($booking->remaining_amount));
+
+        // Verifikasi halaman success dapat diakses tanpa redirect loop (HTTP 200)
+        $successResponse = $this->get(route('booking.success', $booking->booking_code));
+        $successResponse->assertStatus(200);
+        $successResponse->assertSee($booking->booking_code);
+    }
+
+    /**
+     * Memverifikasi halaman success memunculkan E-Ticket tanpa redirect loop untuk transaksi FULL_PAID dengan biaya admin.
+     */
+    public function test_success_page_renders_without_redirect_loop_for_full_paid_with_admin_fee(): void
+    {
+        $booking = $this->createIsolatedBooking([
+            'payment_mode' => 'FULL',
+            'total_amount' => 500000,
+            'paid_amount' => 500000,
+            'remaining_amount' => 0,
+            'booking_status' => 'FULL_PAID',
+        ]);
+
+        Payment::create([
+            'booking_id' => $booking->id,
+            'order_id' => $booking->booking_code . '-TRX-FULLFEE',
+            'transaction_ref' => 'TRX-FULLFEE-1',
+            'payment_stage' => 'FULL_PAYMENT',
+            'payment_type' => 'bri_va',
+            'payment_method' => 'bri_va',
+            'base_amount' => 500000,
+            'admin_fee' => 4000,
+            'gross_amount' => 504000,
+            'payment_status' => 'SETTLED',
+            'paid_at' => now(),
+        ]);
+
+        $response = $this->get(route('booking.success', $booking->booking_code));
+        $response->assertStatus(200);
+        $response->assertSee($booking->booking_code);
+        $response->assertSee('Verifikasi Tiket');
+    }
 }

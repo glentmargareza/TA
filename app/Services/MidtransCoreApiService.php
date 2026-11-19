@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Booking;
 use App\Models\Payment;
+use App\Services\PaymentFeeService;
 use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -82,13 +83,18 @@ class MidtransCoreApiService
             return $this->formatPaymentResponse($existingPayment);
         }
 
-        // 4. Generate order_id Unik dengan Entropi Tinggi
+        // 4. Hitung Biaya Admin Otomatis Sesuai Metode (Deterministik Sisi Server)
+        $feeData = PaymentFeeService::calculate($paymentMethod, $chargeAmount);
+        $adminFee = $feeData['admin_fee'];
+        $grossAmount = $feeData['total_amount'];
+
+        // 5. Generate order_id Unik dengan Entropi Tinggi
         $orderId = $booking->booking_code . '-TRX-' . strtoupper(Str::random(6));
 
-        // 5. Susun Payload Sesuai Metode Pembayaran Resmi Midtrans
-        $payload = $this->buildChargePayload($booking, $orderId, $chargeAmount, $paymentMethod, $paymentStage);
+        // 6. Susun Payload Sesuai Metode Pembayaran Resmi Midtrans
+        $payload = $this->buildChargePayload($booking, $orderId, $chargeAmount, $adminFee, $feeData, $paymentMethod, $paymentStage);
 
-        // 6. Eksekusi Request Charge ke Midtrans Sandbox API
+        // 7. Eksekusi Request Charge ke Midtrans Sandbox API
         try {
             $response = \Midtrans\CoreApi::charge($payload);
         } catch (\Exception $e) {
@@ -96,10 +102,10 @@ class MidtransCoreApiService
             throw new \RuntimeException('Gagal menghubungi gateway pembayaran Midtrans: ' . $e->getMessage(), $e->getCode(), $e);
         }
 
-        // 7. Ekstraksi dan Normalisasi Data Respons
-        $normalizedData = $this->extractNormalizedResponse($response, $orderId, $paymentMethod, $chargeAmount);
+        // 8. Ekstraksi dan Normalisasi Data Respons
+        $normalizedData = $this->extractNormalizedResponse($response, $orderId, $paymentMethod, $grossAmount, $chargeAmount, $adminFee, $feeData);
 
-        // 8. Simpan Transaksi ke Tabel payments (Defensif Kompatibel)
+        // 9. Simpan Transaksi ke Tabel payments (Defensif Kompatibel)
         $payment = $this->persistPaymentRecord($booking, $normalizedData, $paymentStage);
 
         return $normalizedData;
@@ -108,30 +114,44 @@ class MidtransCoreApiService
     /**
      * Membangun payload charge terstruktur sesuai dokumentasi spesifik Midtrans
      */
-    protected function buildChargePayload(Booking $booking, string $orderId, int $chargeAmount, string $paymentMethod, string $paymentStage): array
+    protected function buildChargePayload(Booking $booking, string $orderId, int $baseAmount, int $adminFee, array $feeData, string $paymentMethod, string $paymentStage): array
     {
+        $grossAmount = $baseAmount + $adminFee;
+
+        $itemDetails = [
+            [
+                'id'       => (string) $booking->package_id,
+                'price'    => $baseAmount,
+                'quantity' => 1,
+                'name'     => ($paymentStage === 'DOWN_PAYMENT' ? 'DP (30%) ' : 'Lunas ') . substr($booking->package->name, 0, 35),
+            ],
+        ];
+
+        // Tambahkan item biaya admin terpisah agar sum(item_details) == gross_amount tanpa double count
+        if ($adminFee > 0) {
+            $itemDetails[] = [
+                'id'       => 'FEE-ADMIN',
+                'price'    => $adminFee,
+                'quantity' => 1,
+                'name'     => substr($feeData['method_name'] ?? 'Biaya Layanan Admin', 0, 45),
+            ];
+        }
+
         $payload = [
             'transaction_details' => [
-                'order_id' => $orderId,
-                'gross_amount' => $chargeAmount,
+                'order_id'     => $orderId,
+                'gross_amount' => $grossAmount,
             ],
             'customer_details' => [
                 'first_name' => $booking->customer_name,
-                'phone' => $booking->customer_phone,
-                'email' => $booking->customer_email ?? 'wisatawan@jeepwukirsari.id',
+                'phone'      => $booking->customer_phone,
+                'email'      => $booking->customer_email ?? 'wisatawan@jeepwukirsari.id',
             ],
-            'item_details' => [
-                [
-                    'id' => (string) $booking->package_id,
-                    'price' => $chargeAmount,
-                    'quantity' => 1,
-                    'name' => ($paymentStage === 'DOWN_PAYMENT' ? 'DP (30%) ' : 'Lunas ') . substr($booking->package->name, 0, 35),
-                ]
-            ],
+            'item_details' => $itemDetails,
             'custom_expiry' => [
-                'order_time' => now()->format('Y-m-d H:i:s O'),
+                'order_time'      => now()->format('Y-m-d H:i:s O'),
                 'expiry_duration' => 30,
-                'unit' => 'minute',
+                'unit'            => 'minute',
             ],
         ];
 
@@ -149,6 +169,11 @@ class MidtransCoreApiService
             case 'bri_va':
                 $payload['payment_type'] = 'bank_transfer';
                 $payload['bank_transfer'] = ['bank' => 'bri'];
+                break;
+
+            case 'dana':
+                $payload['payment_type'] = 'qris';
+                $payload['qris'] = ['acquirer' => 'gopay'];
                 break;
 
             case 'mandiri_echannel':
@@ -191,7 +216,7 @@ class MidtransCoreApiService
     /**
      * Mengekstraksi dan menormalisasi respons mentah Midtrans Core API
      */
-    protected function extractNormalizedResponse($response, string $orderId, string $paymentMethod, int $chargeAmount): array
+    protected function extractNormalizedResponse($response, string $orderId, string $paymentMethod, int $grossAmount, int $baseAmount = 0, int $adminFee = 0, array $feeBreakdown = []): array
     {
         $responseObj = is_object($response) ? $response : (object) $response;
         
@@ -236,7 +261,10 @@ class MidtransCoreApiService
             'order_id' => $orderId,
             'transaction_id' => $responseObj->transaction_id ?? null,
             'payment_method' => $paymentMethod,
-            'gross_amount' => $chargeAmount,
+            'base_amount' => $baseAmount ?: $grossAmount,
+            'admin_fee' => $adminFee,
+            'gross_amount' => $grossAmount,
+            'fee_breakdown' => $feeBreakdown,
             'va_number' => $vaNumber,
             'biller_code' => $billerCode,
             'bill_key' => $billKey,
@@ -255,9 +283,18 @@ class MidtransCoreApiService
     protected function persistPaymentRecord(Booking $booking, array $normalizedData, string $paymentStage): Payment
     {
         $hasOrderIdCol = Schema::hasColumn('payments', 'order_id');
+        $hasBaseCol    = Schema::hasColumn('payments', 'base_amount');
+        $hasFeeCol     = Schema::hasColumn('payments', 'admin_fee');
+
+        $baseAmount = $normalizedData['base_amount'] ?? $normalizedData['gross_amount'];
+        $adminFee   = $normalizedData['admin_fee'] ?? 0;
+
+        $payloadResponse = array_merge($normalizedData['raw_response'] ?? [], [
+            'fee_breakdown' => $normalizedData['fee_breakdown'] ?? []
+        ]);
 
         if ($hasOrderIdCol) {
-            return Payment::create([
+            $attributes = [
                 'booking_id' => $booking->id,
                 'order_id' => $normalizedData['order_id'],
                 'transaction_ref' => $normalizedData['transaction_id'] ?? $normalizedData['order_id'],
@@ -273,12 +310,21 @@ class MidtransCoreApiService
                 'gross_amount' => $normalizedData['gross_amount'],
                 'payment_status' => 'PENDING',
                 'expires_at' => $normalizedData['expires_at'],
-                'payload_response' => $normalizedData['raw_response'],
+                'payload_response' => $payloadResponse,
                 'paid_at' => null,
-            ]);
+            ];
+
+            if ($hasBaseCol) {
+                $attributes['base_amount'] = $baseAmount;
+            }
+            if ($hasFeeCol) {
+                $attributes['admin_fee'] = $adminFee;
+            }
+
+            return Payment::create($attributes);
         } else {
             // Skema sebelum migrasi dijalankan: simpan ke kolom yang ada & simpan cache
-            $payment = Payment::create([
+            $attributes = [
                 'booking_id' => $booking->id,
                 'transaction_ref' => $normalizedData['order_id'],
                 'payment_stage' => $paymentStage,
@@ -286,7 +332,16 @@ class MidtransCoreApiService
                 'gross_amount' => $normalizedData['gross_amount'],
                 'payment_status' => 'PENDING',
                 'paid_at' => null,
-            ]);
+            ];
+
+            if ($hasBaseCol) {
+                $attributes['base_amount'] = $baseAmount;
+            }
+            if ($hasFeeCol) {
+                $attributes['admin_fee'] = $adminFee;
+            }
+
+            $payment = Payment::create($attributes);
 
             Cache::put("payment_payload_{$normalizedData['order_id']}", $normalizedData, 1800);
             return $payment;
@@ -326,11 +381,16 @@ class MidtransCoreApiService
     {
         $hasOrderIdCol = Schema::hasColumn('payments', 'order_id');
 
+        $baseAmount = (int) round($payment->base_amount ?? ($payment->gross_amount - ($payment->admin_fee ?? 0)));
+        $adminFee   = (int) round($payment->admin_fee ?? 0);
+
         if ($hasOrderIdCol && !empty($payment->order_id)) {
             return [
                 'order_id' => $payment->order_id,
                 'transaction_id' => $payment->transaction_ref,
                 'payment_method' => $payment->payment_method ?? $payment->payment_type,
+                'base_amount' => $baseAmount,
+                'admin_fee' => $adminFee,
                 'gross_amount' => (int) round($payment->gross_amount),
                 'va_number' => $payment->va_number,
                 'biller_code' => $payment->biller_code,

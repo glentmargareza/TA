@@ -55,6 +55,11 @@ class BookingController extends Controller
 
     public function create(Request $request)
     {
+        // Handle Finish Redirect URL dari Midtrans jika diarahkan ke /booking?order_id=...
+        if ($request->has('order_id')) {
+            return app(PaymentController::class)->finish($request);
+        }
+
         $selectedSlug = $request->query('package', 'short-trip');
         $packages = Package::where('is_active', true)->get();
         $selectedPackage = Package::where('slug', $selectedSlug)->first() ?? $packages->first();
@@ -410,10 +415,31 @@ class BookingController extends Controller
             ->firstOrFail();
 
         // Jika booking sudah selesai dibayar dan sah secara finansial, alihkan ke e-tiket
-        if (in_array($booking->booking_status, ['FULL_PAID', 'DP_PAID'])) {
+        // Proteksi loop: Jangan redirect jika halaman payment dibuka dengan pesan error/peringatan
+        if (in_array($booking->booking_status, ['FULL_PAID', 'DP_PAID']) && !session()->has('error')) {
             $hasSettled = $booking->payments->where('payment_status', 'SETTLED')->isNotEmpty();
             if ($hasSettled || $booking->payments->isEmpty()) {
                 return redirect()->route('booking.success', $booking->booking_code);
+            }
+        }
+
+        // Auto-sync status jika booking masih PENDING dan memiliki transaksi online aktif
+        if ($booking->booking_status === 'PENDING') {
+            $activeOnlinePayment = $booking->payments
+                ->where('payment_status', 'PENDING')
+                ->whereNotNull('order_id')
+                ->first();
+
+            if ($activeOnlinePayment && !empty($activeOnlinePayment->order_id)) {
+                try {
+                    $syncResult = PaymentWebhookController::syncOrder($activeOnlinePayment->order_id);
+                    if ($syncResult['success'] && in_array($syncResult['status'] ?? '', ['settled', 'already_settled'])) {
+                        $booking->refresh();
+                        return redirect()->route('booking.success', $booking->booking_code);
+                    }
+                } catch (\Exception $e) {
+                    // Abaikan jika offline / koneksi timeout
+                }
             }
         }
 
@@ -601,6 +627,8 @@ class BookingController extends Controller
             'payment_stage' => $stage,
             'payment_type' => 'cash',
             'payment_method' => 'Bayar Tunai di Loket Kasir',
+            'base_amount' => $payableAmount,
+            'admin_fee' => 0.00,
             'gross_amount' => $payableAmount,
             'payment_status' => 'SETTLED',
             'paid_at' => now(),
@@ -664,19 +692,24 @@ class BookingController extends Controller
         $remainingInt   = (int) round($booking->remaining_amount);
 
         $settledPayments = $booking->payments->where('payment_status', 'SETTLED');
-        $accumulatedSettledInt = (int) round($settledPayments->sum('gross_amount'));
+        $accumulatedSettledInt = (int) round($settledPayments->sum(function ($p) {
+            if ($p->base_amount !== null && (float)$p->base_amount > 0) {
+                return (float) $p->base_amount;
+            }
+            return (float) ($p->gross_amount - ($p->admin_fee ?? 0));
+        }));
 
         if ($booking->payments->isNotEmpty()) {
             if ($booking->booking_status === 'FULL_PAID') {
                 // Skenario Lunas (Lunas Online ATAU DP Online + Pelunasan Kasir Basecamp)
-                if ($settledPayments->isEmpty() || $remainingInt !== 0 || $accumulatedSettledInt !== $totalAmountInt) {
+                if ($settledPayments->isEmpty() || $remainingInt !== 0 || $accumulatedSettledInt < $totalAmountInt) {
                     Log::warning("Inkonsistensi finansial pada tiket FULL_PAID: {$booking->booking_code}. Akumulasi: {$accumulatedSettledInt}, Total: {$totalAmountInt}");
                     return redirect()->route('booking.payment', $booking->booking_code)
                         ->with('error', 'Pembayaran sah belum terverifikasi secara lengkap oleh sistem.');
                 }
             } elseif ($booking->booking_status === 'DP_PAID') {
                 // Skenario DP (Uang Muka Sah Online)
-                if ($settledPayments->isEmpty() || $remainingInt <= 0 || $accumulatedSettledInt !== $paidAmountInt) {
+                if ($settledPayments->isEmpty() || $remainingInt <= 0 || $accumulatedSettledInt < $paidAmountInt) {
                     Log::warning("Inkonsistensi finansial pada tiket DP_PAID: {$booking->booking_code}. Akumulasi: {$accumulatedSettledInt}, Paid: {$paidAmountInt}");
                     return redirect()->route('booking.payment', $booking->booking_code)
                         ->with('error', 'Pembayaran uang muka sah belum terverifikasi oleh sistem.');
