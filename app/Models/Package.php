@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Package extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -69,18 +70,39 @@ class Package extends Model
         return [];
     }
 
+    public static function getDefaultCoverForSlug(?string $slug): string
+    {
+        $map = [
+            'short-trip' => 'img/short_trip.jpeg',
+            'medium-trip-a' => 'img/medium_trip_a.jpeg',
+            'medium-trip-b' => 'img/medium_trip_b.jpeg',
+            'long-trip' => 'img/long_trip.jpeg',
+            'sunrise-trip' => 'img/sunrise_trip.jpeg',
+        ];
+
+        return $map[$slug] ?? 'img/beranda.jpeg';
+    }
+
+    public static function getDefaultGalleryForSlug(?string $slug): array
+    {
+        $defaults = [
+            'short-trip' => ['img/7.jpeg', 'img/12.jpeg', 'img/13.jpeg', 'img/5.jpeg'],
+            'medium-trip-a' => ['img/1.jpeg', 'img/6.jpeg', 'img/11.jpeg', 'img/10.jpeg'],
+            'medium-trip-b' => ['img/3.jpeg', 'img/4.jpeg', 'img/6.jpeg', 'img/15.jpeg'],
+            'long-trip' => ['img/12.jpeg', 'img/8.jpeg', 'img/4.jpeg', 'img/manuver_air.png'],
+            'sunrise-trip' => ['img/16.jpeg', 'img/5.jpeg', 'img/13.jpeg', 'img/3.jpeg'],
+        ];
+
+        return $defaults[$slug] ?? ['img/7.jpeg', 'img/12.jpeg', 'img/13.jpeg', 'img/5.jpeg'];
+    }
+
     public function getEffectiveGalleryAttribute()
     {
         $list = [];
         if (is_array($this->gallery_images) && count($this->gallery_images) > 0) {
             $list = $this->gallery_images;
         } else {
-            $list = [
-                'img/7.jpeg',
-                'img/12.jpeg',
-                'img/13.jpeg',
-                'img/5.jpeg',
-            ];
+            $list = self::getDefaultGalleryForSlug($this->attributes['slug'] ?? '');
         }
 
         return array_map(function ($item) {
@@ -112,17 +134,10 @@ class Package extends Model
             return asset($cleanPath);
         }
 
-        $map = [
-            'short-trip' => 'img/short_trip.jpeg',
-            'medium-trip-a' => 'img/medium_trip_a.jpeg',
-            'medium-trip-b' => 'img/medium_trip_b.jpeg',
-            'long-trip' => 'img/long_trip.jpeg',
-            'sunrise-trip' => 'img/sunrise_trip.jpeg',
-        ];
-
         $slug = $this->attributes['slug'] ?? '';
-        if (!empty($slug) && isset($map[$slug]) && file_exists(public_path($map[$slug]))) {
-            return asset($map[$slug]);
+        $defaultRel = self::getDefaultCoverForSlug($slug);
+        if (file_exists(public_path($defaultRel))) {
+            return asset($defaultRel);
         }
 
         return asset('img/beranda.jpeg');

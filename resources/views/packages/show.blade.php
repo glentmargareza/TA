@@ -16,6 +16,22 @@
             </a>
         </div>
 
+        @if(auth()->check() && auth()->user()->role === 'admin')
+        <!-- Admin Bar Pemberitahuan & Tombol Aksi Cepat -->
+        <div class="p-4 px-5 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-200/90 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5">
+            <div class="text-xs sm:text-sm text-emerald-950 font-medium">
+                <span class="font-bold text-emerald-900">Akses Admin:</span> Anda dapat mengubah <strong>Foto Utama (Hero)</strong> dan <strong>4 Foto Galeri Destinasi</strong> untuk paket ini.
+            </div>
+            <button type="button" onclick="openPackagePhotosModal()" class="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs hover:shadow-md transition-all cursor-pointer">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span>Kelola Foto Paket</span>
+            </button>
+        </div>
+        @endif
+
         <!-- Main Card Detail Paket -->
         <div class="bg-white rounded-3xl border border-wukirsari-border overflow-hidden shadow-sm">
             
@@ -32,6 +48,20 @@
                         {{ $package->category_badge }}
                     </span>
                     @endif
+
+                    @if(auth()->check() && auth()->user()->role === 'admin')
+                    <!-- Tombol Kelola Foto Admin Floating di Cover -->
+                    <div class="absolute top-4 right-4 z-20">
+                        <button type="button" onclick="openPackagePhotosModal('cover')" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/95 hover:bg-white text-emerald-950 font-bold text-xs shadow-lg backdrop-blur-md border border-white/80 hover:border-emerald-300 transition-all hover:scale-105 cursor-pointer">
+                            <svg class="w-4 h-4 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span>Ubah Foto Paket</span>
+                            <span class="px-1.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[10px] font-extrabold uppercase">Admin</span>
+                        </button>
+                    </div>
+                    @endif
                 </div>
 
                 <!-- 4 Galeri Thumbnail -->
@@ -40,9 +70,17 @@
                 @endphp
                 <div class="grid grid-cols-4 gap-2 sm:gap-4 mt-3 sm:mt-4">
                     @foreach($gallery as $index => $imgUrl)
-                    <button type="button" data-src="{{ $imgUrl }}" onclick="selectGalleryImage(this)" class="gallery-thumb relative aspect-[16/10] rounded-xl overflow-hidden border-2 transition-all {{ $index === 0 ? 'border-wukirsari-primary ring-2 ring-wukirsari-primary/30' : 'border-transparent opacity-75 hover:opacity-100 hover:border-wukirsari-border' }}">
-                        <img src="{{ $imgUrl }}" alt="Galeri {{ $package->name }} {{ $index + 1 }}" class="w-full h-full object-cover">
-                    </button>
+                    <div class="relative group">
+                        <button type="button" data-src="{{ $imgUrl }}" onclick="selectGalleryImage(this)" class="gallery-thumb w-full relative aspect-[16/10] rounded-xl overflow-hidden border-2 transition-all block cursor-pointer {{ $index === 0 ? 'border-wukirsari-primary ring-2 ring-wukirsari-primary/30' : 'border-transparent opacity-75 hover:opacity-100 hover:border-wukirsari-border' }}">
+                            <img src="{{ $imgUrl }}" alt="Galeri {{ $package->name }} {{ $index + 1 }}" class="w-full h-full object-cover">
+                        </button>
+                        @if(auth()->check() && auth()->user()->role === 'admin')
+                        <!-- Shortcut Ubah Foto Galeri Spesifik -->
+                        <button type="button" onclick="openPackagePhotosModal('gallery_{{ $index }}')" title="Ganti Foto Galeri {{ $index + 1 }}" class="absolute top-1.5 right-1.5 z-10 w-6 h-6 rounded-lg bg-white/95 hover:bg-white text-emerald-900 shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity border border-emerald-300 cursor-pointer">
+                            <svg class="w-3.5 h-3.5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                        </button>
+                        @endif
+                    </div>
                     @endforeach
                 </div>
             </div>
@@ -73,13 +111,6 @@
                                 <span class="font-semibold text-merapiText-primary">Max 4 orang</span>
                             </div>
                             <span class="text-wukirsari-border">•</span>
-                            <div class="flex items-center gap-1.5">
-                                <svg class="w-4 h-4 text-wukirsari-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                </svg>
-                                <span>Sleman, Yogyakarta</span>
-                            </div>
                         </div>
 
                         <!-- Tagline Harga -->
@@ -168,13 +199,6 @@
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
                             </span>
                             <span class="font-medium">Ruang Tunggu Basecamp Santai</span>
-                        </div>
-
-                        <div class="flex items-center gap-2.5">
-                            <span class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
-                            </span>
-                            <span class="font-medium">Opsi Layanan Antar-Jemput Hotel</span>
                         </div>
                     </div>
                 </div>
@@ -300,9 +324,6 @@
         <div class="pt-6 space-y-6">
             <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                 <div>
-                    <span class="text-xs font-bold uppercase tracking-wider text-wukirsari-primary font-display block mb-1">
-                        PENGALAMAN & REVIEW WISATAWAN
-                    </span>
                     <h3 class="text-xl sm:text-2xl lg:text-3xl font-extrabold text-merapiText-primary font-display">
                         Apa Kata Orang Lain Tentang {{ $package->name }}?
                     </h3>
@@ -387,7 +408,6 @@
                     </div>
 
                     <div class="pt-2 border-t border-wukirsari-border/70 text-[11px] text-merapiText-muted flex items-center justify-between">
-                        <span>Wisatawan Terverifikasi</span>
                         <span>{{ $rev->created_at->diffForHumans() }}</span>
                     </div>
                 </div>
@@ -459,7 +479,6 @@
         <div class="pt-8 space-y-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <span class="text-xs font-bold uppercase tracking-wider text-wukirsari-primary font-display block">PILIHAN LAIN</span>
                     <h3 class="text-xl sm:text-2xl font-extrabold text-merapiText-primary font-display">Paket Wisata Lainnya</h3>
                 </div>
                 <a href="{{ route('home') }}#paket" class="text-xs sm:text-sm font-semibold text-wukirsari-primary hover:text-wukirsari-hover transition-colors">
@@ -489,11 +508,11 @@
 
                     <div class="pt-3 border-t border-wukirsari-border flex items-center justify-between">
                         <div>
-                            <span class="text-[10px] text-merapiText-muted block">Tarif</span>
+                            
                             <span class="text-base font-bold text-merapiText-primary font-display">{{ $other->formatted_price }}</span>
                         </div>
                         <a href="{{ route('packages.show', $other->slug) }}" class="px-4 py-2 rounded-full border border-wukirsari-border hover:border-wukirsari-primary text-merapiText-primary hover:text-wukirsari-primary text-xs font-semibold transition-all">
-                            Detail →
+                            Detail
                         </a>
                     </div>
                 </div>
@@ -505,8 +524,372 @@
     </div>
 </div>
 
+@if(auth()->check() && auth()->user()->role === 'admin')
+<!-- Modal Kelola & Ubah Foto Paket (Admin) -->
+<div id="modalEditPackagePhotos" class="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-xs hidden flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+    <div id="modalEditPackagePhotosCard" class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full border border-slate-200 overflow-hidden my-auto transform transition-all duration-200 scale-95 opacity-0 flex flex-col max-h-[92vh]">
+        
+        <!-- Modal Header -->
+        <div class="p-5 sm:p-6 bg-gradient-to-r from-emerald-950 via-emerald-900 to-emerald-950 text-white flex items-center justify-between gap-4 shrink-0">
+            <div class="flex items-center gap-3.5">
+                <div class="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center text-emerald-300 shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h3 class="text-base sm:text-lg font-bold font-display leading-tight">Kelola Foto Paket: {{ $package->name }}</h3>
+                        <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-[10px] font-extrabold uppercase tracking-wider">Admin</span>
+                    </div>
+                    <p class="text-xs text-emerald-200/90 mt-0.5">Ubah foto cover utama dan 4 foto thumbnail galeri paket wisata ini.</p>
+                </div>
+            </div>
+            <button type="button" onclick="closePackagePhotosModal()" class="w-9 h-9 rounded-2xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer shrink-0" title="Tutup Modal">
+                ✕
+            </button>
+        </div>
+
+        <!-- Segmented Tab Header -->
+        <div class="px-5 sm:px-6 pt-3 bg-slate-100/90 border-b border-slate-200 flex items-center gap-2 shrink-0 overflow-x-auto">
+            <button type="button" onclick="switchPhotoModalTab('cover')" id="tabBtnCover" class="px-4 py-2.5 rounded-t-2xl font-bold text-xs sm:text-sm border-b-2 border-emerald-700 text-emerald-900 bg-white shadow-2xs transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer">
+                <svg class="w-4 h-4 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <span>1. Foto Utama (Cover)</span>
+            </button>
+            <button type="button" onclick="switchPhotoModalTab('gallery')" id="tabBtnGallery" class="px-4 py-2.5 rounded-t-2xl font-bold text-xs sm:text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-800 hover:bg-white/60 transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer">
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                <span>2. Galeri Wisata (4 Foto)</span>
+            </button>
+        </div>
+
+        <!-- Form Content -->
+        <form id="formEditPackagePhotos" action="{{ route('admin.packages.updatePhotos', $package->id) }}" method="POST" enctype="multipart/form-data" class="overflow-y-auto flex-1 p-5 sm:p-6 space-y-6">
+            @csrf
+
+            <!-- TAB 1: FOTO UTAMA (COVER) -->
+            <div id="photoTabCover" class="space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-100">
+                    <div>
+                        <h4 class="text-sm font-extrabold text-slate-900">Foto Utama (Hero Cover)</h4>
+                        <p class="text-xs text-slate-500">Foto ini tampil sebagai gambar paling besar di halaman detail dan kartu paket beranda.</p>
+                    </div>
+                    <label class="inline-flex items-center gap-2 cursor-pointer text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-xl border border-rose-200 transition-colors w-fit">
+                        <input type="checkbox" name="reset_cover" value="1" id="reset_cover_cb" onchange="toggleResetCover(this)" class="rounded text-rose-600 focus:ring-rose-500">
+                        <span>Kembalikan Foto Bawaan</span>
+                    </label>
+                </div>
+
+                <!-- Preview Box Cover -->
+                <div class="relative aspect-[16/9] sm:aspect-[21/9] rounded-2xl overflow-hidden bg-slate-900 border-2 border-slate-200 shadow-inner group">
+                    <img id="coverModalPreview" src="{{ $package->cover_image }}" alt="Preview Cover" class="w-full h-full object-cover">
+                    <div class="absolute bottom-3 left-3 bg-black/75 backdrop-blur text-white text-[11px] font-semibold px-3 py-1 rounded-lg flex items-center">
+                        <span id="coverPreviewLabel">Preview Foto Aktif</span>
+                    </div>
+                </div>
+
+                <!-- Input Grid Cover -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                        <label class="block text-xs font-bold text-slate-800">
+                            1. Upload File dari Perangkat (PC / HP)
+                        </label>
+                        <input type="file" id="cover_file_input" name="cover_image_file" accept="image/png, image/jpeg, image/jpg, image/webp" class="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-700 file:text-white hover:file:bg-emerald-800 file:cursor-pointer cursor-pointer" onchange="previewCoverFile(this)">
+                        <p class="text-[11px] text-slate-500">Format yang didukung: JPG, JPEG, PNG, WEBP (Maksimal 5 MB)</p>
+                    </div>
+
+                    <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                        <label for="cover_url_input" class="block text-xs font-bold text-slate-800">
+                            2. Atau Tautkan URL Gambar Online
+                        </label>
+                        <input type="url" id="cover_url_input" name="cover_image_url" placeholder="https://images.unsplash.com/photo-..." class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-white" oninput="previewCoverUrl(this.value)">
+                        <p class="text-[11px] text-slate-500">Gunakan jika gambar tersimpan di CDN atau hosting eksternal</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: 4 FOTO GALERI -->
+            <div id="photoTabGallery" class="space-y-4 hidden">
+                <div class="pb-2 border-b border-slate-100">
+                    <h4 class="text-sm font-extrabold text-slate-900">4 Foto Galeri Destinasi</h4>
+                    <p class="text-xs text-slate-500">Foto-foto ini muncul pada 4 kolom thumbnail di bawah foto utama. Pengunjung dapat mengkliknya untuk melihat di foto utama.</p>
+                </div>
+
+                @php
+                    $effectiveGallery = $package->effective_gallery;
+                @endphp
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    @for($i = 0; $i < 4; $i++)
+                    @php
+                        $curThumb = $effectiveGallery[$i] ?? asset('img/7.jpeg');
+                    @endphp
+                    <div id="gallery_card_{{ $i }}" class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3 transition-all duration-300">
+                        <div class="flex items-center justify-between">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-100 text-emerald-950 text-xs font-extrabold">
+                                <svg class="w-3.5 h-3.5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                <span>Galeri {{ $i + 1 }}</span>
+                            </span>
+                            <label class="inline-flex items-center gap-1.5 cursor-pointer text-[11px] font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 px-2.5 py-1 rounded-lg border border-rose-200 transition-colors">
+                                <input type="checkbox" name="reset_gallery[{{ $i }}]" value="1" id="reset_gallery_cb_{{ $i }}" onchange="toggleResetGallery({{ $i }}, this)" class="rounded text-rose-600 focus:ring-rose-500">
+                                <span>Reset Default</span>
+                            </label>
+                        </div>
+
+                        <!-- Preview Thumbnail -->
+                        <div class="relative aspect-[16/10] rounded-xl overflow-hidden bg-slate-900 border border-slate-200 shadow-inner">
+                            <img id="gallery_preview_{{ $i }}" src="{{ $curThumb }}" alt="Galeri {{ $i + 1 }}" class="w-full h-full object-cover">
+                            <span id="gallery_label_{{ $i }}" class="absolute bottom-2 left-2 bg-black/75 backdrop-blur text-white text-[10px] font-medium px-2 py-0.5 rounded">
+                                Foto Saat Ini
+                            </span>
+                        </div>
+
+                        <!-- Inputs File & URL -->
+                        <div class="space-y-2 pt-1">
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-700 mb-1">Upload File Baru:</label>
+                                <input type="file" id="gallery_file_{{ $i }}" name="gallery_files[{{ $i }}]" accept="image/png, image/jpeg, image/jpg, image/webp" class="w-full text-xs text-slate-600 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-[11px] file:font-semibold file:bg-emerald-700 file:text-white hover:file:bg-emerald-800 file:cursor-pointer cursor-pointer" onchange="previewGalleryFile({{ $i }}, this)">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-700 mb-1">Atau Link URL Gambar:</label>
+                                <input type="url" id="gallery_url_{{ $i }}" name="gallery_urls[{{ $i }}]" placeholder="https://..." class="w-full px-3 py-1.5 text-xs rounded-xl border border-slate-300 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-white" oninput="previewGalleryUrl({{ $i }}, this.value)">
+                            </div>
+                        </div>
+                    </div>
+                    @endfor
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="pt-4 border-t border-slate-200 flex items-center justify-between gap-3">
+                <button type="button" onclick="closePackagePhotosModal()" class="px-5 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold text-xs sm:text-sm transition-all cursor-pointer">
+                    Batal
+                </button>
+                <button type="submit" id="btnSubmitPhotos" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs sm:text-sm shadow-md hover:shadow-lg transition-all cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <span id="btnSubmitPhotosText">Simpan Perubahan Foto</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+@endif
+
 <!-- JAVASCRIPT UNTUK INTERAKTIVITAS GALERI FOTO DAN TAB KONTEN -->
 <script>
+    @if(auth()->check() && auth()->user()->role === 'admin')
+    const defaultCoverUrl = @json(asset(\App\Models\Package::getDefaultCoverForSlug($package->slug)));
+    const defaultGalleryUrls = @json(array_map(fn($p) => asset($p), \App\Models\Package::getDefaultGalleryForSlug($package->slug)));
+    const currentCoverUrl = @json($package->cover_image);
+    const currentGalleryUrls = @json($package->effective_gallery);
+
+    function openPackagePhotosModal(targetTab) {
+        const modal = document.getElementById('modalEditPackagePhotos');
+        const card = document.getElementById('modalEditPackagePhotosCard');
+        if (!modal || !card) return;
+
+        modal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+
+        requestAnimationFrame(() => {
+            card.classList.remove('scale-95', 'opacity-0');
+            card.classList.add('scale-100', 'opacity-100');
+        });
+
+        if (targetTab && targetTab.startsWith('gallery')) {
+            switchPhotoModalTab('gallery');
+            const parts = targetTab.split('_');
+            if (parts.length > 1) {
+                const idx = parseInt(parts[1]);
+                setTimeout(() => {
+                    const targetCard = document.getElementById('gallery_card_' + idx);
+                    if (targetCard) {
+                        targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        targetCard.classList.add('ring-4', 'ring-emerald-400');
+                        setTimeout(() => targetCard.classList.remove('ring-4', 'ring-emerald-400'), 1500);
+                    }
+                }, 150);
+            }
+        } else {
+            switchPhotoModalTab('cover');
+        }
+    }
+
+    function closePackagePhotosModal() {
+        const modal = document.getElementById('modalEditPackagePhotos');
+        const card = document.getElementById('modalEditPackagePhotosCard');
+        if (!modal || !card) return;
+
+        card.classList.remove('scale-100', 'opacity-100');
+        card.classList.add('scale-95', 'opacity-0');
+
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }, 150);
+    }
+
+    function switchPhotoModalTab(tab) {
+        const tabCover = document.getElementById('photoTabCover');
+        const tabGallery = document.getElementById('photoTabGallery');
+        const btnCover = document.getElementById('tabBtnCover');
+        const btnGallery = document.getElementById('tabBtnGallery');
+
+        if (!tabCover || !tabGallery) return;
+
+        if (tab === 'cover') {
+            tabCover.classList.remove('hidden');
+            tabGallery.classList.add('hidden');
+
+            btnCover.classList.add('border-emerald-700', 'text-emerald-900', 'bg-white', 'shadow-2xs');
+            btnCover.classList.remove('border-transparent', 'text-slate-500');
+
+            btnGallery.classList.remove('border-emerald-700', 'text-emerald-900', 'bg-white', 'shadow-2xs');
+            btnGallery.classList.add('border-transparent', 'text-slate-500');
+        } else {
+            tabCover.classList.add('hidden');
+            tabGallery.classList.remove('hidden');
+
+            btnGallery.classList.add('border-emerald-700', 'text-emerald-900', 'bg-white', 'shadow-2xs');
+            btnGallery.classList.remove('border-transparent', 'text-slate-500');
+
+            btnCover.classList.remove('border-emerald-700', 'text-emerald-900', 'bg-white', 'shadow-2xs');
+            btnCover.classList.add('border-transparent', 'text-slate-500');
+        }
+    }
+
+    function previewCoverFile(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.getElementById('coverModalPreview');
+                const lbl = document.getElementById('coverPreviewLabel');
+                if (img) img.src = e.target.result;
+                if (lbl) lbl.textContent = 'File Dipilih: ' + input.files[0].name;
+                const resetCb = document.getElementById('reset_cover_cb');
+                if (resetCb) resetCb.checked = false;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function previewCoverUrl(url) {
+        const fileInput = document.getElementById('cover_file_input');
+        if (fileInput && fileInput.files && fileInput.files.length > 0) return;
+
+        const img = document.getElementById('coverModalPreview');
+        const lbl = document.getElementById('coverPreviewLabel');
+        const resetCb = document.getElementById('reset_cover_cb');
+
+        if (url && url.trim().length > 5) {
+            if (img) img.src = url.trim();
+            if (lbl) lbl.textContent = 'Preview URL Online';
+            if (resetCb) resetCb.checked = false;
+        } else {
+            if (img) img.src = currentCoverUrl;
+            if (lbl) lbl.textContent = 'Preview Foto Aktif';
+        }
+    }
+
+    function toggleResetCover(cb) {
+        const img = document.getElementById('coverModalPreview');
+        const lbl = document.getElementById('coverPreviewLabel');
+        const fileInput = document.getElementById('cover_file_input');
+        const urlInput = document.getElementById('cover_url_input');
+
+        if (cb.checked) {
+            if (img) img.src = defaultCoverUrl;
+            if (lbl) lbl.textContent = 'Akan di-reset ke Default';
+            if (fileInput) fileInput.value = '';
+            if (urlInput) urlInput.value = '';
+        } else {
+            if (img) img.src = currentCoverUrl;
+            if (lbl) lbl.textContent = 'Preview Foto Aktif';
+        }
+    }
+
+    function previewGalleryFile(idx, input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.getElementById('gallery_preview_' + idx);
+                const lbl = document.getElementById('gallery_label_' + idx);
+                if (img) img.src = e.target.result;
+                if (lbl) lbl.textContent = 'File: ' + input.files[0].name;
+                const resetCb = document.getElementById('reset_gallery_cb_' + idx);
+                if (resetCb) resetCb.checked = false;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function previewGalleryUrl(idx, url) {
+        const fileInput = document.getElementById('gallery_file_' + idx);
+        if (fileInput && fileInput.files && fileInput.files.length > 0) return;
+
+        const img = document.getElementById('gallery_preview_' + idx);
+        const lbl = document.getElementById('gallery_label_' + idx);
+        const resetCb = document.getElementById('reset_gallery_cb_' + idx);
+
+        if (url && url.trim().length > 5) {
+            if (img) img.src = url.trim();
+            if (lbl) lbl.textContent = 'URL Online';
+            if (resetCb) resetCb.checked = false;
+        } else {
+            if (img) img.src = currentGalleryUrls[idx] || defaultGalleryUrls[idx];
+            if (lbl) lbl.textContent = 'Foto Saat Ini';
+        }
+    }
+
+    function toggleResetGallery(idx, cb) {
+        const img = document.getElementById('gallery_preview_' + idx);
+        const lbl = document.getElementById('gallery_label_' + idx);
+        const fileInput = document.getElementById('gallery_file_' + idx);
+        const urlInput = document.getElementById('gallery_url_' + idx);
+
+        if (cb.checked) {
+            if (img) img.src = defaultGalleryUrls[idx];
+            if (lbl) lbl.textContent = 'Akan di-reset Default';
+            if (fileInput) fileInput.value = '';
+            if (urlInput) urlInput.value = '';
+        } else {
+            if (img) img.src = currentGalleryUrls[idx] || defaultGalleryUrls[idx];
+            if (lbl) lbl.textContent = 'Foto Saat Ini';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('modalEditPackagePhotos');
+        if (modal) {
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closePackagePhotosModal();
+                }
+            });
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closePackagePhotosModal();
+            }
+        });
+
+        const form = document.getElementById('formEditPackagePhotos');
+        if (form) {
+            form.addEventListener('submit', function() {
+                const btn = document.getElementById('btnSubmitPhotos');
+                const txt = document.getElementById('btnSubmitPhotosText');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.classList.add('opacity-75', 'cursor-not-allowed');
+                }
+                if (txt) {
+                    txt.textContent = 'Menyimpan Foto...';
+                }
+            });
+        }
+    });
+    @endif
     function selectGalleryImage(src, buttonEl) {
         if (src instanceof HTMLElement) {
             buttonEl = src;

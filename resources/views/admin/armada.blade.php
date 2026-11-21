@@ -39,7 +39,7 @@
         <header class="bg-white border-b border-slate-200 px-4 sm:px-8 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-0 z-20 shadow-2xs">
             <div>
                 <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                    Monitoring Armada Jeep & Driver Paguyuban
+                    Monitoring Armada Jeep & Driver 
                 </h1>
                 <p class="text-xs text-slate-500 mt-0.5">Admin memantau kesiapan armada Jeep, ketersediaan pangkalan, serta status operasional driver Paguyuban.</p>
             </div>
@@ -48,15 +48,6 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                     <span>Tambah Kendaraan</span>
                 </button>
-                <span class="px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                    {{ $totalJeepsCount }} Kendaraan
-                </span>
-                <span class="px-3 py-1.5 rounded-full text-xs font-bold bg-blue-50 text-blue-800 border border-blue-200">
-                    {{ $activeDriversCount }} Driver Aktif &bull; {{ $inactiveDriversCount }} Nonaktif
-                </span>
-                <a href="{{ route('admin.dashboard') }}" class="px-3.5 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all">
-                    &larr; Dashboard
-                </a>
             </div>
         </header>
 
@@ -65,7 +56,7 @@
             @if(session('success'))
             <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-2xl text-sm font-semibold shadow-xs flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                    <span class="text-emerald-600 text-lg">✓</span>
+                    <svg class="w-5 h-5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                     <span>{{ session('success') }}</span>
                 </div>
                 <button type="button" onclick="this.parentElement.remove()" class="text-emerald-700 hover:text-emerald-950 font-bold text-sm cursor-pointer">&times;</button>
@@ -75,7 +66,7 @@
             @if($errors->any())
             <div class="p-4 bg-rose-50 border border-rose-200 text-rose-900 rounded-2xl text-sm font-semibold shadow-xs flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                    <span class="text-rose-600 text-lg">⚠</span>
+                    <svg class="w-5 h-5 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                     <span>{{ $errors->first() }}</span>
                 </div>
                 <button type="button" onclick="this.parentElement.remove()" class="text-rose-700 hover:text-rose-950 font-bold text-sm cursor-pointer">&times;</button>
@@ -83,55 +74,43 @@
             @endif
 
             <!-- 3 KARTU RINGKASAN: JUMLAH KENDARAAN, DRIVER AKTIF, DRIVER NONAKTIF -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
+            <div class="grid grid-cols-3 gap-2 sm:gap-4 md:gap-5">
                 <!-- 1. Jumlah Kendaraan -->
-                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden flex items-center justify-between">
-                    <div>
-                        <span class="text-xs font-semibold text-slate-500 block">Jumlah Kendaraan</span>
-                        <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 block mt-1 tracking-tight">
-                            {{ $totalJeepsCount }} <span class="text-xs font-normal text-slate-400">Unit</span>
+                <div class="bg-white p-3 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden flex items-center justify-between">
+                    <div class="min-w-0">
+                        <span class="text-[11px] sm:text-xs font-semibold text-slate-500 block truncate">Jumlah Kendaraan</span>
+                        <span class="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 block mt-0.5 sm:mt-1 tracking-tight">
+                            {{ $totalJeepsCount }} <span class="text-[10px] sm:text-xs font-normal text-slate-400">Unit</span>
                         </span>
-                        <span class="inline-flex items-center gap-1.5 text-[11px] text-slate-600 font-semibold mt-2">
-                            <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-                            Total Armada Paguyuban
+                        <span class="inline-flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-[11px] text-slate-600 font-semibold mt-1 sm:mt-2 truncate">
+                            Total Armada
                         </span>
-                    </div>
-                    <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 17a2 2 0 100-4 2 2 0 000 4zm8 0a2 2 0 100-4 2 2 0 000 4zM4 11h16M4 11l2-6h12l2 6M4 11v6a1 1 0 001 1h1m10 0h1a1 1 0 001-1v-6"/></svg>
                     </div>
                 </div>
 
                 <!-- 2. Driver Aktif -->
-                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden flex items-center justify-between">
-                    <div>
-                        <span class="text-xs font-semibold text-slate-500 block">Driver Aktif</span>
-                        <span class="text-2xl sm:text-3xl font-extrabold text-emerald-800 block mt-1 tracking-tight">
-                            {{ $activeDriversCount }} <span class="text-xs font-normal text-slate-400">Driver</span>
+                <div class="bg-white p-3 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden flex items-center justify-between">
+                    <div class="min-w-0">
+                        <span class="text-[11px] sm:text-xs font-semibold text-slate-500 block truncate">Driver Aktif</span>
+                        <span class="text-xl sm:text-2xl md:text-3xl font-extrabold text-emerald-800 block mt-0.5 sm:mt-1 tracking-tight">
+                            {{ $activeDriversCount }} <span class="text-[10px] sm:text-xs font-normal text-slate-400">Driver</span>
                         </span>
-                        <span class="inline-flex items-center gap-1.5 text-[11px] text-emerald-700 font-semibold mt-2">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                            Siap ditugaskan trip
+                        <span class="inline-flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-[11px] text-emerald-700 font-semibold mt-1 sm:mt-2 truncate">
+                            Siap ditugaskan
                         </span>
-                    </div>
-                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                     </div>
                 </div>
 
                 <!-- 3. Driver Tidak Aktif / Nonaktif -->
-                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden flex items-center justify-between">
-                    <div>
-                        <span class="text-xs font-semibold text-slate-500 block">Driver Nonaktif</span>
-                        <span class="text-2xl sm:text-3xl font-extrabold text-amber-700 block mt-1 tracking-tight">
-                            {{ $inactiveDriversCount }} <span class="text-xs font-normal text-slate-400">Driver</span>
+                <div class="bg-white p-3 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden flex items-center justify-between">
+                    <div class="min-w-0">
+                        <span class="text-[11px] sm:text-xs font-semibold text-slate-500 block truncate">Driver Nonaktif</span>
+                        <span class="text-xl sm:text-2xl md:text-3xl font-extrabold text-amber-700 block mt-0.5 sm:mt-1 tracking-tight">
+                            {{ $inactiveDriversCount }} <span class="text-[10px] sm:text-xs font-normal text-slate-400">Driver</span>
                         </span>
-                        <span class="inline-flex items-center gap-1.5 text-[11px] text-amber-700 font-semibold mt-2">
-                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                            Libur / Izin / Nonaktif
+                        <span class="inline-flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-[11px] text-amber-700 font-semibold mt-1 sm:mt-2 truncate">
+                            Nonaktif
                         </span>
-                    </div>
-                    <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
                     </div>
                 </div>
             </div>
@@ -140,17 +119,10 @@
             <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
                 <div class="p-5 sm:p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-slate-50 to-white">
                     <div>
-                        <h3 class="text-base font-bold text-slate-800">Status & Kesiapan Driver Paguyuban ({{ $totalDriversCount }} Driver)</h3>
+                        <h3 class="text-base font-bold text-slate-800">Status & Kesiapan Driver</h3>
                         <p class="text-xs text-slate-500 mt-0.5">Daftar driver yang siap ditugaskan melayani wisatawan dan driver yang sedang libur/tidak aktif.</p>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-800">
-                            {{ $activeDriversCount }} Driver Aktif
-                        </span>
-                        <span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-700">
-                            {{ $inactiveDriversCount }} Driver Nonaktif
-                        </span>
-                    </div>
+                    
                 </div>
 
                 <div class="p-5 sm:p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -158,15 +130,9 @@
                     <div class="bg-[#F8FAF9] rounded-2xl border border-emerald-200/80 p-5 flex flex-col justify-between">
                         <div>
                             <div class="flex items-center justify-between pb-3 mb-4 border-b border-emerald-200/70">
-                                <div class="flex items-center gap-2">
-                                    <span class="w-3 h-3 rounded-full bg-emerald-500 flex items-center justify-center">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
-                                    </span>
+                                <div class="flex items-center gap-2"> 
                                     <h4 class="text-sm font-extrabold text-slate-800 tracking-tight">Daftar Driver yang Aktif</h4>
                                 </div>
-                                <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                                    {{ $activeDriversCount }} Personel
-                                </span>
                             </div>
 
                             <div class="space-y-2">
@@ -181,15 +147,11 @@
                                                 {{ $d->full_name }}
                                             </span>
                                             <span class="text-[11px] text-slate-400 block font-mono">
-                                                ID: #DRV-{{ str_pad($d->id, 2, '0', STR_PAD_LEFT) }} &bull; {{ $d->license_number ?? 'SIM-B1' }}
+                                                ID: #DRV-{{ str_pad($d->id, 2, '0', STR_PAD_LEFT) }}
                                             </span>
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-1.5 shrink-0">
-                                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#DCFCE7] text-[#16A34A] border border-emerald-200/60 inline-flex items-center gap-1">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                            Siap Jalan
-                                        </span>
                                         <form action="{{ route('admin.drivers.status', $d->id) }}" method="POST" class="inline"
                                               data-confirm-title="Nonaktifkan Driver"
                                               data-confirm-message="Ubah status driver <strong class='text-slate-800 font-bold'>{{ $d->full_name }}</strong> menjadi <strong class='text-amber-700 font-bold'>TIDAK AKTIF</strong>? Driver sementara tidak akan dialokasikan ke booking."
@@ -197,8 +159,8 @@
                                               data-confirm-text="Ya, Nonaktifkan"
                                               data-confirm-cancel="Batal">
                                             @csrf
-                                            <button type="submit" class="px-2 py-1 rounded-lg border border-slate-200 hover:border-amber-300 bg-white hover:bg-amber-50 text-[10px] font-bold text-slate-600 hover:text-amber-800 transition-all cursor-pointer" title="Nonaktifkan Driver">
-                                                Nonaktifkan
+                                            <button type="submit" class="p-1.5 rounded-lg border border-slate-200 hover:border-amber-300 bg-white hover:bg-amber-50 text-slate-400 hover:text-amber-700 transition-all cursor-pointer shadow-2xs" title="Nonaktifkan Driver">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                             </button>
                                         </form>
                                         <form action="{{ route('admin.drivers.destroy', $d->id) }}" method="POST" class="inline"
@@ -209,7 +171,7 @@
                                               data-confirm-cancel="Batal">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="p-1 rounded-lg border border-slate-200 hover:border-rose-300 bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-all cursor-pointer" title="Hapus Driver">
+                                            <button type="submit" class="p-1.5 rounded-lg border border-slate-200 hover:border-rose-300 bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-all cursor-pointer shadow-2xs" title="Hapus Driver">
                                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                             </button>
                                         </form>
@@ -222,10 +184,7 @@
                                 @endforelse
                             </div>
                         </div>
-                        <div class="mt-4 pt-3 border-t border-emerald-100 flex items-center justify-between text-[11px] text-emerald-800 font-medium">
-                            <span>Status: Muncul dalam penugasan order booking</span>
-                            <span>✓ Terintegrasi Rotasi</span>
-                        </div>
+                        
                     </div>
 
                     <!-- KOLOM 2: DAFTAR DRIVER YANG TIDAK AKTIF -->
@@ -233,14 +192,10 @@
                         <div>
                             <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-200">
                                 <div class="flex items-center gap-2">
-                                    <span class="w-3 h-3 rounded-full bg-slate-400 flex items-center justify-center">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
-                                    </span>
+                                    
                                     <h4 class="text-sm font-extrabold text-slate-800 tracking-tight">Daftar Driver yang Tidak Aktif</h4>
                                 </div>
-                                <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-200 text-slate-700">
-                                    {{ $inactiveDriversCount }} Personel
-                                </span>
+                                
                             </div>
 
                             <div class="space-y-2">
@@ -255,15 +210,11 @@
                                                 {{ $d->full_name }}
                                             </span>
                                             <span class="text-[11px] text-slate-400 block font-mono">
-                                                ID: #DRV-{{ str_pad($d->id, 2, '0', STR_PAD_LEFT) }} &bull; {{ $d->license_number ?? 'SIM-B1' }}
+                                                ID: #DRV-{{ str_pad($d->id, 2, '0', STR_PAD_LEFT) }}
                                             </span>
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-1.5 shrink-0">
-                                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200/60 inline-flex items-center gap-1">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                                            Libur / Izin
-                                        </span>
                                         <form action="{{ route('admin.drivers.status', $d->id) }}" method="POST" class="inline"
                                               data-confirm-title="Aktifkan Kembali Driver"
                                               data-confirm-message="Aktifkan kembali driver <strong class='text-slate-800 font-bold'>{{ $d->full_name }}</strong> untuk jadwal rotasi penugasan armada?"
@@ -271,8 +222,8 @@
                                               data-confirm-text="Ya, Aktifkan"
                                               data-confirm-cancel="Batal">
                                             @csrf
-                                            <button type="submit" class="px-2.5 py-1 rounded-lg border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-[10px] font-bold text-emerald-800 transition-all cursor-pointer" title="Aktifkan Driver">
-                                                Aktifkan
+                                            <button type="submit" class="p-1.5 rounded-lg border border-slate-200 hover:border-emerald-300 bg-white hover:bg-emerald-50 text-slate-400 hover:text-emerald-700 transition-all cursor-pointer shadow-2xs" title="Aktifkan Driver">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                             </button>
                                         </form>
                                         <form action="{{ route('admin.drivers.destroy', $d->id) }}" method="POST" class="inline"
@@ -283,7 +234,7 @@
                                               data-confirm-cancel="Batal">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="p-1 rounded-lg border border-slate-200 hover:border-rose-300 bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-all cursor-pointer" title="Hapus Driver">
+                                            <button type="submit" class="p-1.5 rounded-lg border border-slate-200 hover:border-rose-300 bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-all cursor-pointer shadow-2xs" title="Hapus Driver">
                                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                             </button>
                                         </form>
@@ -296,10 +247,7 @@
                                 @endforelse
                             </div>
                         </div>
-                        <div class="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-500 font-medium">
-                            <span>Status: Tidak dialokasikan untuk order baru</span>
-                            <span>⏸ Standby Off</span>
-                        </div>
+                    
                     </div>
                 </div>
             </div>

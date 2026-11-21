@@ -517,6 +517,28 @@
                         <span class="font-extrabold text-[#1E3F20] text-base">Rp{{ number_format($booking->paid_amount, 0, ',', '.') }}</span>
                     </div>
                 </div>
+                </div>
+            </div>
+
+            <!-- Tombol Aksi -->
+            <div class="p-6 bg-slate-50 border-t border-wukirsari-border flex flex-col sm:flex-row items-center justify-between gap-3">
+                <button onclick="window.print()" class="w-full sm:w-auto px-6 py-2.5 rounded-full border border-wukirsari-border bg-white text-xs sm:text-sm font-semibold text-merapiText-primary hover:bg-slate-100 flex items-center justify-center gap-2 transition-colors">
+                    <svg class="w-4 h-4 text-merapiText-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                    <span>Simpan / Cetak Tiket</span>
+                </button>
+
+                @php
+                    $waMsg = "Halo Admin Jeep Wukirsari, saya telah memesan tiket online dengan Kode: {$booking->booking_code} atas nama {$booking->customer_name}.";
+                    $csPhoneClean = preg_replace('/[^\d]/', '', \App\Services\BasecampService::getSettings()['cs_phone'] ?? '6281234567890');
+                    if (str_starts_with($csPhoneClean, '0')) {
+                        $csPhoneClean = '62' . substr($csPhoneClean, 1);
+                    }
+                    $waLink = "https://wa.me/{$csPhoneClean}?text=" . urlencode($waMsg);
+                @endphp
+                <a href="{{ $waLink }}" target="_blank" class="w-full sm:w-auto px-6 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 shadow-sm transition-all">
+                    <svg class="w-4 h-4 fill-current text-white" viewBox="0 0 24 24"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0012.04 2z"/></svg>
+                    <span>Konfirmasi ke WhatsApp CS</span>
+                </a>
             </div>
 
             {{-- ----- PERFORASI 3 ----- --}}
@@ -735,4 +757,22 @@
     }
 </script>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const qrContainer = document.getElementById('qrcode');
+        const token = "{{ $booking->qr_token ?? $booking->booking_code }}";
+        if (qrContainer && typeof QRCode !== 'undefined' && token) {
+            qrContainer.innerHTML = '';
+            new QRCode(qrContainer, {
+                text: token,
+                width: 84,
+                height: 84,
+                colorDark : "#0D2714",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.M
+            });
+        }
+    });
+</script>
 @endsection
