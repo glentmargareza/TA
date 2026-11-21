@@ -453,6 +453,7 @@ class BookingPaymentTest extends TestCase
         $responseFull->assertStatus(200);
         $responseFull->assertSee('E-TIKET WISATA RESMI');
         $responseFull->assertSee('LUNAS (100%)');
+        $responseFull->assertSee('Konfirmasi ke WhatsApp CS');
 
         // 2. Uji Booking DP_PAID
         $bookingDp = $this->createIsolatedBooking([

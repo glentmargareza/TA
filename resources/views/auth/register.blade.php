@@ -71,7 +71,7 @@
                 </div>
 
                 <button type="submit" class="w-full py-3.5 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-xs font-bold shadow-md shadow-wukirsari-primary/20 transition-all flex items-center justify-center gap-2">
-                    <span>Daftar Akun Sekarang →</span>
+                    <span>Daftar Akun Sekarang</span>
                 </button>
             </form>
 

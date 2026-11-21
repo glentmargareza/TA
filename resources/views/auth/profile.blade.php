@@ -31,9 +31,6 @@
                         <h1 class="text-xl sm:text-2xl font-bold text-merapiText-primary font-display">
                             {{ $user->name }}
                         </h1>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-wukirsari-sage text-wukirsari-primary">
-                            Wisatawan
-                        </span>
                     </div>
                     <p class="text-xs text-merapiText-secondary flex items-center justify-center sm:justify-start gap-1.5">
                         <span class="flex items-center gap-1">
@@ -60,7 +57,7 @@
                     <span>Ubah Profil</span>
                 </button>
                 <a href="{{ route('booking.create') }}" class="px-5 py-2.5 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5">
-                    <span>+ Booking Baru</span>
+                    <span>Booking Baru</span>
                 </a>
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
@@ -76,20 +73,14 @@
             <div class="flex items-center justify-between">
                 <h2 class="text-lg font-bold text-merapiText-primary font-display flex items-center gap-2">
                     <span>Riwayat Tiket & Pesanan Saya</span>
-                    <span class="text-xs font-semibold px-2 py-0.5 bg-wukirsari-sage text-wukirsari-primary rounded-full">
-                        {{ $myBookings->count() }}
-                    </span>
                 </h2>
                 <a href="{{ route('ticket.check') }}" class="text-xs font-semibold text-wukirsari-primary hover:underline">
-                    Lacak Tiket dengan Kode →
+                    Lacak Tiket dengan Kode
                 </a>
             </div>
 
             @if($myBookings->isEmpty())
             <div class="bg-white rounded-3xl border border-wukirsari-border p-8 text-center space-y-4">
-                <div class="w-16 h-16 rounded-full bg-wukirsari-sage/50 text-wukirsari-primary flex items-center justify-center mx-auto">
-                    <svg class="w-8 h-8 text-wukirsari-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1"/></svg>
-                </div>
                 <div class="space-y-1">
                     <h3 class="text-base font-bold text-merapiText-primary font-display">Belum Ada Riwayat Pemesanan</h3>
                     <p class="text-xs text-merapiText-muted max-w-md mx-auto">
@@ -165,13 +156,10 @@
         <div class="space-y-4 pt-4 border-t border-wukirsari-border">
             <div class="flex items-center justify-between">
                 <h2 class="text-lg font-bold text-merapiText-primary font-display flex items-center gap-2">
-                    <span>⭐ Ulasan & Testimoni Saya</span>
-                    <span class="text-xs font-semibold px-2 py-0.5 bg-wukirsari-sage text-wukirsari-primary rounded-full">
-                        {{ $myReviews->count() }}
-                    </span>
+                    <span>Ulasan & Testimoni Saya</span>
                 </h2>
                 <a href="{{ route('home') }}#tulis-ulasan" class="text-xs font-semibold text-wukirsari-primary hover:underline">
-                    + Tulis Ulasan Baru →
+                    Tulis Ulasan Baru
                 </a>
             </div>
 
@@ -181,7 +169,7 @@
                     Anda belum menuliskan ulasan. Bagikan cerita keseruan Anda setelah trip offroad lereng Merapi!
                 </p>
                 <a href="{{ route('home') }}#tulis-ulasan" class="inline-block text-xs font-bold text-wukirsari-primary hover:underline">
-                    Tulis Ulasan Sekarang →
+                    Tulis Ulasan Sekarang 
                 </a>
             </div>
             @else

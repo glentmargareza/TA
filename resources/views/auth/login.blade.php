@@ -56,11 +56,10 @@
                         <input type="checkbox" name="remember" class="rounded text-wukirsari-primary focus:ring-0">
                         <span>Ingat saya</span>
                     </label>
-                    <span class="text-[11px] text-merapiText-muted">Sistem Wukirsari Merapi</span>
                 </div>
 
                 <button type="submit" id="btnSubmitLogin" class="w-full py-3.5 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-xs font-bold shadow-md shadow-wukirsari-primary/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95">
-                    <span>Masuk Sekarang →</span>
+                    <span>Masuk Sekarang</span>
                 </button>
             </form>
 

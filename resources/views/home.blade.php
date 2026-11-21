@@ -5,7 +5,7 @@
 @section('content')
 
     <!-- 1. HERO SECTION -->
-    <section class="relative min-h-[520px] sm:min-h-[640px] lg:min-h-[700px] lg:max-h-[800px] flex items-center justify-center overflow-hidden">
+    <section class="relative min-h-[560px] sm:min-h-[640px] lg:min-h-[700px] lg:max-h-[800px] flex items-center justify-center overflow-hidden">
         <!-- Hero Slider Background Images -->
         <div id="heroSliderContainer" class="absolute inset-0 z-0 overflow-hidden">
             @php
@@ -24,55 +24,51 @@
                 $bg4 = $homeSettings['hero_slide_4'] ?? null;
                 $src4 = !empty($bg4) ? (str_starts_with($bg4, 'http') ? $bg4 : asset($bg4)) : asset('img/manuver_air.png');
             @endphp
-            <img id="heroSlide-0" src="{{ $src0 }}" alt="Jeep Merapi Adventure - Basecamp" class="hero-slide absolute inset-0 w-full h-full object-cover object-center filter brightness-[0.92] transition-opacity duration-700 ease-in-out opacity-100 z-10">
-            <img id="heroSlide-1" src="{{ $src1 }}" alt="Sunrise Trip Merapi" class="hero-slide absolute inset-0 w-full h-full object-cover object-center filter brightness-[0.92] transition-opacity duration-700 ease-in-out opacity-0 z-0">
-            <img id="heroSlide-2" src="{{ $src2 }}" alt="Long Trip Merapi Offroad" class="hero-slide absolute inset-0 w-full h-full object-cover object-center filter brightness-[0.92] transition-opacity duration-700 ease-in-out opacity-0 z-0">
-            <img id="heroSlide-3" src="{{ $src3 }}" alt="Medium Trip Merapi" class="hero-slide absolute inset-0 w-full h-full object-cover object-center filter brightness-[0.92] transition-opacity duration-700 ease-in-out opacity-0 z-0">
-            <img id="heroSlide-4" src="{{ $src4 }}" alt="Short Trip Merapi" class="hero-slide absolute inset-0 w-full h-full object-cover object-center filter brightness-[0.92] transition-opacity duration-700 ease-in-out opacity-0 z-0">
+            <img id="heroSlide-0" src="{{ $src0 }}" alt="Jeep Merapi Adventure - Basecamp" class="hero-slide absolute inset-0 w-full h-full object-cover object-center filter brightness-100 transition-opacity duration-700 ease-in-out opacity-100 z-10">
+            <img id="heroSlide-1" src="{{ $src1 }}" alt="Sunrise Trip Merapi" class="hero-slide absolute inset-0 w-full h-full object-cover object-center filter brightness-100 transition-opacity duration-700 ease-in-out opacity-0 z-0">
+            <img id="heroSlide-2" src="{{ $src2 }}" alt="Long Trip Merapi Offroad" class="hero-slide absolute inset-0 w-full h-full object-cover object-center filter brightness-100 transition-opacity duration-700 ease-in-out opacity-0 z-0">
+            <img id="heroSlide-3" src="{{ $src3 }}" alt="Medium Trip Merapi" class="hero-slide absolute inset-0 w-full h-full object-cover object-center filter brightness-100 transition-opacity duration-700 ease-in-out opacity-0 z-0">
+            <img id="heroSlide-4" src="{{ $src4 }}" alt="Short Trip Merapi" class="hero-slide absolute inset-0 w-full h-full object-cover object-center filter brightness-100 transition-opacity duration-700 ease-in-out opacity-0 z-0">
             
-            <!-- Cinematic Layered Gradients Overlay for Razor-Sharp Text Contrast & Rich Photo Depth -->
-            <div class="absolute inset-0 bg-gradient-to-r from-black/92 via-black/60 via-40% to-transparent z-20 pointer-events-none"></div>
-            <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent z-20 pointer-events-none"></div>
-            <div class="absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-transparent z-20 pointer-events-none"></div>
+            <!-- Cinematic Deep Forest Atmosphere Overlay: Harmonizes with Merapi landscape & brand identity -->
+            <div class="absolute inset-0 bg-gradient-to-b from-[#091D10]/80 via-black/25 via-45% to-[#07170C]/85 z-20 pointer-events-none"></div>
+            <div class="hidden sm:block absolute inset-0 bg-gradient-to-r from-[#091D10]/85 via-[#091D10]/40 via-50% to-transparent z-20 pointer-events-none"></div>
         </div>
 
         <!-- MAIN HERO CONTENT CONTAINER (Perfect Vertical Centering & No Cutoff) -->
-        <div class="relative z-20 max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 pt-6 sm:pt-12 lg:pt-14 pb-5 sm:pb-8 w-full max-w-full flex flex-col justify-between min-h-[520px] sm:min-h-[640px] lg:min-h-[700px] lg:max-h-[800px] overflow-hidden">
+        <div class="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-7 sm:pt-12 lg:pt-14 pb-5 sm:pb-8 w-full max-w-full flex flex-col justify-between min-h-[560px] sm:min-h-[640px] lg:min-h-[700px] lg:max-h-[800px] overflow-hidden">
             
             <!-- Headline & CTA Area -->
-            <div class="max-w-2xl mt-1 sm:mt-6 space-y-3.5 sm:space-y-6">
+            <div class="max-w-2xl mt-1 sm:mt-6 space-y-3 sm:space-y-5">
                 
-                <!-- Tagline Badge: Official Adventure Status + Script Quote -->
-                <div class="flex flex-wrap items-center gap-2 sm:gap-3">
-                    <span class="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-emerald-400/30 text-emerald-300 text-[11px] sm:text-xs font-bold uppercase tracking-wider shadow-lg">
-                        <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                        <span>Merapi Adventure Tour</span>
-                    </span>
-
-                    <span class="font-script text-xl sm:text-3xl lg:text-4xl text-emerald-100 tracking-wide drop-shadow-md">
+                <!-- Tagline: Warm Sunrise Gold Script Quote -->
+                <div>
+                    <span class="font-script text-base sm:text-2xl lg:text-3xl text-amber-200/95 tracking-wide drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
                         "Petualangan di Lereng Merapi"
                     </span>
                 </div>
 
-                <!-- Main Headline: Responsive & Fluid with Glowing Emerald Nature Gradient -->
-                <h1 class="text-2xl sm:text-4xl lg:text-[52px] font-extrabold text-white font-display leading-[1.2] sm:leading-[1.12] tracking-tight drop-shadow-[0_4px_18px_rgba(0,0,0,0.8)]">
-                    Jelajahi Keindahan <br class="hidden sm:inline"><span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-teal-200 to-white">Alam Merapi</span> Bersama <br class="hidden sm:inline"><span>Jeep Wukirsari</span>
+                <!-- Main Headline: Responsive & Fluid with Fresh Mountain Emerald Nature Gradient -->
+                <h1 class="text-[25px] sm:text-4xl lg:text-[52px] font-extrabold text-white font-display leading-[1.22] sm:leading-[1.12] tracking-tight drop-shadow-[0_4px_18px_rgba(0,0,0,0.85)]">
+                    Jelajahi Keindahan <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-emerald-100 to-white">Alam Merapi</span> Bersama Jeep Wukirsari
                 </h1>
 
-                <!-- Subtitle Paragraph with Enhanced Contrast & Readability -->
-                <p class="text-white/90 text-xs sm:text-base lg:text-lg leading-relaxed max-w-xl font-normal drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
-                    {{ $homeSettings['hero_subtitle'] ?? 'Rasakan petualangan seru menyusuri jalur lava, menikmati panorama Merapi, dan menciptakan cerita perjalanan yang tak terlupakan.' }}
-                </p>
+                <!-- Subtitle Paragraph: Harmonized Deep Forest Frosted Glass Backdrop -->
+                <div class="max-w-xl">
+                    <p class="inline-block text-white/95 text-[11px] sm:text-sm lg:text-base leading-relaxed font-normal bg-[#091D10]/60 sm:bg-[#091D10]/40 backdrop-blur-md px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl border border-emerald-500/25 shadow-lg drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
+                        {{ $homeSettings['hero_subtitle'] ?? 'Rasakan petualangan seru menyusuri jalur lava, menikmati panorama Merapi, dan menciptakan cerita perjalanan yang tak terlupakan.' }}
+                    </p>
+                </div>
 
                 <!-- Status Login Akun di Beranda (Tetap Terjaga) -->
                 @auth
                     @if(Auth::user()->isAdmin())
-                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-emerald-400/40 text-emerald-200 text-xs shadow-lg">
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#091D10]/60 backdrop-blur-md border border-emerald-400/40 text-emerald-200 text-xs shadow-lg">
                         <span>Admin: <strong class="text-white">{{ Auth::user()->name }}</strong></span>
                         <a href="{{ route('admin.dashboard') }}" class="ml-1 font-bold text-emerald-300 hover:underline">Dashboard →</a>
                     </div>
                     @else
-                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/30 text-white text-xs shadow-lg">
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#091D10]/60 backdrop-blur-md border border-white/30 text-white text-xs shadow-lg">
                         <span>Halo, <strong>{{ Auth::user()->name }}</strong></span>
                         <span class="text-white/40">•</span>
                         <a href="{{ route('profile') }}" class="font-bold text-emerald-300 hover:underline">Tiket Saya →</a>
@@ -80,79 +76,54 @@
                     @endif
                 @endauth
 
-                <!-- 2 Modern Action Buttons Responsive Stack on Mobile -->
-                <div class="pt-1 sm:pt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-4 w-full sm:w-auto">
-                    <a href="{{ route('booking.create') }}" class="group inline-flex items-center justify-center gap-2.5 px-6 sm:px-8 py-3 sm:py-4 rounded-full bg-gradient-to-r from-emerald-600 via-emerald-700 to-[#194821] hover:from-emerald-500 hover:to-[#225d2b] text-white text-xs sm:text-sm font-bold border border-emerald-400/40 shadow-xl shadow-black/40 hover:shadow-emerald-600/30 hover:scale-[1.03] active:scale-95 transition-all text-center">
+                <!-- 2 Modern Action Buttons Responsive Row on Mobile -->
+                <div class="pt-1.5 sm:pt-4 flex flex-row items-center gap-2.5 sm:gap-4 w-full sm:w-auto">
+                    <a href="{{ route('booking.create') }}" class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 sm:px-8 py-3 sm:py-3.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-bold border border-emerald-400/40 shadow-xl shadow-black/30 hover:scale-[1.02] active:scale-95 transition-all text-center">
                         <span>Booking Sekarang</span>
-                        <svg class="w-4 h-4 text-emerald-200 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                        <svg class="w-3.5 h-3.5 text-emerald-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                     </a>
 
-                    <a href="#paket" class="inline-flex items-center justify-center gap-2 px-5 sm:px-7 py-3 sm:py-4 rounded-full bg-black/35 hover:bg-white/20 backdrop-blur-md border border-white/30 hover:border-white/60 text-white text-xs sm:text-sm font-semibold shadow-lg transition-all hover:scale-[1.02] active:scale-95 text-center">
-                        <svg class="w-4 h-4 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                    <a href="#paket" class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 sm:px-7 py-3 sm:py-3.5 rounded-full bg-[#091D10]/65 hover:bg-[#142B16] backdrop-blur-md border border-emerald-400/35 hover:border-emerald-300 text-white text-xs sm:text-sm font-semibold shadow-lg transition-all active:scale-95 text-center">
                         <span>Jelajahi Paket</span>
                     </a>
                 </div>
             </div>
 
             <!-- Bottom Floating Slider Dock (Clean, Elegant & Always in Viewport) -->
-            <div class="pt-4 sm:pt-8 pb-1 flex items-center justify-between text-white/90 gap-1.5 sm:gap-3 border-t border-white/20 w-full max-w-full min-w-0">
-                <div class="flex items-center gap-1.5 sm:gap-4 text-xs tracking-wider select-none z-10 shrink-0" id="heroSlideButtons">
+            <div class="pt-3.5 sm:pt-6 pb-1 flex items-center justify-start text-white/90 gap-2 border-t border-white/15 w-full max-w-full min-w-0">
+                <div class="flex items-center gap-1.5 sm:gap-3 text-xs tracking-wider select-none z-10 shrink-0" id="heroSlideButtons">
                     <!-- Slide Numbers Pill Dock -->
-                    <div class="relative flex items-center gap-1.5 sm:gap-4 px-2 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-black/35 backdrop-blur-md border border-white/20 shadow-md">
-                        <button type="button" onclick="goToHeroSlide(0)" class="hero-indicator font-bold text-white border-b-2 border-emerald-400 pb-0.5 text-xs sm:text-sm transition-all cursor-pointer">01</button>
-                        <button type="button" onclick="goToHeroSlide(1)" class="hero-indicator text-white/50 hover:text-white border-b-2 border-transparent pb-0.5 text-xs sm:text-sm transition-all cursor-pointer">02</button>
-                        <button type="button" onclick="goToHeroSlide(2)" class="hero-indicator text-white/50 hover:text-white border-b-2 border-transparent pb-0.5 text-xs sm:text-sm transition-all cursor-pointer">03</button>
-                        <button type="button" onclick="goToHeroSlide(3)" class="hero-indicator text-white/50 hover:text-white border-b-2 border-transparent pb-0.5 text-xs sm:text-sm transition-all cursor-pointer">04</button>
-                        <button type="button" onclick="goToHeroSlide(4)" class="hero-indicator text-white/50 hover:text-white border-b-2 border-transparent pb-0.5 text-xs sm:text-sm transition-all cursor-pointer">05</button>
+                    <div class="relative flex items-center gap-1 sm:gap-3 px-2 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-[#091D10]/65 backdrop-blur-md border border-emerald-500/25 shadow-md">
+                        <button type="button" onclick="goToHeroSlide(0)" class="hero-indicator font-bold text-white border-b-2 border-emerald-400 pb-0.5 text-xs sm:text-sm transition-all cursor-pointer px-1">01</button>
+                        <button type="button" onclick="goToHeroSlide(1)" class="hero-indicator text-white/55 hover:text-white border-b-2 border-transparent pb-0.5 text-xs sm:text-sm transition-all cursor-pointer px-1">02</button>
+                        <button type="button" onclick="goToHeroSlide(2)" class="hero-indicator text-white/55 hover:text-white border-b-2 border-transparent pb-0.5 text-xs sm:text-sm transition-all cursor-pointer px-1">03</button>
+                        <button type="button" onclick="goToHeroSlide(3)" class="hero-indicator text-white/55 hover:text-white border-b-2 border-transparent pb-0.5 text-xs sm:text-sm transition-all cursor-pointer px-1">04</button>
+                        <button type="button" onclick="goToHeroSlide(4)" class="hero-indicator text-white/55 hover:text-white border-b-2 border-transparent pb-0.5 text-xs sm:text-sm transition-all cursor-pointer px-1">05</button>
                     </div>
                     
                     <!-- Chevron Arrows Navigation -->
                     <div class="flex items-center gap-1 text-sm text-white/80">
-                        <button type="button" onclick="prevHeroSlide()" aria-label="Slide Sebelumnya" class="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-black/35 hover:bg-emerald-600 hover:text-white border border-white/20 flex items-center justify-center transition-all cursor-pointer shadow-sm active:scale-90">
+                        <button type="button" onclick="prevHeroSlide()" aria-label="Slide Sebelumnya" class="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-[#091D10]/65 hover:bg-emerald-600 hover:text-white border border-emerald-500/25 flex items-center justify-center transition-all cursor-pointer shadow-sm active:scale-90">
                             <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
                         </button>
-                        <button type="button" onclick="nextHeroSlide()" aria-label="Slide Selanjutnya" class="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-black/35 hover:bg-emerald-600 hover:text-white border border-white/20 flex items-center justify-center transition-all cursor-pointer shadow-sm active:scale-90">
+                        <button type="button" onclick="nextHeroSlide()" aria-label="Slide Selanjutnya" class="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-[#091D10]/65 hover:bg-emerald-600 hover:text-white border border-emerald-500/25 flex items-center justify-center transition-all cursor-pointer shadow-sm active:scale-90">
                             <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                         </button>
                     </div>
-                </div>
-
-                <!-- Destination & Location Beacon Badge -->
-                <div class="inline-flex items-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-[10px] sm:text-xs text-white max-w-[125px] sm:max-w-none truncate shadow-lg shrink min-w-0">
-                    <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-400 animate-ping shrink-0"></span>
-                    <span id="heroSlideLocationText" class="truncate font-semibold text-emerald-200">{{ $homeSettings['hero_location_0'] ?? 'Susur Kali Gendol' }}</span>
-                    <span class="text-white/40 hidden sm:inline">•</span>
-                    <span class="text-white/80 hidden sm:inline font-normal">Wukirsari, Sleman, Yogyakarta</span>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Script Hero Slider dengan Data Lokasi Dinamis -->
-    <script type="application/json" id="heroLocationsData">
-        {!! json_encode([
-            $homeSettings['hero_location_0'] ?? 'Susur Kali Gendol',
-            $homeSettings['hero_location_1'] ?? 'Spot Sunrise',
-            $homeSettings['hero_location_2'] ?? 'Jalur Offroad',
-            $homeSettings['hero_location_3'] ?? 'Museum Kampung Hilang',
-            $homeSettings['hero_location_4'] ?? 'Manuver Air'
-        ]) !!}
-    </script>
-    <script>
-        try {
-            window.customHeroLocations = JSON.parse(document.getElementById('heroLocationsData').textContent);
-        } catch (e) {
-            window.customHeroLocations = null;
-        }
-    </script>
+    <!-- Script Hero Slider -->
     <script src="{{ asset('js/hero-slider.js') }}"></script>
 
     <!-- 2. VALUE BAR (4 FITUR KEUNGGULAN) -->
-    <section class="bg-[#F8F9F5] py-8 sm:py-10 border-b border-[#E3EBE4] relative overflow-hidden select-none">
+    <section class="bg-[#F8F9F5] py-5 sm:py-10 border-b border-[#E3EBE4] relative overflow-hidden select-none">
         
         <!-- Botanical Mountain Fern Illustration - Left Edge (Bentuk Khas Pakis Merapi Rimbun, Rapi & Elegan) -->
-        <div class="block absolute left-0 top-0 sm:top-1/2 -translate-y-2 sm:-translate-y-1/2 -translate-x-3 lg:translate-x-0 pointer-events-none opacity-40 sm:opacity-55 lg:opacity-65 z-0">
-            <svg class="w-24 sm:w-40 lg:w-48 h-auto text-[#3D6B49]" viewBox="-5 0 175 125" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <div class="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 pointer-events-none opacity-55 lg:opacity-65 z-0">
+            <svg class="w-40 lg:w-48 h-auto text-[#3D6B49]" viewBox="-5 0 175 125" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                     <linearGradient id="vbFernFillLeft" x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop offset="0%" stop-color="#4E785B" stop-opacity="0.14" />
@@ -220,8 +191,8 @@
         </div>
 
         <!-- Botanical Mountain Fern Illustration - Right Edge (Mirrored, Rimbun & Elegan) -->
-        <div class="block absolute right-0 bottom-0 sm:top-1/2 translate-y-2 sm:-translate-y-1/2 translate-x-3 lg:translate-x-0 pointer-events-none opacity-40 sm:opacity-55 lg:opacity-65 z-0 transform scale-x-[-1]">
-            <svg class="w-24 sm:w-40 lg:w-48 h-auto text-[#3D6B49]" viewBox="-5 0 175 125" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <div class="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none opacity-55 lg:opacity-65 z-0 transform scale-x-[-1]">
+            <svg class="w-40 lg:w-48 h-auto text-[#3D6B49]" viewBox="-5 0 175 125" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                     <linearGradient id="vbFernFillRight" x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop offset="0%" stop-color="#4E785B" stop-opacity="0.14" />
@@ -289,12 +260,12 @@
         </div>
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-6 lg:gap-0 lg:divide-x divide-[#DCE6DE] items-center">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-6 lg:gap-0 lg:divide-x divide-[#DCE6DE] items-center">
                 
                 <!-- Fitur 1: Jeep 4x4 -->
-                <div class="flex items-center gap-4 lg:px-5 xl:px-6 first:lg:pl-0">
-                    <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-[22px] bg-[#E1EDE4] flex items-center justify-center shrink-0 shadow-2xs">
-                        <svg class="w-7 h-7 sm:w-8 sm:h-8 text-[#1E3F20]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <div class="flex items-center gap-2.5 sm:gap-4 lg:px-5 xl:px-6 first:lg:pl-0 bg-white/70 sm:bg-transparent p-2.5 sm:p-0 rounded-2xl sm:rounded-none border sm:border-0 border-[#E3EBE4]/70 shadow-2xs sm:shadow-none">
+                    <div class="w-11 h-11 sm:w-16 sm:h-16 rounded-xl sm:rounded-[22px] bg-[#E1EDE4] flex items-center justify-center shrink-0 shadow-2xs">
+                        <svg class="w-5 h-5 sm:w-8 sm:h-8 text-[#1E3F20]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M5 10 L6.8 4.5 C7 4 7.5 3.5 8.2 3.5 L15.8 3.5 C16.5 3.5 17 4 17.2 4.5 L19 10" />
                             <path d="M12 4 L12 10" />
                             <rect x="3" y="10" width="18" height="7" rx="2" />
@@ -309,50 +280,50 @@
                         </svg>
                     </div>
                     <div class="min-w-0">
-                        <h4 class="text-sm sm:text-base font-extrabold text-[#142B16] font-display truncate leading-tight">Jeep 4x4</h4>
-                        <p class="text-xs text-[#5E7264] truncate mt-1">Siap di segala medan</p>
+                        <h4 class="text-xs sm:text-base font-extrabold text-[#142B16] font-display truncate leading-tight">Jeep 4x4</h4>
+                        <p class="text-[10px] sm:text-xs text-[#5E7264] truncate mt-0.5 sm:mt-1">Segala medan</p>
                     </div>
                 </div>
 
                 <!-- Fitur 2: Driver Berpengalaman -->
-                <div class="flex items-center gap-4 lg:px-5 xl:px-6">
-                    <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-[22px] bg-[#E1EDE4] flex items-center justify-center shrink-0 shadow-2xs">
-                        <svg class="w-7 h-7 sm:w-8 sm:h-8 text-[#1E3F20]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <div class="flex items-center gap-2.5 sm:gap-4 lg:px-5 xl:px-6 bg-white/70 sm:bg-transparent p-2.5 sm:p-0 rounded-2xl sm:rounded-none border sm:border-0 border-[#E3EBE4]/70 shadow-2xs sm:shadow-none">
+                    <div class="w-11 h-11 sm:w-16 sm:h-16 rounded-xl sm:rounded-[22px] bg-[#E1EDE4] flex items-center justify-center shrink-0 shadow-2xs">
+                        <svg class="w-5 h-5 sm:w-8 sm:h-8 text-[#1E3F20]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                             <circle cx="12" cy="11" r="2.2" fill="currentColor" />
                         </svg>
                     </div>
                     <div class="min-w-0">
-                        <h4 class="text-sm sm:text-base font-extrabold text-[#142B16] font-display truncate leading-tight">Driver Berpengalaman</h4>
-                        <p class="text-xs text-[#5E7264] truncate mt-1">Pemandu profesional</p>
+                        <h4 class="text-xs sm:text-base font-extrabold text-[#142B16] font-display truncate leading-tight">Driver Handal</h4>
+                        <p class="text-[10px] sm:text-xs text-[#5E7264] truncate mt-0.5 sm:mt-1">Pemandu lokal</p>
                     </div>
                 </div>
 
                 <!-- Fitur 3: Fasilitas Lengkap -->
-                <div class="flex items-center gap-4 lg:px-5 xl:px-6">
-                    <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-[22px] bg-[#E1EDE4] flex items-center justify-center shrink-0 shadow-2xs">
-                        <svg class="w-7 h-7 sm:w-8 sm:h-8 text-[#1E3F20]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <div class="flex items-center gap-2.5 sm:gap-4 lg:px-5 xl:px-6 bg-white/70 sm:bg-transparent p-2.5 sm:p-0 rounded-2xl sm:rounded-none border sm:border-0 border-[#E3EBE4]/70 shadow-2xs sm:shadow-none">
+                    <div class="w-11 h-11 sm:w-16 sm:h-16 rounded-xl sm:rounded-[22px] bg-[#E1EDE4] flex items-center justify-center shrink-0 shadow-2xs">
+                        <svg class="w-5 h-5 sm:w-8 sm:h-8 text-[#1E3F20]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                             <path d="M12 8.5v5M9.5 11h5" stroke-width="2.5" />
                         </svg>
                     </div>
                     <div class="min-w-0">
-                        <h4 class="text-sm sm:text-base font-extrabold text-[#142B16] font-display truncate leading-tight">Fasilitas Lengkap</h4>
-                        <p class="text-xs text-[#5E7264] truncate mt-1">Aman dan nyaman</p>
+                        <h4 class="text-xs sm:text-base font-extrabold text-[#142B16] font-display truncate leading-tight">Fasilitas Aman</h4>
+                        <p class="text-[10px] sm:text-xs text-[#5E7264] truncate mt-0.5 sm:mt-1">Standar resmi</p>
                     </div>
                 </div>
 
                 <!-- Fitur 4: Lokasi Strategis -->
-                <div class="flex items-center gap-4 lg:px-5 xl:px-6 last:lg:pr-0">
-                    <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-[22px] bg-[#E1EDE4] flex items-center justify-center shrink-0 shadow-2xs">
-                        <svg class="w-7 h-7 sm:w-8 sm:h-8 text-[#1E3F20]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <div class="flex items-center gap-2.5 sm:gap-4 lg:px-5 xl:px-6 last:lg:pr-0 bg-white/70 sm:bg-transparent p-2.5 sm:p-0 rounded-2xl sm:rounded-none border sm:border-0 border-[#E3EBE4]/70 shadow-2xs sm:shadow-none">
+                    <div class="w-11 h-11 sm:w-16 sm:h-16 rounded-xl sm:rounded-[22px] bg-[#E1EDE4] flex items-center justify-center shrink-0 shadow-2xs">
+                        <svg class="w-5 h-5 sm:w-8 sm:h-8 text-[#1E3F20]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
                             <circle cx="12" cy="10" r="3" fill="currentColor" />
                         </svg>
                     </div>
                     <div class="min-w-0">
-                        <h4 class="text-sm sm:text-base font-extrabold text-[#142B16] font-display truncate leading-tight">Lokasi Strategis</h4>
-                        <p class="text-xs text-[#5E7264] truncate mt-1">Dekat Gunung Merapi</p>
+                        <h4 class="text-xs sm:text-base font-extrabold text-[#142B16] font-display truncate leading-tight">Lokasi Strategis</h4>
+                        <p class="text-[10px] sm:text-xs text-[#5E7264] truncate mt-0.5 sm:mt-1">Lereng Merapi</p>
                     </div>
                 </div>
 
@@ -365,14 +336,9 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-12 gap-4">
                 <div>
-                    <span class="text-xs font-semibold uppercase tracking-[0.2em] text-[#7A8C80] font-display block mb-1.5">PAKET WISATA</span>
                     <h2 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#142B16] font-display leading-tight">Paket Wisata Populer</h2>
                     <p class="text-[#5E7264] text-xs sm:text-base mt-1.5 max-w-xl">Pilihan terbaik untuk pengalaman tak terlupakan di setiap perjalanan.</p>
                 </div>
-                <a href="{{ route('home') }}#paket" class="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#142B16] hover:text-[#265029] transition-colors self-start md:self-end">
-                    <span>Lihat Semua</span>
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                </a>
             </div>
 
             <!-- Loop Paket dari Model Package Database -->
@@ -419,7 +385,7 @@
 
                             <div class="grid grid-cols-2 gap-2.5">
                                 <a href="{{ route('packages.show', $pkg->slug) }}" class="py-2.5 px-3 rounded-full border border-wukirsari-border text-merapiText-primary hover:border-wukirsari-primary hover:text-wukirsari-primary text-xs font-semibold text-center transition-all">
-                                    Lihat Detail →
+                                    Lihat Detail
                                 </a>
                                 <a href="{{ route('booking.create', ['package' => $pkg->slug]) }}" class="py-2.5 px-3 rounded-full bg-[#1E3F20] hover:bg-[#285736] text-white text-xs font-semibold text-center transition-all shadow-sm">
                                     Booking Sekarang
@@ -725,15 +691,6 @@
                             <p class="text-white/85 text-xs sm:text-sm leading-relaxed max-w-sm font-normal">
                                 Kami berkomitmen memberikan pengalaman terbaik untuk setiap perjalanan Anda. Dengan pelayanan profesional, fasilitas lengkap dan rute yang aman, liburan Anda akan menjadi lebih berkesan.
                             </p>
-
-                            <div class="pt-1">
-                                <button type="button" onclick="openAboutModal()" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white hover:bg-emerald-50 text-[#142B16] font-bold text-xs sm:text-sm shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer">
-                                    <span>Tentang Kami</span>
-                                    <svg class="w-4 h-4 text-[#142B16]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
-                                    </svg>
-                                </button>
-                            </div>
                         </div>
 
                         <!-- Right Column: 4 Frosted Glass Feature Cards -->
@@ -741,27 +698,27 @@
                             <div class="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-3.5 xl:gap-4 items-stretch">
                                 
                                 <!-- Card 1: Harga Transparan -->
-                                <div class="bg-white/10 hover:bg-white/15 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-white/20 shadow-lg shadow-black/20 transition-all duration-300 flex flex-col items-center text-center justify-center min-h-[185px] sm:min-h-[195px] group">
-                                    <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-[#142B16] shadow-md group-hover:scale-105 transition-transform shrink-0 mb-3.5">
+                                <div class="bg-white/10 hover:bg-white/15 backdrop-blur-md rounded-2xl p-3 sm:p-5 border border-white/20 shadow-lg shadow-black/20 transition-all duration-300 flex flex-col items-center text-center justify-center min-h-[140px] sm:min-h-[195px] group">
+                                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white flex items-center justify-center text-[#142B16] shadow-md group-hover:scale-105 transition-transform shrink-0 mb-2 sm:mb-3.5">
                                         <svg class="w-5 h-5 text-[#142B16]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                                         </svg>
                                     </div>
                                     <div class="w-full">
-                                        <div class="h-8 sm:h-9 flex items-center justify-center mb-1">
+                                        <div class="min-h-[2rem] sm:h-9 flex items-center justify-center mb-0.5 sm:mb-1">
                                             <h4 class="text-xs sm:text-sm font-extrabold text-white font-display leading-tight">
                                                 Harga Transparan
                                             </h4>
                                         </div>
-                                        <p class="text-[11px] sm:text-xs text-white/75 font-normal leading-tight">
+                                        <p class="text-[10px] sm:text-xs text-white/75 font-normal leading-tight">
                                             Tanpa biaya tersembunyi
                                         </p>
                                     </div>
                                 </div>
 
                                 <!-- Card 2: Pelayanan Ramah -->
-                                <div class="bg-white/10 hover:bg-white/15 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-white/20 shadow-lg shadow-black/20 transition-all duration-300 flex flex-col items-center text-center justify-center min-h-[185px] sm:min-h-[195px] group">
-                                    <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-[#142B16] shadow-md group-hover:scale-105 transition-transform shrink-0 mb-3.5">
+                                <div class="bg-white/10 hover:bg-white/15 backdrop-blur-md rounded-2xl p-3 sm:p-5 border border-white/20 shadow-lg shadow-black/20 transition-all duration-300 flex flex-col items-center text-center justify-center min-h-[140px] sm:min-h-[195px] group">
+                                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white flex items-center justify-center text-[#142B16] shadow-md group-hover:scale-105 transition-transform shrink-0 mb-2 sm:mb-3.5">
                                         <svg class="w-5 h-5 text-[#142B16]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 14a4 4 0 00-8 0v2h8v-2z" />
                                             <circle cx="12" cy="8" r="3" stroke-width="2" />
@@ -770,50 +727,50 @@
                                         </svg>
                                     </div>
                                     <div class="w-full">
-                                        <div class="h-8 sm:h-9 flex items-center justify-center mb-1">
+                                        <div class="min-h-[2rem] sm:h-9 flex items-center justify-center mb-0.5 sm:mb-1">
                                             <h4 class="text-xs sm:text-sm font-extrabold text-white font-display leading-tight">
                                                 Pelayanan Ramah
                                             </h4>
                                         </div>
-                                        <p class="text-[11px] sm:text-xs text-white/75 font-normal leading-tight">
+                                        <p class="text-[10px] sm:text-xs text-white/75 font-normal leading-tight">
                                             Siap membantu 24 jam
                                         </p>
                                     </div>
                                 </div>
 
                                 <!-- Card 3: Jalur Aman -->
-                                <div class="bg-white/10 hover:bg-white/15 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-white/20 shadow-lg shadow-black/20 transition-all duration-300 flex flex-col items-center text-center justify-center min-h-[185px] sm:min-h-[195px] group">
-                                    <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-[#142B16] shadow-md group-hover:scale-105 transition-transform shrink-0 mb-3.5">
+                                <div class="bg-white/10 hover:bg-white/15 backdrop-blur-md rounded-2xl p-3 sm:p-5 border border-white/20 shadow-lg shadow-black/20 transition-all duration-300 flex flex-col items-center text-center justify-center min-h-[140px] sm:min-h-[195px] group">
+                                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white flex items-center justify-center text-[#142B16] shadow-md group-hover:scale-105 transition-transform shrink-0 mb-2 sm:mb-3.5">
                                         <svg class="w-5 h-5 text-[#142B16]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
                                         </svg>
                                     </div>
                                     <div class="w-full">
-                                        <div class="h-8 sm:h-9 flex items-center justify-center mb-1">
+                                        <div class="min-h-[2rem] sm:h-9 flex items-center justify-center mb-0.5 sm:mb-1">
                                             <h4 class="text-xs sm:text-sm font-extrabold text-white font-display leading-tight">
                                                 Jalur Aman
                                             </h4>
                                         </div>
-                                        <p class="text-[11px] sm:text-xs text-white/75 font-normal leading-tight">
+                                        <p class="text-[10px] sm:text-xs text-white/75 font-normal leading-tight">
                                             Dipilih sesuai kondisi
                                         </p>
                                     </div>
                                 </div>
 
                                 <!-- Card 4: Pengalaman Terbaik -->
-                                <div class="bg-white/10 hover:bg-white/15 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-white/20 shadow-lg shadow-black/20 transition-all duration-300 flex flex-col items-center text-center justify-center min-h-[185px] sm:min-h-[195px] group">
-                                    <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-[#142B16] shadow-md group-hover:scale-105 transition-transform shrink-0 mb-3.5">
+                                <div class="bg-white/10 hover:bg-white/15 backdrop-blur-md rounded-2xl p-3 sm:p-5 border border-white/20 shadow-lg shadow-black/20 transition-all duration-300 flex flex-col items-center text-center justify-center min-h-[140px] sm:min-h-[195px] group">
+                                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white flex items-center justify-center text-[#142B16] shadow-md group-hover:scale-105 transition-transform shrink-0 mb-2 sm:mb-3.5">
                                         <svg class="w-5 h-5 text-[#142B16]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
                                         </svg>
                                     </div>
                                     <div class="w-full">
-                                        <div class="h-8 sm:h-9 flex items-center justify-center mb-1">
+                                        <div class="min-h-[2rem] sm:h-9 flex items-center justify-center mb-0.5 sm:mb-1">
                                             <h4 class="text-xs sm:text-sm font-extrabold text-white font-display leading-tight">
                                                 Pengalaman Terbaik
                                             </h4>
                                         </div>
-                                        <p class="text-[11px] sm:text-xs text-white/75 font-normal leading-tight">
+                                        <p class="text-[10px] sm:text-xs text-white/75 font-normal leading-tight">
                                             Banyak review positif
                                         </p>
                                     </div>
@@ -827,53 +784,6 @@
             </div>
         </div>
     </section>
-
-    <!-- Modal Informasi Tentang Kami (Basecamp Jeep Wukirsari) -->
-    <div id="aboutBasecampModal" class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 hidden transition-opacity duration-200">
-        <div class="relative bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
-            <button type="button" onclick="closeAboutModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors cursor-pointer">
-                ✕
-            </button>
-            
-            <div class="flex items-center gap-3 mb-5">
-                <div class="w-12 h-12 rounded-2xl bg-[#143B1E]/10 p-1.5 flex items-center justify-center border border-[#143B1E]/20">
-                    <img src="{{ asset('img/logo.png') }}" alt="Jeep Wukirsari Logo" class="w-full h-full object-contain">
-                </div>
-                <div>
-                    <h3 class="font-display font-extrabold text-base sm:text-lg text-slate-900 leading-tight">Jeep Wukirsari Adventure</h3>
-                    <p class="text-xs text-emerald-700 font-semibold">Basecamp Resmi Offroad Lereng Merapi</p>
-                </div>
-            </div>
-
-            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed mb-5">
-                <strong>Jeep Wukirsari</strong> merupakan paguyuban penyedia wisata petualangan offroad resmi di kawasan lereng Gunung Merapi, Yogyakarta. Dikelola langsung oleh pemuda dan komunitas driver lokal desa wisata Wukirsari yang ramah, berlisensi, dan berpengalaman puluhan tahun menaklukkan rute lava tour.
-            </p>
-
-            <div class="space-y-3 mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                <div class="flex items-start gap-2.5 text-xs text-slate-700">
-                    <span class="text-emerald-700 font-bold">📍</span>
-                    <span><strong>Lokasi Basecamp:</strong> Dusun Pusung, Wukirsari, Cangkringan, Sleman, D.I. Yogyakarta 55583</span>
-                </div>
-                <div class="flex items-start gap-2.5 text-xs text-slate-700">
-                    <span class="text-emerald-700 font-bold">⏰</span>
-                    <span><strong>Jam Operasional:</strong> Setiap Hari, 04.30 - 17.00 WIB (Termasuk Sunrise Trip)</span>
-                </div>
-                <div class="flex items-start gap-2.5 text-xs text-slate-700">
-                    <span class="text-emerald-700 font-bold">🛡️</span>
-                    <span><strong>Jaminan Keamanan:</strong> Armada terawat berkala, driver bersertifikat, dan asuransi Jasa Raharja</span>
-                </div>
-            </div>
-
-            <div class="flex flex-col sm:flex-row gap-2.5">
-                <a href="#paket" onclick="closeAboutModal()" class="flex-1 py-3 px-4 rounded-full bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs text-center transition-all shadow-md">
-                    Lihat Paket Wisata →
-                </a>
-                <a href="https://wa.me/6281234567890?text=Halo%20Admin%20Jeep%20Wukirsari,%20saya%20ingin%20tanya%20seputar%20tour%20merapi" target="_blank" class="py-3 px-5 rounded-full border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs text-center transition-all">
-                    Chat WhatsApp CS
-                </a>
-            </div>
-        </div>
-    </div>
 
     <script>
         function openAboutModal() {
@@ -899,7 +809,6 @@
     <section id="galeri" class="py-12 sm:py-16 lg:py-20 bg-wukirsari-cream">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="mb-8 sm:mb-12">
-                <span class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#1E3F20] font-display block mb-1">GALERI</span>
                 <h2 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-merapiText-primary font-display">{{ $homeSettings['gallery_title'] ?? 'Jelajahi Momen Indah Bersama Kami' }}</h2>
                 <p class="text-merapiText-secondary text-xs sm:text-base mt-1.5 max-w-xl">{{ $homeSettings['gallery_subtitle'] ?? 'Kumpulan foto perjalanan seru di berbagai rute wisata.' }}</p>
             </div>
@@ -929,9 +838,9 @@
                     ],
                 ];
             @endphp
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 sm:gap-4">
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
                 @foreach($galleryPhotos as $gPhoto)
-                <div class="rounded-2xl overflow-hidden shadow-xs border border-wukirsari-border group relative aspect-[16/11] bg-slate-100">
+                <div class="rounded-2xl overflow-hidden shadow-xs border border-wukirsari-border group relative aspect-[16/11] bg-slate-100 {{ $loop->last ? 'col-span-2 sm:col-span-1 aspect-[21/9] sm:aspect-[16/11]' : '' }}">
                     <img src="{{ $gPhoto['src'] }}" alt="{{ $gPhoto['caption'] }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                     @if(!empty($gPhoto['caption']))
                     <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent p-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
@@ -945,80 +854,116 @@
     </section>
 
     <!-- 6. TESTIMONI (APA KATA MEREKA?) -->
-    <section class="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-wukirsari-cream via-white to-wukirsari-cream border-t border-wukirsari-border">
+    <section id="ulasan" class="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-wukirsari-cream via-white to-wukirsari-cream border-t border-wukirsari-border">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="mb-8 sm:mb-12">
-                <span class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#1E3F20] font-display block mb-1">TESTIMONI</span>
                 <h2 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-merapiText-primary font-display">Apa Kata Mereka?</h2>
                 <p class="text-merapiText-secondary text-xs sm:text-base mt-1.5 max-w-xl">
                     Pengalaman nyata dari pelanggan yang sudah merasakan keseruannya.
                 </p>
             </div>
 
-            <!-- 3 Testimonial Cards Matching Mockup -->
+            <!-- 3 Testimonial Cards from Database (Real Reviews) -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <!-- Card 1: Andi Pratama -->
-                <div class="bg-white p-6 sm:p-7 rounded-3xl border border-wukirsari-border shadow-xs hover:shadow-lg transition-all flex flex-col justify-between space-y-4">
-                    <div class="space-y-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-11 h-11 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm font-display shrink-0 border border-emerald-200">
-                                AP
+                @forelse($reviews->take(3) as $review)
+                    @php
+                        $name = $review->user->name ?? 'Wisatawan';
+                        $words = explode(' ', trim($name));
+                        $initials = '';
+                        foreach (array_slice($words, 0, 2) as $w) {
+                            $initials .= strtoupper(substr($w, 0, 1));
+                        }
+                    @endphp
+                    <div class="bg-white p-6 sm:p-7 rounded-3xl border border-wukirsari-border shadow-xs hover:shadow-lg transition-all flex flex-col justify-between space-y-4">
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-11 h-11 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm font-display shrink-0 border border-emerald-200">
+                                    {{ $initials ?: 'W' }}
+                                </div>
+                                <div class="min-w-0">
+                                    <h4 class="text-sm font-bold text-slate-900 font-display truncate">{{ $name }}</h4>
+                                    <span class="text-xs text-slate-500 block truncate">{{ $review->city ?? ($review->package->name ?? 'Wisatawan') }}</span>
+                                </div>
                             </div>
-                            <div>
-                                <h4 class="text-sm font-bold text-slate-900 font-display">Andi Pratama</h4>
-                                <span class="text-xs text-slate-500 block">Yogyakarta</span>
-                            </div>
+                            <p class="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
+                                "{{ $review->comment }}"
+                            </p>
                         </div>
-                        <p class="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
-                            "Pengalaman yang luar biasa! Driver-nya ramah dan sangat berpengalaman. Pemandangannya keren banget!"
-                        </p>
+                        <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+                            <div class="flex items-center gap-1 text-amber-400 text-base">
+                                @for($i = 1; $i <= 5; $i++)
+                                    <span>{{ $i <= $review->rating ? '★' : '☆' }}</span>
+                                @endfor
+                            </div>
+                            @if($review->package)
+                            <span class="text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100 truncate max-w-[140px]">
+                                {{ $review->package->name }}
+                            </span>
+                            @endif
+                        </div>
                     </div>
-                    <div class="pt-3 border-t border-slate-100 flex items-center gap-1 text-amber-400 text-base">
-                        ★★★★★
+                @empty
+                    <!-- Fallback Dummy jika database ulasan kosong -->
+                    <div class="bg-white p-6 sm:p-7 rounded-3xl border border-wukirsari-border shadow-xs hover:shadow-lg transition-all flex flex-col justify-between space-y-4">
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-11 h-11 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm font-display shrink-0 border border-emerald-200">
+                                    AP
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-900 font-display">Andi Pratama</h4>
+                                    <span class="text-xs text-slate-500 block">Yogyakarta</span>
+                                </div>
+                            </div>
+                            <p class="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
+                                "Pengalaman yang luar biasa! Driver-nya ramah dan sangat berpengalaman. Pemandangannya keren banget!"
+                            </p>
+                        </div>
+                        <div class="pt-3 border-t border-slate-100 flex items-center gap-1 text-amber-400 text-base">
+                            ★★★★★
+                        </div>
                     </div>
-                </div>
 
-                <!-- Card 2: Siti Nurhaliza -->
-                <div class="bg-white p-6 sm:p-7 rounded-3xl border border-wukirsari-border shadow-xs hover:shadow-lg transition-all flex flex-col justify-between space-y-4">
-                    <div class="space-y-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-11 h-11 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm font-display shrink-0 border border-emerald-200">
-                                SN
+                    <div class="bg-white p-6 sm:p-7 rounded-3xl border border-wukirsari-border shadow-xs hover:shadow-lg transition-all flex flex-col justify-between space-y-4">
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-11 h-11 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm font-display shrink-0 border border-emerald-200">
+                                    SN
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-900 font-display">Siti Nurhaliza</h4>
+                                    <span class="text-xs text-slate-500 block">Sleman</span>
+                                </div>
                             </div>
-                            <div>
-                                <h4 class="text-sm font-bold text-slate-900 font-display">Siti Nurhaliza</h4>
-                                <span class="text-xs text-slate-500 block">Sleman</span>
-                            </div>
+                            <p class="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
+                                "Sunrise di Merapi benar-benar magical. Timnya profesional dan semua sesuai dengan yang dijanjikan."
+                            </p>
                         </div>
-                        <p class="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
-                            "Sunrise di Merapi benar-benar magical. Timnya profesional dan semua sesuai dengan yang dijanjikan."
-                        </p>
+                        <div class="pt-3 border-t border-slate-100 flex items-center gap-1 text-amber-400 text-base">
+                            ★★★★★
+                        </div>
                     </div>
-                    <div class="pt-3 border-t border-slate-100 flex items-center gap-1 text-amber-400 text-base">
-                        ★★★★★
-                    </div>
-                </div>
 
-                <!-- Card 3: Rizky Maulana -->
-                <div class="bg-white p-6 sm:p-7 rounded-3xl border border-wukirsari-border shadow-xs hover:shadow-lg transition-all flex flex-col justify-between space-y-4">
-                    <div class="space-y-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-11 h-11 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm font-display shrink-0 border border-emerald-200">
-                                RM
+                    <div class="bg-white p-6 sm:p-7 rounded-3xl border border-wukirsari-border shadow-xs hover:shadow-lg transition-all flex flex-col justify-between space-y-4">
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-11 h-11 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm font-display shrink-0 border border-emerald-200">
+                                    RM
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-900 font-display">Rizky Maulana</h4>
+                                    <span class="text-xs text-slate-500 block">Bandung</span>
+                                </div>
                             </div>
-                            <div>
-                                <h4 class="text-sm font-bold text-slate-900 font-display">Rizky Maulana</h4>
-                                <span class="text-xs text-slate-500 block">Bandung</span>
-                            </div>
+                            <p class="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
+                                "Booking-nya mudah, adminnya responsif, dan semuanya sesuai dengan yang dijanjikan."
+                            </p>
                         </div>
-                        <p class="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
-                            "Booking-nya mudah, adminnya responsif, dan semuanya sesuai dengan yang dijanjikan."
-                        </p>
+                        <div class="pt-3 border-t border-slate-100 flex items-center gap-1 text-amber-400 text-base">
+                            ★★★★★
+                        </div>
                     </div>
-                    <div class="pt-3 border-t border-slate-100 flex items-center gap-1 text-amber-400 text-base">
-                        ★★★★★
-                    </div>
-                </div>
+                @endforelse
             </div>
 
             <!-- Link to Full Reviews / Form -->

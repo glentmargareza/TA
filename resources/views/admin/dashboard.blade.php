@@ -108,11 +108,16 @@
                                         {{ $notif->icon_type === 'cancel' ? 'bg-rose-500' : '' }}
                                         {{ $notif->icon_type === 'schedule' ? 'bg-amber-500' : '' }}
                                         {{ !in_array($notif->icon_type, ['booking','payment','cancel','schedule']) ? 'bg-teal-600' : '' }}">
-                                        @if($notif->icon_type === 'booking') 📋
-                                        @elseif($notif->icon_type === 'payment') 💳
-                                        @elseif($notif->icon_type === 'cancel') ✕
-                                        @elseif($notif->icon_type === 'schedule') ⚠️
-                                        @else 🔔
+                                        @if($notif->icon_type === 'booking')
+                                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                        @elseif($notif->icon_type === 'payment')
+                                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                                        @elseif($notif->icon_type === 'cancel')
+                                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                        @elseif($notif->icon_type === 'schedule')
+                                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        @else
+                                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
                                         @endif
                                     </div>
                                     <div class="flex-1 min-w-0">
@@ -145,7 +150,7 @@
             @if(session('success'))
             <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-2xl text-sm font-semibold shadow-xs flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                    <span class="text-emerald-600 text-lg">✓</span>
+                    <svg class="w-5 h-5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                     <span>{{ session('success') }}</span>
                 </div>
                 <button type="button" onclick="this.parentElement.remove()" class="text-emerald-700 hover:text-emerald-950 font-bold text-sm cursor-pointer">&times;</button>
@@ -159,9 +164,7 @@
                 <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all relative overflow-hidden flex flex-col justify-between">
                     <div>
                         <div class="flex items-center justify-between mb-3">
-                            <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                            </div>
+                            
                             @if($todayPercentChange >= 0)
                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#DCFCE7] text-[#16A34A] border border-emerald-200/60">
                                 &uarr; +{{ $todayPercentChange }}%
@@ -190,9 +193,7 @@
                 <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all relative overflow-hidden flex flex-col justify-between">
                     <div>
                         <div class="flex items-center justify-between mb-3">
-                            <div class="w-10 h-10 rounded-xl bg-emerald-700 text-white flex items-center justify-center shadow-xs">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            </div>
+                           
                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#DCFCE7] text-[#16A34A] border border-emerald-200/60">
                                 &uarr; +{{ $upcomingPercentage }}%
                             </span>
@@ -214,9 +215,7 @@
                 <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all relative overflow-hidden flex flex-col justify-between">
                     <div>
                         <div class="flex items-center justify-between mb-3">
-                            <div class="w-10 h-10 rounded-xl bg-[#174825] text-white flex items-center justify-center shadow-xs">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/></svg>
-                            </div>
+                           
                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#DCFCE7] text-[#16A34A] border border-emerald-200/60">
                                 &uarr; +{{ $completedPercentage }}%
                             </span>
@@ -238,9 +237,7 @@
                 <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all relative overflow-hidden flex flex-col justify-between">
                     <div>
                         <div class="flex items-center justify-between mb-3">
-                            <div class="w-10 h-10 rounded-xl bg-[#F87171] text-white flex items-center justify-center shadow-xs">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                            </div>
+                           
                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FEE2E2] text-[#DC2626] border border-rose-200/60">
                                 &darr; -{{ $cancelPercentage }}%
                             </span>
@@ -269,9 +266,7 @@
                         <!-- Header Bar with Title, Metric Switcher, Chart Type & Period -->
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                             <div class="flex items-center gap-2.5">
-                                <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center shrink-0 border border-emerald-100">
-                                    <svg class="w-4 h-4 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
-                                </div>
+                                
                                 <div>
                                     <h3 class="text-sm font-bold text-slate-800">Tren Performa Penjualan</h3>
                                     <p class="text-[11px] text-slate-500 font-medium" id="chartSubtitle">Statistik omzet penjualan harian</p>
@@ -320,7 +315,7 @@
                 <div class="lg:col-span-3 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
-                            <svg class="w-4 h-4 text-emerald-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                            
                             <h3 class="text-sm font-bold text-slate-800">Status Pembayaran</h3>
                         </div>
 
@@ -362,7 +357,7 @@
                     <div>
                         <div class="flex items-center justify-between mb-3">
                             <div class="flex items-center gap-2">
-                                <svg class="w-4 h-4 text-emerald-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 17a2 2 0 100-4 2 2 0 000 4zm8 0a2 2 0 100-4 2 2 0 000 4zM4 11h16M4 11l2-6h12l2 6M4 11v6a1 1 0 001 1h1m10 0h1a1 1 0 001-1v-6"/></svg>
+                                
                                 <h3 class="text-sm font-bold text-slate-800">Armada Jeep</h3>
                             </div>
                             <a href="{{ route('admin.armada') }}" class="text-xs font-semibold text-emerald-800 hover:text-emerald-950 inline-flex items-center gap-1">
@@ -405,12 +400,10 @@
 
                         <!-- Total Armada Box (Persis Mockup Hijau Mint Bawah) -->
                         <div class="mt-2.5 p-2.5 rounded-xl bg-[#EBF7EE] border border-[#D1EED7] flex items-center gap-2.5">
-                            <div class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
-                                ✓
-                            </div>
+                            
                             <div class="min-w-0 flex-1">
                                 <span class="block text-xs font-bold text-emerald-950 leading-tight">Total Armada: {{ $totalJeepsCount }} Jeep ({{ $readyJeepsCount }} Unit Aktif)</span>
-                                <span class="block text-[10px] text-emerald-700/80 leading-tight">Kapasitas Maks: 4 Penumpang/Jeep</span>
+                                
                             </div>
                         </div>
                     </div>
@@ -427,7 +420,7 @@
                         <!-- Header -->
                         <div class="p-5 border-b border-slate-100 flex items-center justify-between">
                             <div class="flex items-center gap-2">
-                                <svg class="w-4 h-4 text-emerald-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                                
                                 <h3 class="text-sm font-bold text-slate-800">Daftar Booking Terbaru</h3>
                             </div>
                             <a href="{{ route('admin.bookings') }}" class="text-xs font-semibold text-emerald-800 hover:text-emerald-950 inline-flex items-center gap-1">
@@ -441,29 +434,17 @@
                             <table class="w-full text-left text-xs min-w-[640px]">
                                 <thead class="bg-slate-50/80 text-slate-500 font-bold uppercase tracking-wider text-[10px] border-b border-slate-100">
                                     <tr>
+                                        <th class="py-3 px-4 text-center whitespace-nowrap">Aksi</th>
                                         <th class="py-3 px-4">Kode Booking</th>
                                         <th class="py-3 px-4">Nama Pemesan</th>
                                         <th class="py-3 px-4">Paket Wisata</th>
                                         <th class="py-3 px-4">Tanggal</th>
                                         <th class="py-3 px-4">Status</th>
-                                        <th class="py-3 px-4 text-center">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100">
                                     @forelse($recentBookings as $rb)
                                     @php
-                                        $proofUrl = null;
-                                        $senderName = null;
-                                        $senderBank = null;
-                                        foreach ($rb->payments as $p) {
-                                            if (is_array($p->payload_response) && !empty($p->payload_response['proof_url'])) {
-                                                $proofUrl = asset($p->payload_response['proof_url']);
-                                                $senderName = $p->payload_response['sender_name'] ?? null;
-                                                $senderBank = $p->payload_response['sender_bank'] ?? null;
-                                                break;
-                                            }
-                                        }
-
                                         $rbDetail = [
                                             'id' => $rb->id,
                                             'booking_code' => $rb->booking_code,
@@ -480,6 +461,7 @@
                                             'pickup_zone' => $rb->pickupZone?->name ?? ($rb->pickup_distance_km ? 'Antar-Jemput (' . number_format($rb->pickup_distance_km, 1) . ' km)' : 'Layanan Antar-Jemput'),
                                             'pickup_address' => $rb->pickup_address ?? '-',
                                             'payment_mode' => $rb->payment_mode === 'DP' ? 'Uang Muka (DP 30%)' : 'Pembayaran Penuh (100%)',
+                                            'payment_channel' => $rb->payment_channel,
                                             'package_subtotal' => number_format($rb->package_subtotal, 0, ',', '.'),
                                             'pickup_fee' => number_format($rb->pickup_fee, 0, ',', '.'),
                                             'maps_link' => ($rb->pickup_address && $rb->pickup_address !== '-') ? 'https://www.google.com/maps/search/?api=1&query=' . urlencode($rb->pickup_address) : null,
@@ -491,12 +473,16 @@
                                             'jeep_name' => $rb->assignments->first()?->jeep?->model_name ?? 'Belum Ditugaskan',
                                             'driver_name' => $rb->assignments->first()?->driver?->full_name ?? 'Dialokasikan Otomatis',
                                             'customer_notes' => $rb->customer_notes ?? '',
-                                            'proof_url' => $proofUrl,
-                                            'sender_name' => $senderName,
-                                            'sender_bank' => $senderBank,
                                         ];
                                     @endphp
                                     <tr class="hover:bg-slate-50/70 transition-colors">
+                                        <td class="py-3 px-4 text-center">
+                                            <div class="flex items-center justify-center gap-1.5">
+                                                <button type="button" data-booking='@json($rbDetail)' onclick="openBookingDetailModal(this)" class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-emerald-50 hover:border-emerald-300 text-slate-600 hover:text-emerald-700 shadow-2xs transition-all cursor-pointer" title="Lihat Detail Pesanan">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                                </button>
+                                            </div>
+                                        </td>
                                         <td class="py-3 px-4 font-mono font-bold text-slate-800">
                                             {{ $rb->booking_code }}
                                         </td>
@@ -540,26 +526,6 @@
                                             </span>
                                             @endif
                                         </td>
-                                        <td class="py-3 px-4 text-center">
-                                            <div class="flex items-center justify-center gap-1.5">
-                                                <button type="button" data-booking='@json($rbDetail)' onclick="openBookingDetailModal(this)" class="px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 font-semibold text-[11px] shadow-2xs transition-all cursor-pointer">
-                                                    👁 Detail
-                                                </button>
-                                                @if(!empty($rbDetail['proof_url']))
-                                                <!-- Tombol Akses Bukti Transfer Cepat (1 Tab / Modal Lightbox) -->
-                                                <button type="button" 
-                                                    data-proof-url="{{ $rbDetail['proof_url'] }}" 
-                                                    data-booking-code="{{ $rb->booking_code }}" 
-                                                    data-sender-name="{{ $rbDetail['sender_name'] ?? 'Wisatawan' }}" 
-                                                    data-sender-bank="{{ $rbDetail['sender_bank'] ?? 'Bank BPD DIY' }}" 
-                                                    onclick="openProofFromBtn(this)" 
-                                                    class="p-1 rounded-lg border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold shadow-2xs transition-all cursor-pointer" 
-                                                    title="Lihat Bukti Transfer Pelanggan">
-                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                                </button>
-                                                @endif
-                                            </div>
-                                        </td>
                                     </tr>
                                     @empty
                                     <tr>
@@ -586,7 +552,7 @@
                         <!-- Header -->
                         <div class="flex items-center justify-between mb-5">
                             <div class="flex items-center gap-2">
-                                <svg class="w-4 h-4 text-emerald-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                
                                 <h3 class="text-sm font-bold text-slate-800">Aktivitas Terbaru</h3>
                             </div>
                             <a href="{{ route('admin.notifications') }}" class="text-xs font-semibold text-emerald-800 hover:text-emerald-950 inline-flex items-center gap-1">
@@ -632,279 +598,193 @@
 
             </div>
 
-            <!-- MODAL DETAIL LENGKAP INFORMASI PEMESAN -->
-            <div id="modalBookingDetail" onclick="if(event.target === this) closeBookingDetailModal()" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden transition-opacity duration-200">
-                <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-100 transform transition-all animate-in fade-in zoom-in-95">
-                    <!-- Modal Header -->
-                    <div class="p-5 sm:p-6 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-xs z-10">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
-                                <svg class="w-5 h-5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <!-- MODAL DETAIL LENGKAP INFORMASI PEMESAN (CLEAN MINIMALIST SHEET) -->
+            <div id="modalBookingDetail" onclick="if(event.target === this) closeBookingDetailModal()" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 hidden transition-opacity duration-200">
+                <div class="bg-white rounded-2xl max-w-xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden text-slate-800">
+                    
+                    <!-- Header: Bersih & Tenang -->
+                    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
+                        <div>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="text-xs text-slate-400 font-medium">Reservasi</span>
+                                <span id="detail_booking_code" class="font-mono font-bold text-slate-900 text-base"></span>
+                                <button type="button" onclick="copyDetailText('detail_booking_code', this)" class="text-slate-400 hover:text-emerald-600 transition p-1" title="Salin Kode">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                </button>
+                                <span id="detail_status_badge"></span>
                             </div>
-                            <div>
-                                <div class="flex items-center gap-2">
-                                    <h3 class="font-bold text-slate-800 text-base">Detail Informasi Pemesan</h3>
-                                    <span id="detail_status_badge"></span>
-                                </div>
-                                <p class="text-xs text-slate-500">Kode Booking: <span id="detail_booking_code" class="font-mono font-bold text-emerald-800"></span></p>
-                            </div>
+                            <p id="detail_created_at" class="text-[11px] text-slate-400 mt-0.5"></p>
                         </div>
-                        <button type="button" onclick="closeBookingDetailModal()" class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 flex items-center justify-center font-bold text-lg cursor-pointer">&times;</button>
+                        <button type="button" onclick="closeBookingDetailModal()" class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center text-xl transition cursor-pointer">&times;</button>
                     </div>
 
-                    <!-- Modal Body -->
-                    <div class="p-6 space-y-6 text-xs sm:text-sm">
-                        <!-- 1. Identitas Pemesan -->
-                        <div class="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200/80 space-y-3">
-                            <h4 class="font-bold text-slate-800 flex items-center gap-2 text-xs uppercase tracking-wider text-emerald-800">
-                                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                                Data Wisatawan / Pemesan
-                            </h4>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div>
-                                    <span class="text-slate-400 text-xs block">Nama Lengkap</span>
-                                    <span id="detail_customer_name" class="font-bold text-slate-800 text-sm block"></span>
-                                </div>
-                                <div>
-                                    <span class="text-slate-400 text-xs block">No. WhatsApp / HP</span>
-                                    <span id="detail_customer_phone" class="font-bold text-slate-800 block"></span>
-                                </div>
-                                <div>
-                                    <span class="text-slate-400 text-xs block">Email</span>
-                                    <span id="detail_customer_email" class="font-medium text-slate-700 block"></span>
-                                </div>
-                                <div>
-                                    <span class="text-slate-400 text-xs block">Waktu Pemesanan Masuk</span>
-                                    <span id="detail_created_at" class="font-medium text-slate-700 block"></span>
-                                </div>
-                            </div>
-                        </div>
+                    <!-- Modal Body (Bersih, Berjarak Nyaman, Mudah Dipindai) -->
+                    <div class="p-6 space-y-5 overflow-y-auto">
 
-                        <!-- Catatan / Permintaan Khusus Wisatawan -->
-                        <div id="detail_notes_container" class="bg-amber-50/80 p-4 sm:p-5 rounded-2xl border border-amber-200/90 space-y-1.5 hidden">
-                            <h4 class="font-bold text-amber-900 flex items-center gap-2 text-xs uppercase tracking-wider">
-                                <span>💬</span>
-                                <span>Pesan / Catatan Khusus dari Pemesan</span>
-                            </h4>
-                            <p id="detail_customer_notes" class="text-xs text-amber-950 font-semibold italic leading-relaxed"></p>
-                        </div>
-
-                        <!-- 2. Paket & Jadwal Trip -->
-                        <div class="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200/80 space-y-3">
-                            <h4 class="font-bold text-slate-800 flex items-center gap-2 text-xs uppercase tracking-wider text-emerald-800">
-                                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                Paket Wisata & Waktu Pelaksanaan
-                            </h4>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div>
-                                    <span class="text-slate-400 text-xs block">Paket Wisata</span>
-                                    <span id="detail_package_name" class="font-bold text-slate-800 text-sm block"></span>
-                                </div>
-                                <div>
-                                    <span class="text-slate-400 text-xs block">Tanggal Trip</span>
-                                    <span id="detail_trip_date" class="font-bold text-slate-800 block"></span>
-                                </div>
-                                <div>
-                                    <span class="text-slate-400 text-xs block">Sesi Waktu</span>
-                                    <span id="detail_slot_label" class="font-semibold text-slate-700 block"></span>
-                                </div>
-                                <div>
-                                    <span class="text-slate-400 text-xs block">Armada & Penumpang</span>
-                                    <span id="detail_armada_pax" class="font-semibold text-slate-700 block"></span>
-                                </div>
-                                <div class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-200/60">
+                        <!-- 1. Kontak & Pemesan -->
+                        <div>
+                            <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Informasi Pemesan</h4>
+                            <div class="bg-slate-50/70 rounded-xl p-3.5 border border-slate-100 space-y-2">
+                                <div class="flex items-center justify-between flex-wrap gap-2">
                                     <div>
-                                        <span class="text-slate-400 text-xs block">Armada Jeep Ditugaskan</span>
-                                        <span id="detail_jeep_name" class="font-bold text-slate-800 block mt-0.5"></span>
+                                        <span id="detail_customer_name" class="font-bold text-slate-900 text-sm sm:text-base block"></span>
+                                        <span id="detail_customer_email" class="text-xs text-slate-500 block"></span>
                                     </div>
-                                    <div>
-                                        <span class="text-slate-400 text-xs block">Driver Paguyuban (Otomatis)</span>
-                                        <span id="detail_driver_name" class="font-bold text-emerald-800 block mt-0.5"></span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 3. Kedatangan & Penjemputan -->
-                        <div class="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200/80 space-y-3">
-                            <h4 class="font-bold text-slate-800 flex items-center gap-2 text-xs uppercase tracking-wider text-emerald-800">
-                                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                                Logistik Kedatangan Wisatawan
-                            </h4>
-                            <div class="space-y-2">
-                                <div>
-                                    <span class="text-slate-400 text-xs block">Tipe Kedatangan</span>
-                                    <span id="detail_arrival_type" class="font-bold text-slate-800 block"></span>
-                                </div>
-                                <div id="detail_pickup_container" class="hidden">
-                                    <div class="flex items-center justify-between mb-1">
-                                        <span class="text-slate-400 text-xs block">Zona & Alamat Lengkap Penjemputan</span>
-                                        <a id="detail_pickup_maps_btn" href="#" target="_blank" rel="noopener noreferrer" class="hidden inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 transition">
-                                            <svg class="w-3 h-3 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path></svg>
-                                            Buka Maps
+                                    <div class="flex items-center gap-2">
+                                        <span id="detail_customer_phone" class="font-mono text-xs font-semibold text-slate-700 bg-white px-2.5 py-1 rounded-lg border border-slate-200"></span>
+                                        <button type="button" onclick="copyDetailText('detail_customer_phone', this)" class="text-slate-400 hover:text-emerald-600 text-xs p-1" title="Salin HP">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                        </button>
+                                        <a id="btnQuickWa" href="#" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs transition">
+                                            <span>WhatsApp</span>
                                         </a>
                                     </div>
-                                    <div class="bg-white p-3 rounded-xl border border-slate-200 text-slate-700 mt-1 leading-relaxed">
-                                        <span id="detail_pickup_zone" class="font-semibold text-emerald-800 block mb-0.5"></span>
-                                        <span id="detail_pickup_address"></span>
+                                </div>
+
+                                <!-- Catatan Wisatawan (Hanya tampil jika ada) -->
+                                <div id="detail_notes_container" class="pt-2 border-t border-slate-200/60 hidden">
+                                    <span class="text-[10px] text-amber-800 font-bold block uppercase tracking-wider">Catatan Pemesan:</span>
+                                    <p id="detail_customer_notes" class="text-xs text-slate-700 italic mt-0.5"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2. Jadwal & Penugasan Armada -->
+                        <div>
+                            <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Trip & Armada</h4>
+                            <div class="border border-slate-100 rounded-xl overflow-hidden divide-y divide-slate-100 text-xs">
+                                <div class="flex items-center justify-between p-3 bg-white">
+                                    <span class="text-slate-400 font-medium">Paket Wisata</span>
+                                    <span id="detail_package_name" class="font-bold text-slate-900 text-right"></span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-slate-50/50">
+                                    <span class="text-slate-400 font-medium">Jadwal & Sesi</span>
+                                    <div class="text-right">
+                                        <span id="detail_trip_date" class="font-semibold text-slate-800 block"></span>
+                                        <span id="detail_slot_label" class="text-[11px] text-slate-500 block"></span>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- 4. Rincian Tagihan & Pembayaran -->
-                        <div class="bg-emerald-50/60 p-4 sm:p-5 rounded-2xl border border-emerald-200/80 space-y-3">
-                            <h4 class="font-bold text-slate-800 flex items-center gap-2 text-xs uppercase tracking-wider text-emerald-900">
-                                <svg class="w-4 h-4 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                                Rincian Keuangan & Status Loket
-                            </h4>
-                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                <div>
-                                    <span class="text-slate-500 text-xs block">Mode Bayar</span>
-                                    <span id="detail_payment_mode" class="font-semibold text-slate-800 block"></span>
+                                <div class="flex items-center justify-between p-3 bg-white">
+                                    <span class="text-slate-400 font-medium">Armada & Kapasitas</span>
+                                    <span id="detail_armada_pax" class="font-medium text-slate-800 text-right"></span>
                                 </div>
-                                <div>
-                                    <span class="text-slate-500 text-xs block">Biaya Paket</span>
-                                    <span id="detail_package_subtotal" class="font-semibold text-slate-800 block"></span>
+                                <div class="flex items-center justify-between p-3 bg-slate-50/50">
+                                    <span class="text-slate-400 font-medium">Armada Jeep Ditugaskan</span>
+                                    <span id="detail_jeep_name" class="font-semibold text-slate-900 text-right"></span>
                                 </div>
-                                <div>
-                                    <span class="text-slate-500 text-xs block">Biaya Jemput</span>
-                                    <span id="detail_pickup_fee" class="font-semibold text-slate-800 block"></span>
-                                </div>
-                                <div>
-                                    <span class="text-slate-500 text-xs block">Total Tagihan</span>
-                                    <span id="detail_total_amount" class="font-black text-slate-900 text-sm block"></span>
-                                </div>
-                                <div>
-                                    <span class="text-slate-500 text-xs block">Telah Dibayar</span>
-                                    <span id="detail_paid_amount" class="font-bold text-emerald-800 text-sm block"></span>
-                                </div>
-                                <div>
-                                    <span class="text-slate-500 text-xs block">Sisa di Loket</span>
-                                    <span id="detail_remaining_amount" class="font-black text-rose-600 text-sm block"></span>
+                                <div class="flex items-center justify-between p-3 bg-white">
+                                    <span class="text-slate-400 font-medium">Driver Paguyuban</span>
+                                    <span id="detail_driver_name" class="font-bold text-emerald-800 text-right"></span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- 5. Bukti Transfer Pelanggan (Jika Ada) -->
-                        <div id="detail_proof_box" class="bg-blue-50/70 p-4 sm:p-5 rounded-2xl border border-blue-200/80 space-y-3 hidden">
-                            <div class="flex items-center justify-between">
-                                <h4 class="font-bold text-blue-900 flex items-center gap-2 text-xs uppercase tracking-wider">
-                                    <svg class="w-4 h-4 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                    Bukti Transfer Pelanggan (Bank BPD DIY)
-                                </h4>
-                                <span id="detail_proof_bank_badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800"></span>
+                        <!-- 3. Titik Kumpul / Kedatangan -->
+                        <div>
+                            <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Lokasi Kedatangan</h4>
+                            <span id="detail_arrival_type" class="hidden"></span>
+
+                            <!-- Kondisi A: Antar-Jemput -->
+                            <div id="detail_pickup_container" class="hidden p-3.5 bg-amber-50/70 rounded-xl border border-amber-200/80 text-xs space-y-1">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-amber-950">Layanan Antar-Jemput (Pickup Hotel / Alamat)</span>
+                                    <a id="detail_pickup_maps_btn" href="#" target="_blank" rel="noopener noreferrer" class="hidden font-semibold text-emerald-700 hover:text-emerald-900 text-xs hover:underline">
+                                        Buka Google Maps &rarr;
+                                    </a>
+                                </div>
+                                <p class="text-slate-700">
+                                    <strong id="detail_pickup_zone" class="text-slate-900 font-semibold"></strong> &bull; <span id="detail_pickup_address"></span>
+                                </p>
                             </div>
-                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-blue-100">
-                                <div class="flex items-center gap-3">
-                                    <img id="detail_proof_thumb" src="" alt="Thumbnail Bukti" onclick="showCurrentProofLightbox()" class="w-12 h-12 sm:w-14 sm:h-14 object-cover rounded-xl border border-slate-200 cursor-pointer hover:opacity-80 transition-opacity shrink-0 shadow-xs" title="Klik untuk memperbesar bukti transfer" />
+
+                            <!-- Kondisi B: Datang Sendiri ke Basecamp -->
+                            <div id="detail_basecamp_container" class="hidden p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs space-y-1">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-slate-900">Datang Sendiri ke Basecamp Paguyuban</span>
+                                    <a href="https://maps.google.com/?q=Basecamp+Jeep+Wukirsari+Adventure+Cangkringan+Sleman" target="_blank" rel="noopener noreferrer" class="font-semibold text-emerald-700 hover:text-emerald-900 text-xs hover:underline">
+                                        Buka Rute Basecamp &rarr;
+                                    </a>
+                                </div>
+                                <p class="text-slate-500">
+                                    Basecamp Jeep Wukirsari: Dusun Pusung, Wukirsari, Cangkringan, Sleman. Wisatawan berkumpul langsung di meeting point.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- 4. Rincian Tagihan & Kasir Loket -->
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Pembayaran & Status Kasir</h4>
+                                <span id="detail_payment_mode_badge" class="text-[11px] font-medium text-slate-500"></span>
+                            </div>
+                            
+                            <div class="border border-slate-100 rounded-xl overflow-hidden divide-y divide-slate-100 text-xs">
+                                <div class="flex justify-between p-3 bg-white">
+                                    <span class="text-slate-400 font-medium">Biaya Paket</span>
+                                    <span id="detail_package_subtotal" class="font-medium text-slate-700"></span>
+                                </div>
+                                <div class="flex justify-between p-3 bg-white">
+                                    <span class="text-slate-400 font-medium">Biaya Antar-Jemput</span>
+                                    <span id="detail_pickup_fee" class="font-medium text-slate-700"></span>
+                                </div>
+                                <div class="flex justify-between p-3 bg-slate-50/70 font-semibold">
+                                    <span class="text-slate-700">Total Tagihan</span>
+                                    <span id="detail_total_amount" class="text-slate-900 text-sm font-bold"></span>
+                                </div>
+                                <div class="flex justify-between p-3 bg-white items-center">
+                                    <span class="text-slate-500 font-medium">Metode / Saluran Bayar</span>
+                                    <span id="detail_payment_channel" class="font-bold text-slate-800 text-xs bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200"></span>
+                                </div>
+                                <div class="flex justify-between p-3 bg-emerald-50/40">
+                                    <span class="text-emerald-800 font-medium">Telah Dibayar (Transfer)</span>
+                                    <span id="detail_paid_amount" class="text-emerald-700 font-bold text-sm"></span>
+                                </div>
+                                <div id="detail_remaining_box" class="flex justify-between p-3.5 items-center">
                                     <div>
-                                        <span class="text-slate-400 text-xs block">Nama Pengirim (Sesuai Rekening / Struk):</span>
-                                        <span id="detail_proof_sender" class="font-bold text-slate-800 text-xs sm:text-sm block"></span>
-                                        <span class="text-[11px] text-blue-600 block mt-0.5">Transfer Resmi Bank BPD DIY &bull; <button type="button" onclick="showCurrentProofLightbox()" class="underline font-semibold hover:text-blue-800 cursor-pointer">Klik gambar untuk perbesar</button></span>
+                                        <span id="detail_remaining_label" class="block font-bold"></span>
+                                        <span id="detail_remaining_sublabel" class="text-[10px] block mt-0.5"></span>
                                     </div>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <button type="button" id="btnDetailViewProof" onclick="showCurrentProofLightbox()" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs hover:shadow transition-all cursor-pointer">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                                        <span>Lihat Bukti Transfer</span>
-                                    </button>
+                                    <span id="detail_remaining_amount" class="text-base font-extrabold"></span>
                                 </div>
                             </div>
                         </div>
+
                     </div>
 
-                    <!-- Modal Footer -->
-                    <div class="p-5 sm:p-6 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-2 flex-wrap">
-                        <div class="flex items-center gap-2 flex-wrap">
-                            <a id="btnWhatsappCustomer" href="#" target="_blank" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm hover:shadow transition-all cursor-pointer">
-                                <span>Hubungi Pemesan (WhatsApp)</span>
-                            </a>
-                            <button type="button" id="btnFooterViewProof" onclick="showCurrentProofLightbox()" class="hidden inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm hover:shadow transition-all cursor-pointer">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                <span>Lihat Bukti Transfer</span>
-                            </button>
-                        </div>
-                        <button type="button" onclick="closeBookingDetailModal()" class="px-5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs transition-colors cursor-pointer">
+                    <!-- Footer: Bersih & Fungsional -->
+                    <div class="px-6 py-3.5 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between shrink-0">
+                        <a id="btnWhatsappCustomer" href="#" target="_blank" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs transition">
+                            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+                            <span>Hubungi via WhatsApp</span>
+                        </a>
+                        <button type="button" onclick="closeBookingDetailModal()" class="px-4 py-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium text-xs transition cursor-pointer">
                             Tutup
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- MODAL POPUP LIGHTBOX BUKTI TRANSFER (1 TAB / IN-PAGE PREVIEW) -->
-            <div id="modalProofLightbox" onclick="if(event.target === this) closeProofLightbox()" class="fixed inset-0 z-[60] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 hidden transition-all duration-200">
-                <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[92vh] flex flex-col overflow-hidden shadow-2xl border border-slate-100 transform transition-all animate-in fade-in zoom-in-95">
-                    <!-- Lightbox Header -->
-                    <div class="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold shrink-0">
-                                <svg class="w-5 h-5 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                            </div>
-                            <div>
-                                <div class="flex items-center gap-2">
-                                    <h3 class="font-bold text-slate-800 text-sm sm:text-base">Bukti Transfer Pelanggan</h3>
-                                    <span id="proofLightboxCode" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800"></span>
-                                </div>
-                                <p id="proofLightboxSender" class="text-xs text-slate-500 font-medium mt-0.5"></p>
-                            </div>
-                        </div>
-                        <button type="button" onclick="closeProofLightbox()" class="w-8 h-8 rounded-lg hover:bg-slate-200 text-slate-400 hover:text-slate-700 flex items-center justify-center font-bold text-xl cursor-pointer" title="Tutup Bukti">&times;</button>
-                    </div>
-
-                    <!-- Lightbox Body Image -->
-                    <div class="p-4 sm:p-6 bg-slate-900/5 flex items-center justify-center overflow-auto flex-1 min-h-[280px]">
-                        <img id="proofLightboxImg" src="" alt="Bukti Transfer Pelanggan" class="max-h-[65vh] w-auto max-w-full object-contain rounded-2xl shadow-md border border-slate-200 bg-white" />
-                    </div>
-
-                    <!-- Lightbox Footer -->
-                    <div class="p-3.5 sm:p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-2">
-                        <span id="proofLightboxBank" class="text-xs font-semibold text-slate-600 px-3 py-1 bg-white border border-slate-200 rounded-lg"></span>
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="closeProofLightbox()" class="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs transition-colors cursor-pointer">
-                                Tutup Preview
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- SCRIPTS: DETAIL MODAL, DROPDOWN, & CHART.JS INITIALIZATION -->
             <script>
-                // State bukti transfer aktif untuk modal detail
-                let currentDetailProof = { url: '', code: '', sender: '', bank: '' };
-
-                // Lightbox Modal Bukti Transfer (1 Tab)
-                function openProofLightbox(url, code, sender, bank) {
-                    if (!url) return;
-                    document.getElementById('proofLightboxImg').src = url;
-                    document.getElementById('proofLightboxCode').textContent = code ? ('#' + code) : '';
-                    document.getElementById('proofLightboxSender').textContent = sender ? ('Pengirim: ' + sender) : 'Pengirim: Wisatawan';
-                    document.getElementById('proofLightboxBank').textContent = bank || 'Transfer Bank BPD DIY';
-                    document.getElementById('modalProofLightbox').classList.remove('hidden');
-                }
-
-                function closeProofLightbox() {
-                    const lightbox = document.getElementById('modalProofLightbox');
-                    if (lightbox) lightbox.classList.add('hidden');
-                    const img = document.getElementById('proofLightboxImg');
-                    if (img) img.src = '';
-                }
-
-                function showCurrentProofLightbox() {
-                    if (currentDetailProof.url) {
-                        openProofLightbox(currentDetailProof.url, currentDetailProof.code, currentDetailProof.sender, currentDetailProof.bank);
+                // Salin teks ke clipboard helper
+                function copyDetailText(elementId, btn) {
+                    const el = document.getElementById(elementId);
+                    if (!el) return;
+                    const text = el.textContent || el.innerText;
+                    if (!navigator.clipboard) {
+                        return;
                     }
-                }
-
-                function openProofFromBtn(btn) {
-                    if (!btn) return;
-                    openProofLightbox(
-                        btn.getAttribute('data-proof-url'),
-                        btn.getAttribute('data-booking-code'),
-                        btn.getAttribute('data-sender-name'),
-                        btn.getAttribute('data-sender-bank')
-                    );
+                    navigator.clipboard.writeText(text.trim()).then(() => {
+                        const originalHtml = btn.innerHTML;
+                        btn.innerHTML = '<svg class="w-3.5 h-3.5 text-emerald-600 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>';
+                        btn.classList.add('text-emerald-700');
+                        setTimeout(() => {
+                            btn.innerHTML = originalHtml;
+                            btn.classList.remove('text-emerald-700');
+                        }, 1400);
+                    }).catch(err => {
+                        console.error('Failed to copy:', err);
+                    });
                 }
 
                 // 1. Modal Booking Detail
@@ -923,23 +803,22 @@
                         return;
                     }
 
+                    // Identitas Pemesan
                     document.getElementById('detail_booking_code').textContent = data.booking_code;
                     document.getElementById('detail_customer_name').textContent = data.customer_name;
                     document.getElementById('detail_customer_phone').textContent = data.customer_phone;
-                    document.getElementById('detail_customer_email').textContent = data.customer_email;
-                    document.getElementById('detail_created_at').textContent = data.created_at;
-                    document.getElementById('detail_package_name').textContent = data.package_name;
-                    document.getElementById('detail_trip_date').textContent = data.trip_date;
-                    document.getElementById('detail_slot_label').textContent = data.slot_label;
-                    document.getElementById('detail_armada_pax').textContent = data.jeep_quantity + ' Jeep (' + data.passenger_count + ' Orang)';
-                    document.getElementById('detail_jeep_name').textContent = data.jeep_name || 'Belum Ditugaskan';
-                    document.getElementById('detail_driver_name').textContent = data.driver_name;
-                    document.getElementById('detail_arrival_type').textContent = data.arrival_type;
+                    document.getElementById('detail_customer_email').textContent = (data.customer_email && data.customer_email !== '-') ? data.customer_email : 'Tidak ada email';
+                    document.getElementById('detail_created_at').textContent = 'Dipesan pada ' + (data.created_at || '-');
 
-                    // Pesan / Catatan Khusus Pelanggan
+                    const initialEl = document.getElementById('detail_customer_initial');
+                    if (initialEl) {
+                        initialEl.textContent = (data.customer_name || 'W').trim().charAt(0).toUpperCase();
+                    }
+
+                    // Catatan Khusus Wisatawan
                     const notesContainer = document.getElementById('detail_notes_container');
                     if (notesContainer) {
-                        if (data.customer_notes && data.customer_notes.trim() !== '') {
+                        if (data.customer_notes && data.customer_notes.trim() !== '' && data.customer_notes !== '-') {
                             notesContainer.classList.remove('hidden');
                             document.getElementById('detail_customer_notes').textContent = '"' + data.customer_notes + '"';
                         } else {
@@ -947,12 +826,30 @@
                         }
                     }
 
+                    // Paket & Jadwal Pelaksanaan
+                    document.getElementById('detail_package_name').textContent = data.package_name;
+                    document.getElementById('detail_trip_date').textContent = data.trip_date;
+                    document.getElementById('detail_slot_label').textContent = data.slot_label;
+                    document.getElementById('detail_armada_pax').textContent = (data.jeep_quantity || 1) + ' Unit Jeep • ' + (data.passenger_count || 4) + ' Orang Penumpang';
+                    document.getElementById('detail_jeep_name').textContent = data.jeep_name || 'Belum Ditugaskan';
+                    document.getElementById('detail_driver_name').textContent = data.driver_name || 'Dialokasikan Otomatis';
+
+                    // Logistik Kedatangan (Basecamp vs Pickup)
+                    const isPickup = Boolean(data.is_pickup);
                     const pickupContainer = document.getElementById('detail_pickup_container');
+                    const basecampContainer = document.getElementById('detail_basecamp_container');
                     const mapsBtn = document.getElementById('detail_pickup_maps_btn');
-                    if (data.is_pickup || (data.pickup_address && data.pickup_address !== '-')) {
-                        pickupContainer.classList.remove('hidden');
-                        document.getElementById('detail_pickup_zone').textContent = 'Lokasi Jemput: ' + data.pickup_zone;
-                        document.getElementById('detail_pickup_address').textContent = data.pickup_address;
+
+                    if (isPickup) {
+                        if (pickupContainer) pickupContainer.classList.remove('hidden');
+                        if (basecampContainer) basecampContainer.classList.add('hidden');
+
+                        const zoneEl = document.getElementById('detail_pickup_zone');
+                        if (zoneEl) zoneEl.textContent = data.pickup_zone || 'Layanan Antar-Jemput';
+
+                        const addrEl = document.getElementById('detail_pickup_address');
+                        if (addrEl) addrEl.textContent = (data.pickup_address && data.pickup_address !== '-') ? data.pickup_address : 'Alamat hotel / villa belum diisi';
+
                         if (mapsBtn) {
                             if (data.maps_link) {
                                 mapsBtn.href = data.maps_link;
@@ -962,67 +859,103 @@
                             }
                         }
                     } else {
-                        pickupContainer.classList.add('hidden');
+                        if (pickupContainer) pickupContainer.classList.add('hidden');
+                        if (basecampContainer) basecampContainer.classList.remove('hidden');
                     }
 
-                    document.getElementById('detail_payment_mode').textContent = data.payment_mode;
-                    document.getElementById('detail_package_subtotal').textContent = 'Rp ' + data.package_subtotal;
-                    document.getElementById('detail_pickup_fee').textContent = 'Rp ' + data.pickup_fee;
-                    document.getElementById('detail_total_amount').textContent = 'Rp ' + data.total_amount;
-                    document.getElementById('detail_paid_amount').textContent = 'Rp ' + data.paid_amount;
-                    document.getElementById('detail_remaining_amount').textContent = 'Rp ' + data.remaining_amount;
+                    // Rincian Pembayaran & Status Kasir
+                    const modeBadge = document.getElementById('detail_payment_mode_badge');
+                    if (modeBadge) {
+                        modeBadge.textContent = data.payment_mode || 'Pembayaran Penuh';
+                    }
+                    document.getElementById('detail_package_subtotal').textContent = 'Rp ' + (data.package_subtotal || '0');
+                    document.getElementById('detail_pickup_fee').textContent = 'Rp ' + (data.pickup_fee || '0');
+                    document.getElementById('detail_total_amount').textContent = 'Rp ' + (data.total_amount || '0');
+                    document.getElementById('detail_paid_amount').textContent = 'Rp ' + (data.paid_amount || '0');
+                    const channelEl = document.getElementById('detail_payment_channel');
+                    if (channelEl) {
+                        channelEl.textContent = data.payment_channel || 'Transfer Bank / Midtrans';
+                    }
 
-                    const badgeContainer = document.getElementById('detail_status_badge');
-                    if (data.booking_status === 'FULL_PAID') {
-                        badgeContainer.innerHTML = '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#DCFCE7] text-[#16A34A]">Lunas 100%</span>';
-                    } else if (data.booking_status === 'DP_PAID') {
-                        badgeContainer.innerHTML = '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#DCFCE7] text-[#16A34A]">DP Terbayar</span>';
-                    } else if (data.booking_status === 'COMPLETED') {
-                        badgeContainer.innerHTML = '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#DCFCE7] text-[#16A34A]">Selesai</span>';
-                    } else if (data.booking_status === 'CANCELLED') {
-                        badgeContainer.innerHTML = '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FEE2E2] text-[#DC2626]">Dibatalkan</span>';
+                    // Card Sisa Pelunasan di Loket
+                    const remainingBox = document.getElementById('detail_remaining_box');
+                    const remainingLabel = document.getElementById('detail_remaining_label');
+                    const remainingAmount = document.getElementById('detail_remaining_amount');
+                    const remainingSublabel = document.getElementById('detail_remaining_sublabel');
+
+                    const cleanRemaining = String(data.remaining_amount || '').replace(/[^0-9]/g, '');
+                    const isFullyPaid = cleanRemaining === '0' || cleanRemaining === '' || data.booking_status === 'FULL_PAID';
+
+                    if (isFullyPaid) {
+                        if (remainingBox) {
+                            remainingBox.className = 'flex justify-between p-3.5 items-center bg-emerald-50 text-emerald-950 border-t border-emerald-100';
+                        }
+                        if (remainingLabel) {
+                            remainingLabel.className = 'block font-bold text-xs text-emerald-900';
+                            remainingLabel.textContent = 'Sisa Pelunasan di Loket';
+                        }
+                        if (remainingAmount) {
+                            remainingAmount.className = 'text-base font-black text-emerald-700';
+                            remainingAmount.textContent = 'Rp 0';
+                        }
+                        if (remainingSublabel) {
+                            remainingSublabel.className = 'text-[11px] text-emerald-700 block mt-0.5';
+                            remainingSublabel.textContent = 'Lunas 100% (Tidak ada tagihan loket)';
+                        }
                     } else {
-                        badgeContainer.innerHTML = '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FEF3C7] text-[#D97706]">Menunggu</span>';
+                        if (remainingBox) {
+                            remainingBox.className = 'flex justify-between p-3.5 items-center bg-rose-50 text-rose-950 border-t border-rose-200';
+                        }
+                        if (remainingLabel) {
+                            remainingLabel.className = 'block font-bold text-xs text-rose-900';
+                            remainingLabel.textContent = 'Sisa Wajib Ditagih di Loket';
+                        }
+                        if (remainingAmount) {
+                            remainingAmount.className = 'text-base font-black text-rose-700';
+                            remainingAmount.textContent = 'Rp ' + data.remaining_amount;
+                        }
+                        if (remainingSublabel) {
+                            remainingSublabel.className = 'text-[11px] text-rose-600 block mt-0.5 font-medium';
+                            remainingSublabel.textContent = 'Wajib ditagih sebelum tour berangkat';
+                        }
                     }
 
+                    // Status Badge
+                    const badgeContainer = document.getElementById('detail_status_badge');
+                    if (badgeContainer) {
+                        if (data.booking_status === 'FULL_PAID') {
+                            badgeContainer.innerHTML = '<span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Lunas 100%</span>';
+                        } else if (data.booking_status === 'DP_PAID') {
+                            badgeContainer.innerHTML = '<span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200">DP Terbayar</span>';
+                        } else if (data.booking_status === 'COMPLETED') {
+                            badgeContainer.innerHTML = '<span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">Trip Selesai</span>';
+                        } else if (data.booking_status === 'CANCELLED') {
+                            badgeContainer.innerHTML = '<span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">Dibatalkan</span>';
+                        } else {
+                            badgeContainer.innerHTML = '<span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">Menunggu</span>';
+                        }
+                    }
+
+                    // Tombol Hubungi WhatsApp
                     const waBtn = document.getElementById('btnWhatsappCustomer');
+                    const quickWaBtn = document.getElementById('btnQuickWa');
                     let phone = (data.customer_phone || '').replace(/[^0-9]/g, '');
                     if (phone.startsWith('0')) {
                         phone = '62' + phone.substring(1);
                     }
                     if (phone) {
-                        waBtn.href = 'https://wa.me/' + phone + '?text=' + encodeURIComponent('Halo ' + data.customer_name + ', kami dari Paguyuban Jeep Wukirsari Adventure mengenai reservasi Anda dengan kode booking: ' + data.booking_code);
-                        waBtn.classList.remove('hidden');
-                    } else {
-                        waBtn.classList.add('hidden');
-                    }
-
-                    // Handle Bukti Transfer Pelanggan
-                    currentDetailProof = {
-                        url: data.proof_url || '',
-                        code: data.booking_code || '',
-                        sender: (data.sender_name || 'Wisatawan') + (data.sender_bank ? ' (' + data.sender_bank + ')' : ''),
-                        bank: data.sender_bank || 'Transfer Bank BPD DIY'
-                    };
-
-                    const proofBox = document.getElementById('detail_proof_box');
-                    const btnFooterViewProof = document.getElementById('btnFooterViewProof');
-                    const thumbImg = document.getElementById('detail_proof_thumb');
-
-                    if (data.proof_url) {
-                        if (proofBox) proofBox.classList.remove('hidden');
-                        if (thumbImg) thumbImg.src = data.proof_url;
-                        if (document.getElementById('detail_proof_sender')) {
-                            document.getElementById('detail_proof_sender').textContent = currentDetailProof.sender;
+                        const waUrl = 'https://wa.me/' + phone + '?text=' + encodeURIComponent('Halo Kak ' + data.customer_name + ', kami dari Paguyuban Jeep Wukirsari Adventure mengenai reservasi Anda dengan kode booking: ' + data.booking_code);
+                        if (waBtn) {
+                            waBtn.href = waUrl;
+                            waBtn.classList.remove('hidden');
                         }
-                        if (document.getElementById('detail_proof_bank_badge')) {
-                            document.getElementById('detail_proof_bank_badge').textContent = data.sender_bank || 'Transfer Bank BPD DIY';
+                        if (quickWaBtn) {
+                            quickWaBtn.href = waUrl;
+                            quickWaBtn.classList.remove('hidden');
                         }
-                        if (btnFooterViewProof) btnFooterViewProof.classList.remove('hidden');
                     } else {
-                        if (proofBox) proofBox.classList.add('hidden');
-                        if (thumbImg) thumbImg.src = '';
-                        if (btnFooterViewProof) btnFooterViewProof.classList.add('hidden');
+                        if (waBtn) waBtn.classList.add('hidden');
+                        if (quickWaBtn) quickWaBtn.classList.add('hidden');
                     }
 
                     document.getElementById('modalBookingDetail').classList.remove('hidden');
@@ -1034,11 +967,6 @@
 
                 document.addEventListener('keydown', function(e) {
                     if (e.key === 'Escape') {
-                        const lightbox = document.getElementById('modalProofLightbox');
-                        if (lightbox && !lightbox.classList.contains('hidden')) {
-                            closeProofLightbox();
-                            return;
-                        }
                         closeBookingDetailModal();
                     }
                 });
@@ -1357,8 +1285,6 @@
 
         </main>
     </div>
-
-    @include('admin.partials.modal-manual-proof')
 
 </body>
 </html>

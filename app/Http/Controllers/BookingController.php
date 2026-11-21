@@ -163,26 +163,52 @@ class BookingController extends Controller
             $cleanLabel = preg_match('/\(\d{2}:\d{2}\s*WIB\)/i', $label) ? $label : ($label . ' (' . $time . ' WIB)');
             $isSunrise = str_contains(strtolower($s->slot_label), 'sunrise') || $time === '04:30';
 
-            $remaining = $s->remainingJeepsFor($date);
+            $booked = $s->bookedJeepsCount($date);
+            $remaining = max(0, $s->max_jeeps - $booked);
             $passed = $isToday && ($time <= $nowTime);
             $available = !$passed && ($remaining >= $jeeps);
 
             return [
-                'id'         => $s->id,
-                'label'      => $cleanLabel,
-                'time'       => $time,
-                'is_sunrise' => $isSunrise,
-                'remaining'  => $remaining,
-                'max_jeeps'  => $s->max_jeeps,
-                'passed'     => $passed,
-                'available'  => $available,
+                'id'           => $s->id,
+                'label'        => $cleanLabel,
+                'time'         => $time,
+                'is_sunrise'   => $isSunrise,
+                'booked_jeeps' => $booked,
+                'remaining'    => $remaining,
+                'max_jeeps'    => $s->max_jeeps,
+                'passed'       => $passed,
+                'available'    => $available,
             ];
         });
 
+        $totalBookedJeeps = (int) $data->sum('booked_jeeps');
+        $hasBookings = $totalBookedJeeps > 0;
+
+        // Ambil overview booking untuk bulan terkait agar kalender interaktif dapat mendeteksi tanggal bookingan
+        $month = substr($date, 0, 7);
+        $monthBookings = Booking::where('trip_date', 'like', $month . '%')
+            ->whereIn('booking_status', ['PENDING', 'DP_PAID', 'FULL_PAID'])
+            ->where(function ($q) {
+                $q->whereNull('lock_expires_at')->orWhere('lock_expires_at', '>', now());
+            })
+            ->selectRaw('trip_date, SUM(jeep_quantity) as total_jeeps, COUNT(*) as total_orders')
+            ->groupBy('trip_date')
+            ->get()
+            ->mapWithKeys(function ($item) {
+                $d = is_string($item->trip_date) ? substr($item->trip_date, 0, 10) : $item->trip_date->format('Y-m-d');
+                return [$d => [
+                    'total_jeeps'  => (int) $item->total_jeeps,
+                    'total_orders' => (int) $item->total_orders,
+                ]];
+            });
+
         return response()->json([
-            'date'     => $date,
-            'is_today' => $isToday,
-            'slots'    => $data,
+            'date'               => $date,
+            'is_today'           => $isToday,
+            'has_bookings'       => $hasBookings,
+            'total_booked_jeeps' => $totalBookedJeeps,
+            'slots'              => $data,
+            'month_bookings'     => $monthBookings,
         ]);
     }
 
@@ -215,12 +241,13 @@ class BookingController extends Controller
             'pickup_manual' => 'nullable|boolean',
             'notes' => 'nullable|string|max:500',
             'customer_name' => 'required|string|max:100',
-            'customer_phone' => 'required|string|max:20',
+            'customer_phone' => ['required', 'string', 'max:25', 'regex:/^(\+?62|0)8[1-9][0-9]{6,11}$/'],
             'customer_email' => 'nullable|email|max:100',
             'payment_mode' => 'required|in:FULL,DP',
         ], [
             'customer_name.required' => 'Nama lengkap pemesan wajib diisi.',
             'customer_phone.required' => 'Nomor WhatsApp aktif wajib diisi.',
+            'customer_phone.regex' => 'Nomor WhatsApp tidak valid. Masukkan nomor seluler Indonesia aktif (contoh: 081234567890).',
             'trip_date.required' => 'Tanggal wisata wajib dipilih.',
             'trip_date.after_or_equal' => 'Tanggal wisata tidak boleh di masa lalu.',
             'slot_id.required' => 'Jadwal waktu keberangkatan wajib dipilih.',
@@ -597,6 +624,8 @@ class BookingController extends Controller
                 }
             }
         }
+
+        $booking->loadMissing(['assignments.driver', 'assignments.jeep']);
 
         return view('booking.success', compact('booking'));
     }
