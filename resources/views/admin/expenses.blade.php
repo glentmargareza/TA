@@ -391,8 +391,8 @@
                         <p class="text-xs text-emerald-200/90 mt-0.5">Input biaya operasional, BBM, armada jeep, pos, atau utilitas.</p>
                     </div>
                 </div>
-                <button type="button" onclick="closeCreateExpenseModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer shrink-0">
-                    ✕
+                <button type="button" onclick="closeCreateExpenseModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer shrink-0" aria-label="Tutup modal">
+                    <x-icon name="x-mark" class="w-4 h-4" />
                 </button>
             </div>
 
@@ -495,8 +495,8 @@
                         <p class="text-xs text-emerald-200/90 mt-0.5">Perbarui rincian atau bukti kuitansi pengeluaran.</p>
                     </div>
                 </div>
-                <button type="button" onclick="closeEditExpenseModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer shrink-0">
-                    ✕
+                <button type="button" onclick="closeEditExpenseModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer shrink-0" aria-label="Tutup modal">
+                    <x-icon name="x-mark" class="w-4 h-4" />
                 </button>
             </div>
 
@@ -619,8 +619,8 @@
                         <p class="text-xs text-emerald-200/90 mt-0.5">Rincian audit dan lampiran nota pembayaran.</p>
                     </div>
                 </div>
-                <button type="button" onclick="closeDetailExpenseModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer shrink-0">
-                    ✕
+                <button type="button" onclick="closeDetailExpenseModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer shrink-0" aria-label="Tutup modal">
+                    <x-icon name="x-mark" class="w-4 h-4" />
                 </button>
             </div>
 
@@ -685,8 +685,9 @@
     <!-- ======================================================== -->
     <div id="modalReceiptLightbox" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4">
         <div class="relative max-w-4xl max-h-[90vh] flex flex-col items-center">
-            <button type="button" onclick="closeLightbox()" class="absolute -top-12 right-0 text-white/80 hover:text-white p-2 rounded-full bg-white/10 hover:bg-white/20 transition cursor-pointer">
-                ✕ Tutup
+            <button type="button" onclick="closeLightbox()" class="absolute -top-12 right-0 inline-flex items-center gap-1.5 text-white/90 hover:text-white px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold transition cursor-pointer backdrop-blur-xs">
+                <x-icon name="x-mark" class="w-4 h-4" />
+                <span>Tutup</span>
             </button>
             <img id="lightboxImage" src="" alt="Bukti Pengeluaran" class="max-w-full max-h-[82vh] rounded-2xl object-contain border border-white/20 shadow-2xl">
             <span id="lightboxCaption" class="mt-3 text-xs text-slate-300 font-semibold tracking-wide"></span>

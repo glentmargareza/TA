@@ -26,8 +26,9 @@
                     Semua
                 </a>
                 @for($s = 5; $s >= 1; $s--)
-                <a href="{{ route('admin.reviews', array_filter(['rating' => $s, 'search' => $search])) }}" class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 {{ (string)$rating === (string)$s ? 'bg-emerald-700 text-white shadow-xs font-bold' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
-                    ★ {{ $s }}
+                <a href="{{ route('admin.reviews', array_filter(['rating' => $s, 'search' => $search])) }}" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 {{ (string)$rating === (string)$s ? 'bg-emerald-700 text-white shadow-xs font-bold' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
+                    <x-icon name="star" class="w-3.5 h-3.5 {{ (string)$rating === (string)$s ? 'text-amber-300' : 'text-amber-500' }}" />
+                    <span>{{ $s }}</span>
                 </a>
                 @endfor
             </div>
@@ -117,8 +118,9 @@
                                 {{ $rev->package->name ?? 'Tour Jeep Merapi' }}
                             </td>
                             <td class="py-3.5 px-4">
-                                <span class="inline-flex items-center gap-1 text-amber-600 font-bold bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
-                                    ★ {{ $rev->rating }}.0
+                                <span class="inline-flex items-center gap-1 text-amber-700 font-bold bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200 text-xs">
+                                    <x-icon name="star" class="w-3.5 h-3.5 text-amber-500" />
+                                    <span>{{ $rev->rating }}.0</span>
                                 </span>
                             </td>
                             <td class="py-3.5 px-4 max-w-sm text-slate-600 italic">
@@ -157,7 +159,9 @@
         <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 transform transition-all duration-200">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
                 <h3 class="font-bold text-slate-800 text-sm font-display">Edit Ulasan Wisatawan</h3>
-                <button type="button" onclick="closeAdminEditReviewModal()" class="text-slate-400 hover:text-slate-600 text-lg leading-none cursor-pointer">&times;</button>
+                <button type="button" onclick="closeAdminEditReviewModal()" class="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-colors cursor-pointer" aria-label="Tutup modal">
+                    <x-icon name="x-mark" class="w-4 h-4" />
+                </button>
             </div>
 
             <form id="adminEditReviewForm" action="" method="POST" class="space-y-4">
@@ -167,11 +171,11 @@
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">Rating Bintang *</label>
                     <select name="rating" id="adminEditRatingSelect" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                        <option value="5">★ 5 - Sangat Puas</option>
-                        <option value="4">★ 4 - Puas</option>
-                        <option value="3">★ 3 - Cukup</option>
-                        <option value="2">★ 2 - Kurang</option>
-                        <option value="1">★ 1 - Kecewa</option>
+                        <option value="5">5 Bintang - Sangat Puas</option>
+                        <option value="4">4 Bintang - Puas</option>
+                        <option value="3">3 Bintang - Cukup</option>
+                        <option value="2">2 Bintang - Kurang</option>
+                        <option value="1">1 Bintang - Kecewa</option>
                     </select>
                 </div>
 
