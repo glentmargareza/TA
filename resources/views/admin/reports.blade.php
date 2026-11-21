@@ -1,122 +1,70 @@
-<!DOCTYPE html>
-<html lang="id">
+<x-admin-layout :title="($activeTab === 'laba_rugi' ? 'Laporan Laba Rugi' : 'Laporan Penjualan & Kasir')">
+    <x-slot:head>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <style>
+            @media print {
+                aside,
+                header,
+                #filter-box,
+                #tab-navigation,
+                .no-print,
+                button,
+                nav {
+                    display: none !important;
+                }
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $activeTab === 'laba_rugi' ? 'Laporan Laba Rugi' : 'Laporan Penjualan & Kasir' }} | Admin Jeep Wukirsari</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        wukirsari: {
-                            primary: '#143B1E',
-                            dark: '#0D2714',
-                            accent: '#1E5E30',
-                            light: '#EAF3EC',
-                            border: '#D7E5D9',
-                        }
-                    }
+                body {
+                    background: white !important;
+                    color: black !important;
+                }
+
+                #print-area {
+                    display: block !important;
+                    width: 100% !important;
+                    padding: 0 !important;
+                    margin: 0 !important;
+                }
+
+                .print-table {
+                    font-size: 11px !important;
+                    border-collapse: collapse !important;
+                    width: 100% !important;
+                }
+
+                .print-table th,
+                .print-table td {
+                    border: 1px solid #cbd5e1 !important;
+                    padding: 6px 8px !important;
+                }
+
+                .print-header {
+                    display: block !important;
                 }
             }
-        }
-    </script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap');
+        </style>
+    </x-slot:head>
 
-        body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-        }
+    <!-- Header Banner (no-print) -->
+    <x-admin.header
+        :title="$activeTab === 'laba_rugi' ? 'Laporan Laba Rugi Operasional' : 'Laporan Penjualan & Kasir'"
+        :subtitle="$activeTab === 'laba_rugi' ? 'Analisis pendapatan kotor, beban pokok trip armada, operasional basecamp, dan laba bersih paguyuban.' : 'Rekapitulasi transaksi pemesanan tiket tour, arus kas masuk, dan piutang pelunasan sewa Jeep.'"
+        class="no-print"
+    >
+        <x-slot:actions>
+            <a href="{{ route('admin.reports.csv', request()->all()) }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold shadow-2xs transition-all cursor-pointer">
+                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                <span>Unduh CSV</span>
+            </a>
+            <button type="button" onclick="window.print()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-700 via-[#183c21] to-[#102b17] hover:from-emerald-600 hover:to-[#183c21] text-white text-xs font-bold shadow-xs hover:shadow transition-all cursor-pointer active:scale-95">
+                <x-icon name="printer" class="w-4 h-4" />
+                <span>Cetak Laporan</span>
+            </button>
+        </x-slot:actions>
+    </x-admin.header>
 
-        h1,
-        h2,
-        h3,
-        h4,
-        h5,
-        h6 {
-            font-family: 'Poppins', 'Inter', sans-serif;
-        }
-
-        @media print {
-
-            aside,
-            header,
-            #filter-box,
-            #tab-navigation,
-            .no-print,
-            button,
-            nav {
-                display: none !important;
-            }
-
-            body {
-                background: white !important;
-                color: black !important;
-            }
-
-            #print-area {
-                display: block !important;
-                width: 100% !important;
-                padding: 0 !important;
-                margin: 0 !important;
-            }
-
-            .print-table {
-                font-size: 11px !important;
-                border-collapse: collapse !important;
-                width: 100% !important;
-            }
-
-            .print-table th,
-            .print-table td {
-                border: 1px solid #cbd5e1 !important;
-                padding: 6px 8px !important;
-            }
-
-            .print-header {
-                display: block !important;
-            }
-        }
-    </style>
-</head>
-
-<body class="bg-[#F4F6F8] text-slate-800 min-h-screen flex flex-col md:flex-row antialiased">
-
-    @include('admin.partials.sidebar')
-
-    <!-- Main Content Area -->
-    <div class="flex-1 flex flex-col min-w-0 min-h-screen overflow-x-hidden" id="print-area">
-
-        <!-- Header Banner (no-print) -->
-        <header class="bg-white border-b border-slate-200 px-4 sm:px-8 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-0 z-20 shadow-2xs no-print">
-            <div>
-                <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                    {{ $activeTab === 'laba_rugi' ? 'Laporan Laba Rugi Operasional' : 'Laporan Penjualan & Kasir' }}
-                </h1>
-                <p class="text-xs text-slate-500 mt-0.5">
-                    {{ $activeTab === 'laba_rugi' ? 'Analisis pendapatan kotor, beban pokok trip armada, operasional basecamp, dan laba bersih paguyuban.' : 'Rekapitulasi transaksi pemesanan tiket tour, arus kas masuk, dan piutang pelunasan sewa Jeep.' }}
-                </p>
-            </div>
-            <div class="flex items-center gap-2.5 flex-wrap">
-                <a href="{{ route('admin.reports.csv', request()->all()) }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold shadow-2xs transition-all cursor-pointer">
-                    <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                    <span>Unduh CSV</span>
-                </a>
-                <button type="button" onclick="window.print()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-700 via-[#183c21] to-[#102b17] hover:from-emerald-600 hover:to-[#183c21] text-white text-xs font-bold shadow-xs hover:shadow transition-all cursor-pointer active:scale-95">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                    </svg>
-                    <span>Cetak Laporan</span>
-                </button>
-            </div>
-        </header>
-
-        <main class="p-4 sm:p-8 space-y-5 sm:space-y-6 flex-1 overflow-y-auto">
+    <main class="p-4 sm:p-8 space-y-5 sm:space-y-6 flex-1 overflow-y-auto">
 
             <!-- TAB SWITCHER NAVIGATION (NO PRINT) -->
             <div id="tab-navigation" class="flex items-center gap-2 border-b border-slate-200 pb-2 no-print">
@@ -1363,7 +1311,4 @@
         });
     </script>
     @endif
-
-</body>
-
-</html>
+</x-admin-layout>

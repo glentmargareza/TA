@@ -1,168 +1,81 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manajemen Pengeluaran Operasional | Admin Jeep Wukirsari</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        wukirsari: {
-                            primary: '#143B1E',
-                            dark: '#0D2714',
-                            accent: '#1E5E30',
-                            light: '#EAF3EC',
-                            border: '#D7E5D9',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800;900&display=swap');
-        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-        .font-display, h1, h2, h3, h4, h5, h6 { font-family: 'Poppins', 'Inter', sans-serif; }
-    </style>
-</head>
-<body class="bg-[#F4F6F8] text-slate-800 min-h-screen flex flex-col md:flex-row antialiased">
+<x-admin-layout title="Manajemen Pengeluaran Operasional">
+    <!-- Header Banner -->
+    <x-admin.header
+        title="Manajemen Pengeluaran"
+        subtitle="Catat dan pantau seluruh beban biaya operasional, BBM, armada jeep, dan utilitas basecamp secara akurat."
+        badge="Operasional"
+    >
+        <x-slot:actions>
+            <a href="{{ route('admin.reports', ['tab' => 'laba_rugi']) }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold shadow-2xs transition-all cursor-pointer">
+                <x-icon name="chart-bar" class="w-4 h-4 text-emerald-700" />
+                <span>Laporan Laba Rugi</span>
+            </a>
+            <button type="button" onclick="openCreateExpenseModal()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-700 via-[#183c21] to-[#102b17] hover:from-emerald-600 hover:to-[#183c21] text-white text-xs font-bold shadow-xs hover:shadow transition-all cursor-pointer active:scale-95">
+                <x-icon name="plus" class="w-4 h-4" />
+                <span>Tambah Pengeluaran</span>
+            </button>
+        </x-slot:actions>
+    </x-admin.header>
 
-    @include('admin.partials.sidebar')
+    <main class="p-4 sm:p-8 space-y-6 flex-1 overflow-y-auto">
 
-    <!-- Main Content Area -->
-    <div class="flex-1 flex flex-col min-w-0 min-h-screen overflow-x-hidden">
-        
-        <!-- Header Banner -->
-        <header class="bg-white border-b border-slate-200 px-4 sm:px-8 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-0 z-20 shadow-2xs">
-            <div>
-                <div class="flex items-center gap-2">
-                    <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight font-display">
-                        Manajemen Pengeluaran
-                    </h1>
-                    <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold uppercase tracking-wide">
-                        Operasional
-                    </span>
-                </div>
-                <p class="text-xs text-slate-500 mt-0.5">
-                    Catat dan pantau seluruh beban biaya operasional, BBM, armada jeep, dan utilitas basecamp secara akurat.
-                </p>
-            </div>
-            <div class="flex items-center gap-2.5 flex-wrap">
-                <a href="{{ route('admin.reports', ['tab' => 'laba_rugi']) }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold shadow-2xs transition-all cursor-pointer">
-                    <svg class="w-4 h-4 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-                    <span>Laporan Laba Rugi</span>
-                </a>
-                <button type="button" onclick="openCreateExpenseModal()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-700 via-[#183c21] to-[#102b17] hover:from-emerald-600 hover:to-[#183c21] text-white text-xs font-bold shadow-xs hover:shadow transition-all cursor-pointer active:scale-95">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                    <span>Tambah Pengeluaran</span>
-                </button>
-            </div>
-        </header>
+        <!-- Flash Alert Notifikasi -->
+        @if(session('success'))
+            <x-alert type="success" dismissible>{{ session('success') }}</x-alert>
+        @endif
 
-        <main class="p-4 sm:p-8 space-y-6 flex-1 overflow-y-auto">
+        @if(session('error'))
+            <x-alert type="danger" dismissible>{{ session('error') }}</x-alert>
+        @endif
 
-            <!-- Flash Alert Notifikasi -->
-            @if(session('success'))
-            <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs sm:text-sm font-semibold flex items-center justify-between shadow-xs">
-                <div class="flex items-center gap-2.5">
-                    <svg class="w-5 h-5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                    <span>{{ session('success') }}</span>
-                </div>
-                <button type="button" onclick="this.parentElement.remove()" class="text-emerald-700 hover:text-emerald-900 cursor-pointer font-bold px-2 py-0.5 rounded-lg hover:bg-emerald-100">✕</button>
-            </div>
-            @endif
-
-            @if(session('error'))
-            <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 text-xs sm:text-sm font-semibold flex items-center justify-between shadow-xs">
-                <div class="flex items-center gap-2.5">
-                    <svg class="w-5 h-5 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                    <span>{{ session('error') }}</span>
-                </div>
-                <button type="button" onclick="this.parentElement.remove()" class="text-rose-700 hover:text-rose-900 cursor-pointer font-bold px-2 py-0.5 rounded-lg hover:bg-rose-100">✕</button>
-            </div>
-            @endif
-
-            @if(!empty($errors) && $errors->any())
-            <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 text-xs sm:text-sm font-semibold space-y-1 shadow-xs">
-                <div class="flex items-center gap-2 font-bold text-rose-950 mb-1">
-                    <svg class="w-5 h-5 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    <span>Perhatian: Terjadi kesalahan validasi</span>
-                </div>
-                <ul class="list-disc list-inside space-y-0.5 pl-5">
+        @if(!empty($errors) && $errors->any())
+            <x-alert type="danger" title="Perhatian: Terjadi kesalahan validasi">
+                <ul class="list-disc list-inside space-y-0.5 pl-2">
                     @foreach($errors->all() as $err)
                     <li>{{ $err }}</li>
                     @endforeach
                 </ul>
-            </div>
-            @endif
+            </x-alert>
+        @endif
 
-            <!-- A. RINGKASAN PENGELUARAN (4 KARTU STATISTIK) -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                
-                <!-- 1. Total Pengeluaran Bulan Ini -->
-                <div class="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs relative overflow-hidden flex flex-col justify-between">
-                    <div>
-                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Bulan Ini ({{ Carbon\Carbon::now()->translatedFormat('F Y') }})</span>
-                    </div>
-                    <div class="mt-3">
-                        <span class="text-xl sm:text-2xl font-black text-slate-900 font-display block">
-                            Rp {{ number_format($totalThisMonth, 0, ',', '.') }}
-                        </span>
-                        <span class="text-[11px] text-emerald-700 font-semibold mt-1 flex items-center gap-1">
-                            <span>Biaya operasional bulan berjalan</span>
-                        </span>
-                    </div>
-                </div>
+        <!-- A. RINGKASAN PENGELUARAN (4 KARTU STATISTIK) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- 1. Total Pengeluaran Bulan Ini -->
+            <x-stat-card 
+                title="Bulan Ini ({{ Carbon\Carbon::now()->translatedFormat('F Y') }})" 
+                value="Rp {{ number_format($totalThisMonth, 0, ',', '.') }}" 
+                subtext="Biaya operasional bulan berjalan" 
+                variant="emerald" 
+                icon="cash"
+            />
 
-                <!-- 2. Total Pengeluaran Hari Ini -->
-                <div class="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs relative overflow-hidden flex flex-col justify-between">
-                    <div>
-                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Hari Ini ({{ Carbon\Carbon::now()->translatedFormat('d M') }})</span>
-                    </div>
-                    <div class="mt-3">
-                        <span class="text-xl sm:text-2xl font-black text-slate-900 font-display block">
-                            Rp {{ number_format($totalToday, 0, ',', '.') }}
-                        </span>
-                        <span class="text-[11px] text-sky-700 font-semibold mt-1 flex items-center gap-1">
-                            <span>Pengeluaran hari ini</span>
-                        </span>
-                    </div>
-                </div>
+            <!-- 2. Total Pengeluaran Hari Ini -->
+            <x-stat-card 
+                title="Hari Ini ({{ Carbon\Carbon::now()->translatedFormat('d M') }})" 
+                value="Rp {{ number_format($totalToday, 0, ',', '.') }}" 
+                subtext="Pengeluaran hari ini" 
+                variant="sky" 
+                icon="clock"
+            />
 
-                <!-- 3. Jumlah Transaksi Pengeluaran -->
-                <div class="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs relative overflow-hidden flex flex-col justify-between">
-                    <div>
-                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Transaksi</span>
-                    </div>
-                    <div class="mt-3">
-                        <span class="text-xl sm:text-2xl font-black text-slate-900 font-display block">
-                            {{ number_format($totalTransactions) }} <span class="text-sm font-semibold text-slate-500">Nota</span>
-                        </span>
-                        <span class="text-[11px] text-indigo-700 font-semibold mt-1 flex items-center gap-1">
-                            <span>Audit & bukti tersimpan</span>
-                        </span>
-                    </div>
-                </div>
+            <!-- 3. Jumlah Transaksi Pengeluaran -->
+            <x-stat-card 
+                title="Total Transaksi" 
+                value="{{ number_format($totalTransactions) }} Nota" 
+                subtext="Audit & bukti tersimpan" 
+                variant="indigo" 
+                icon="chart-bar"
+            />
 
-                <!-- 4. Pengeluaran Terbesar -->
-                <div class="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs relative overflow-hidden flex flex-col justify-between">
-                    <div>
-                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Pengeluaran Terbesar</span>
-                    </div>
-                    <div class="mt-3">
-                        <span class="text-xl sm:text-2xl font-black text-slate-900 font-display block truncate">
-                            {{ $largestExpense ? $largestExpense->formatted_amount : 'Rp 0' }}
-                        </span>
-                        <span class="text-[11px] text-amber-800 font-semibold mt-1 truncate block" title="{{ $largestExpense ? $largestExpense->name : '-' }}">
-                            {{ $largestExpense ? Str::limit($largestExpense->name, 24) : 'Belum ada data' }}
-                        </span>
-                    </div>
-                </div>
-
-            </div>
+            <!-- 4. Pengeluaran Terbesar -->
+            <x-stat-card 
+                title="Pengeluaran Terbesar" 
+                value="{{ $largestExpense ? $largestExpense->formatted_amount : 'Rp 0' }}" 
+                subtext="{{ $largestExpense ? Str::limit($largestExpense->name, 24) : 'Belum ada data' }}" 
+                variant="amber" 
+                icon="cash"
+            />
+        </div>
 
             <!-- B. FILTER & PENCARIAN -->
             <div class="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-2xs space-y-4">
@@ -1057,6 +970,5 @@
             }
         });
     </script>
-</body>
-</html>
+</x-admin-layout>
 

@@ -1,67 +1,19 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manajemen Booking Wisatawan | Jeep Wukirsari</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        wukirsari: {
-                            primary: '#143B1E',
-                            dark: '#0D2714',
-                            accent: '#1E5E30',
-                            light: '#EAF3EC',
-                            border: '#D7E5D9',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap');
-        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-        h1, h2, h3, h4, h5, h6 { font-family: 'Poppins', 'Inter', sans-serif; }
-    </style>
-</head>
-<body class="bg-[#F4F6F8] text-slate-800 min-h-screen flex flex-col md:flex-row antialiased">
+<x-admin-layout title="Manajemen Booking Wisatawan | Jeep Wukirsari">
 
-    @include('admin.partials.sidebar')
+    <!-- Header Banner -->
+    <x-admin.header title="Manajemen Booking Wisatawan" subtitle="Kelola reservasi, verifikasi pembayaran loket, penugasan armada & driver, serta detail pemesan.">
+        <x-slot:actions>
+            <span class="px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs">
+                Total: {{ $bookings->total() }} Booking Terdaftar
+            </span>
+        </x-slot:actions>
+    </x-admin.header>
 
-    <!-- Main Content Area -->
-    <div class="flex-1 flex flex-col min-w-0 min-h-screen overflow-x-hidden">
-        
-        <!-- Header Banner -->
-        <header class="bg-white border-b border-slate-200 px-4 sm:px-8 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-0 z-20 shadow-2xs">
-            <div>
-                <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                    Manajemen Booking Wisatawan
-                </h1>
-                <p class="text-xs text-slate-500 mt-0.5">Kelola reservasi, verifikasi pembayaran loket, penugasan armada & driver, serta detail pemesan.</p>
-            </div>
-            <div class="flex items-center gap-2.5 sm:gap-3 flex-wrap">
-                <span class="px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                    Total: {{ $bookings->total() }} Booking Terdaftar
-                </span>
-                
-            </div>
-        </header>
+    <main class="p-4 sm:p-8 space-y-5 sm:space-y-6 flex-1">
 
-        <main class="p-4 sm:p-8 space-y-5 sm:space-y-6 flex-1">
-
-            @if(session('success'))
-            <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-2xl text-sm font-semibold shadow-xs flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <svg class="w-5 h-5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                    <span>{{ session('success') }}</span>
-                </div>
-                <button type="button" onclick="this.parentElement.remove()" class="text-emerald-700 hover:text-emerald-950 font-bold text-sm cursor-pointer">&times;</button>
-            </div>
-            @endif
+        @if(session('success'))
+        <x-alert type="success" :message="session('success')" />
+        @endif
 
             <!-- CARD FORM PENCARIAN & FILTER LENGKAP -->
             <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5">
@@ -1201,10 +1153,6 @@
                     }
                 });
             </script>
-
         </main>
-    </div>
-
-</body>
-</html>
+</x-admin-layout>
 

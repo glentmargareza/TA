@@ -1,259 +1,161 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitoring Armada Jeep ({{ $totalJeepsCount }} Unit) | Jeep Wukirsari</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        wukirsari: {
-                            primary: '#143B1E',
-                            dark: '#0D2714',
-                            accent: '#1E5E30',
-                            light: '#EAF3EC',
-                            border: '#D7E5D9',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap');
-        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-        h1, h2, h3, h4, h5, h6 { font-family: 'Poppins', 'Inter', sans-serif; }
-    </style>
-</head>
-<body class="bg-[#F4F6F8] text-slate-800 min-h-screen flex flex-col md:flex-row antialiased">
+<x-admin-layout :title="'Monitoring Armada Jeep (' . $totalJeepsCount . ' Unit) | Jeep Wukirsari'">
 
-    @include('admin.partials.sidebar')
+    <!-- Header Banner -->
+    <x-admin.header title="Monitoring Armada Jeep & Driver" subtitle="Admin memantau kesiapan armada Jeep, ketersediaan pangkalan, serta status operasional driver Paguyuban.">
+        <x-slot:actions>
+            <button type="button" onclick="openAddJeepModal()" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-700 via-[#183c21] to-[#102b17] hover:from-emerald-600 hover:to-[#183c21] text-white text-xs font-bold shadow-sm hover:shadow transition-all cursor-pointer active:scale-95">
+                <x-icon name="plus" class="w-4 h-4" />
+                <span>Tambah Kendaraan</span>
+            </button>
+        </x-slot:actions>
+    </x-admin.header>
 
-    <!-- Main Content Area -->
-    <div class="flex-1 flex flex-col min-w-0 min-h-screen overflow-x-hidden">
-        
-        <!-- Header Banner -->
-        <header class="bg-white border-b border-slate-200 px-4 sm:px-8 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-0 z-20 shadow-2xs">
-            <div>
-                <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                    Monitoring Armada Jeep & Driver 
-                </h1>
-                <p class="text-xs text-slate-500 mt-0.5">Admin memantau kesiapan armada Jeep, ketersediaan pangkalan, serta status operasional driver Paguyuban.</p>
-            </div>
-            <div class="flex items-center gap-2 sm:gap-2.5 flex-wrap">
-                <button type="button" onclick="openAddJeepModal()" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-700 via-[#183c21] to-[#102b17] hover:from-emerald-600 hover:to-[#183c21] text-white text-xs font-bold shadow-sm hover:shadow transition-all cursor-pointer active:scale-95">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                    <span>Tambah Kendaraan</span>
-                </button>
-            </div>
-        </header>
+    <main class="p-4 sm:p-8 space-y-5 sm:space-y-7 flex-1">
 
-        <main class="p-4 sm:p-8 space-y-5 sm:space-y-7 flex-1">
+        @if(session('success'))
+        <x-alert type="success" :message="session('success')" />
+        @endif
 
-            @if(session('success'))
-            <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-2xl text-sm font-semibold shadow-xs flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <svg class="w-5 h-5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                    <span>{{ session('success') }}</span>
-                </div>
-                <button type="button" onclick="this.parentElement.remove()" class="text-emerald-700 hover:text-emerald-950 font-bold text-sm cursor-pointer">&times;</button>
-            </div>
-            @endif
+        @if($errors->any())
+        <x-alert type="danger" :message="$errors->first()" />
+        @endif
 
-            @if($errors->any())
-            <div class="p-4 bg-rose-50 border border-rose-200 text-rose-900 rounded-2xl text-sm font-semibold shadow-xs flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <svg class="w-5 h-5 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                    <span>{{ $errors->first() }}</span>
-                </div>
-                <button type="button" onclick="this.parentElement.remove()" class="text-rose-700 hover:text-rose-950 font-bold text-sm cursor-pointer">&times;</button>
-            </div>
-            @endif
+        <!-- 3 KARTU RINGKASAN: JUMLAH KENDARAAN, DRIVER AKTIF, DRIVER NONAKTIF -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-5">
+            <x-stat-card label="Jumlah Kendaraan" :value="$totalJeepsCount" unit="Unit" subtext="Total Armada Paguyuban" icon="car" />
+            <x-stat-card label="Driver Aktif" :value="$activeDriversCount" unit="Driver" subtext="Siap ditugaskan" icon="user" iconWrapper="bg-emerald-100 text-emerald-800" />
+            <x-stat-card label="Driver Nonaktif" :value="$inactiveDriversCount" unit="Driver" subtext="Nonaktif / Libur" icon="users" iconWrapper="bg-amber-100 text-amber-800" />
+        </div>
 
-            <!-- 3 KARTU RINGKASAN: JUMLAH KENDARAAN, DRIVER AKTIF, DRIVER NONAKTIF -->
-            <div class="grid grid-cols-3 gap-2 sm:gap-4 md:gap-5">
-                <!-- 1. Jumlah Kendaraan -->
-                <div class="bg-white p-3 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden flex items-center justify-between">
-                    <div class="min-w-0">
-                        <span class="text-[11px] sm:text-xs font-semibold text-slate-500 block truncate">Jumlah Kendaraan</span>
-                        <span class="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 block mt-0.5 sm:mt-1 tracking-tight">
-                            {{ $totalJeepsCount }} <span class="text-[10px] sm:text-xs font-normal text-slate-400">Unit</span>
-                        </span>
-                        <span class="inline-flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-[11px] text-slate-600 font-semibold mt-1 sm:mt-2 truncate">
-                            Total Armada
-                        </span>
-                    </div>
-                </div>
-
-                <!-- 2. Driver Aktif -->
-                <div class="bg-white p-3 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden flex items-center justify-between">
-                    <div class="min-w-0">
-                        <span class="text-[11px] sm:text-xs font-semibold text-slate-500 block truncate">Driver Aktif</span>
-                        <span class="text-xl sm:text-2xl md:text-3xl font-extrabold text-emerald-800 block mt-0.5 sm:mt-1 tracking-tight">
-                            {{ $activeDriversCount }} <span class="text-[10px] sm:text-xs font-normal text-slate-400">Driver</span>
-                        </span>
-                        <span class="inline-flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-[11px] text-emerald-700 font-semibold mt-1 sm:mt-2 truncate">
-                            Siap ditugaskan
-                        </span>
-                    </div>
-                </div>
-
-                <!-- 3. Driver Tidak Aktif / Nonaktif -->
-                <div class="bg-white p-3 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden flex items-center justify-between">
-                    <div class="min-w-0">
-                        <span class="text-[11px] sm:text-xs font-semibold text-slate-500 block truncate">Driver Nonaktif</span>
-                        <span class="text-xl sm:text-2xl md:text-3xl font-extrabold text-amber-700 block mt-0.5 sm:mt-1 tracking-tight">
-                            {{ $inactiveDriversCount }} <span class="text-[10px] sm:text-xs font-normal text-slate-400">Driver</span>
-                        </span>
-                        <span class="inline-flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-[11px] text-amber-700 font-semibold mt-1 sm:mt-2 truncate">
-                            Nonaktif
-                        </span>
-                    </div>
+        <!-- PANEL: MONITORING DRIVER PAGUYUBAN (AKTIF & TIDAK AKTIF) -->
+        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+            <div class="p-5 sm:p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-slate-50 to-white">
+                <div>
+                    <h3 class="text-base font-bold text-slate-800 font-display">Status & Kesiapan Driver</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">Daftar driver yang siap ditugaskan melayani wisatawan dan driver yang sedang libur/tidak aktif.</p>
                 </div>
             </div>
 
-            <!-- PANEL: MONITORING DRIVER PAGUYUBAN (AKTIF & TIDAK AKTIF) -->
-            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-                <div class="p-5 sm:p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-slate-50 to-white">
+            <div class="p-5 sm:p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- KOLOM 1: DAFTAR SEMENTARA DRIVER YANG AKTIF -->
+                <div class="bg-[#F8FAF9] rounded-2xl border border-emerald-200/80 p-5 flex flex-col justify-between">
                     <div>
-                        <h3 class="text-base font-bold text-slate-800">Status & Kesiapan Driver</h3>
-                        <p class="text-xs text-slate-500 mt-0.5">Daftar driver yang siap ditugaskan melayani wisatawan dan driver yang sedang libur/tidak aktif.</p>
+                        <div class="flex items-center justify-between pb-3 mb-4 border-b border-emerald-200/70">
+                            <h4 class="text-sm font-extrabold text-slate-800 tracking-tight font-display">Daftar Driver yang Aktif</h4>
+                        </div>
+
+                        <div class="space-y-2">
+                            @forelse($activeDrivers as $index => $d)
+                            <div class="flex items-center justify-between p-3 rounded-xl bg-white border border-slate-200/90 hover:border-emerald-300 hover:shadow-xs transition-all">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-xs flex items-center justify-center shrink-0">
+                                        {{ $index + 1 }}
+                                    </span>
+                                    <div class="min-w-0">
+                                        <span class="font-bold text-slate-900 text-xs sm:text-sm block capitalize truncate">
+                                            {{ $d->full_name }}
+                                        </span>
+                                        <span class="text-[11px] text-slate-400 block font-mono">
+                                            ID: #DRV-{{ str_pad($d->id, 2, '0', STR_PAD_LEFT) }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-1.5 shrink-0">
+                                    <form action="{{ route('admin.drivers.status', $d->id) }}" method="POST" class="inline"
+                                          data-confirm-title="Nonaktifkan Driver"
+                                          data-confirm-message="Ubah status driver <strong class='text-slate-800 font-bold'>{{ $d->full_name }}</strong> menjadi <strong class='text-amber-700 font-bold'>TIDAK AKTIF</strong>? Driver sementara tidak akan dialokasikan ke booking."
+                                          data-confirm-type="warning"
+                                          data-confirm-text="Ya, Nonaktifkan"
+                                          data-confirm-cancel="Batal">
+                                        @csrf
+                                        <button type="submit" class="p-1.5 rounded-lg border border-slate-200 hover:border-amber-300 bg-white hover:bg-amber-50 text-slate-400 hover:text-amber-700 transition-all cursor-pointer shadow-2xs" title="Nonaktifkan Driver">
+                                            <x-icon name="x-mark" class="w-3.5 h-3.5" />
+                                        </button>
+                                    </form>
+                                    <form action="{{ route('admin.drivers.destroy', $d->id) }}" method="POST" class="inline"
+                                          data-confirm-title="Hapus Driver"
+                                          data-confirm-message="Apakah Anda yakin ingin menghapus data driver <strong class='text-slate-800 font-bold'>{{ $d->full_name }}</strong> secara permanen dari sistem?"
+                                          data-confirm-type="danger"
+                                          data-confirm-text="Ya, Hapus Driver"
+                                          data-confirm-cancel="Batal">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="p-1.5 rounded-lg border border-slate-200 hover:border-rose-300 bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-all cursor-pointer shadow-2xs" title="Hapus Driver">
+                                            <x-icon name="trash" class="w-3.5 h-3.5" />
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            @empty
+                            <div class="p-6 text-center text-slate-400 text-xs italic">
+                                Tidak ada driver aktif saat ini.
+                            </div>
+                            @endforelse
+                        </div>
                     </div>
-                    
                 </div>
 
-                <div class="p-5 sm:p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <!-- KOLOM 1: DAFTAR SEMENTARA DRIVER YANG AKTIF -->
-                    <div class="bg-[#F8FAF9] rounded-2xl border border-emerald-200/80 p-5 flex flex-col justify-between">
-                        <div>
-                            <div class="flex items-center justify-between pb-3 mb-4 border-b border-emerald-200/70">
-                                <div class="flex items-center gap-2"> 
-                                    <h4 class="text-sm font-extrabold text-slate-800 tracking-tight">Daftar Driver yang Aktif</h4>
-                                </div>
-                            </div>
-
-                            <div class="space-y-2">
-                                @forelse($activeDrivers as $index => $d)
-                                <div class="flex items-center justify-between p-3 rounded-xl bg-white border border-slate-200/90 hover:border-emerald-300 hover:shadow-xs transition-all">
-                                    <div class="flex items-center gap-3 min-w-0">
-                                        <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-xs flex items-center justify-center shrink-0">
-                                            {{ $index + 1 }}
-                                        </span>
-                                        <div class="min-w-0">
-                                            <span class="font-bold text-slate-900 text-xs sm:text-sm block capitalize truncate">
-                                                {{ $d->full_name }}
-                                            </span>
-                                            <span class="text-[11px] text-slate-400 block font-mono">
-                                                ID: #DRV-{{ str_pad($d->id, 2, '0', STR_PAD_LEFT) }}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center gap-1.5 shrink-0">
-                                        <form action="{{ route('admin.drivers.status', $d->id) }}" method="POST" class="inline"
-                                              data-confirm-title="Nonaktifkan Driver"
-                                              data-confirm-message="Ubah status driver <strong class='text-slate-800 font-bold'>{{ $d->full_name }}</strong> menjadi <strong class='text-amber-700 font-bold'>TIDAK AKTIF</strong>? Driver sementara tidak akan dialokasikan ke booking."
-                                              data-confirm-type="warning"
-                                              data-confirm-text="Ya, Nonaktifkan"
-                                              data-confirm-cancel="Batal">
-                                            @csrf
-                                            <button type="submit" class="p-1.5 rounded-lg border border-slate-200 hover:border-amber-300 bg-white hover:bg-amber-50 text-slate-400 hover:text-amber-700 transition-all cursor-pointer shadow-2xs" title="Nonaktifkan Driver">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                            </button>
-                                        </form>
-                                        <form action="{{ route('admin.drivers.destroy', $d->id) }}" method="POST" class="inline"
-                                              data-confirm-title="Hapus Driver"
-                                              data-confirm-message="Apakah Anda yakin ingin menghapus data driver <strong class='text-slate-800 font-bold'>{{ $d->full_name }}</strong> secara permanen dari sistem?"
-                                              data-confirm-type="danger"
-                                              data-confirm-text="Ya, Hapus Driver"
-                                              data-confirm-cancel="Batal">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="p-1.5 rounded-lg border border-slate-200 hover:border-rose-300 bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-all cursor-pointer shadow-2xs" title="Hapus Driver">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
-                                @empty
-                                <div class="p-6 text-center text-slate-400 text-xs italic">
-                                    Tidak ada driver aktif saat ini.
-                                </div>
-                                @endforelse
-                            </div>
+                <!-- KOLOM 2: DAFTAR DRIVER YANG TIDAK AKTIF -->
+                <div class="bg-slate-50 rounded-2xl border border-slate-200 p-5 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-200">
+                            <h4 class="text-sm font-extrabold text-slate-800 tracking-tight font-display">Daftar Driver yang Tidak Aktif</h4>
                         </div>
-                        
-                    </div>
 
-                    <!-- KOLOM 2: DAFTAR DRIVER YANG TIDAK AKTIF -->
-                    <div class="bg-slate-50 rounded-2xl border border-slate-200 p-5 flex flex-col justify-between">
-                        <div>
-                            <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-200">
-                                <div class="flex items-center gap-2">
-                                    
-                                    <h4 class="text-sm font-extrabold text-slate-800 tracking-tight">Daftar Driver yang Tidak Aktif</h4>
-                                </div>
-                                
-                            </div>
-
-                            <div class="space-y-2">
-                                @forelse($inactiveDrivers as $index => $d)
-                                <div class="flex items-center justify-between p-3 rounded-xl bg-white border border-slate-200/90 hover:border-slate-300 transition-all">
-                                    <div class="flex items-center gap-3 min-w-0">
-                                        <span class="w-6 h-6 rounded-full bg-slate-100 text-slate-600 font-extrabold text-xs flex items-center justify-center shrink-0">
-                                            {{ $index + 1 }}
+                        <div class="space-y-2">
+                            @forelse($inactiveDrivers as $index => $d)
+                            <div class="flex items-center justify-between p-3 rounded-xl bg-white border border-slate-200/90 hover:border-slate-300 transition-all">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <span class="w-6 h-6 rounded-full bg-slate-100 text-slate-600 font-extrabold text-xs flex items-center justify-center shrink-0">
+                                        {{ $index + 1 }}
+                                    </span>
+                                    <div class="min-w-0">
+                                        <span class="font-bold text-slate-700 text-xs sm:text-sm block capitalize truncate">
+                                            {{ $d->full_name }}
                                         </span>
-                                        <div class="min-w-0">
-                                            <span class="font-bold text-slate-700 text-xs sm:text-sm block capitalize truncate">
-                                                {{ $d->full_name }}
-                                            </span>
-                                            <span class="text-[11px] text-slate-400 block font-mono">
-                                                ID: #DRV-{{ str_pad($d->id, 2, '0', STR_PAD_LEFT) }}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center gap-1.5 shrink-0">
-                                        <form action="{{ route('admin.drivers.status', $d->id) }}" method="POST" class="inline"
-                                              data-confirm-title="Aktifkan Kembali Driver"
-                                              data-confirm-message="Aktifkan kembali driver <strong class='text-slate-800 font-bold'>{{ $d->full_name }}</strong> untuk jadwal rotasi penugasan armada?"
-                                              data-confirm-type="success"
-                                              data-confirm-text="Ya, Aktifkan"
-                                              data-confirm-cancel="Batal">
-                                            @csrf
-                                            <button type="submit" class="p-1.5 rounded-lg border border-slate-200 hover:border-emerald-300 bg-white hover:bg-emerald-50 text-slate-400 hover:text-emerald-700 transition-all cursor-pointer shadow-2xs" title="Aktifkan Driver">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                            </button>
-                                        </form>
-                                        <form action="{{ route('admin.drivers.destroy', $d->id) }}" method="POST" class="inline"
-                                              data-confirm-title="Hapus Driver"
-                                              data-confirm-message="Apakah Anda yakin ingin menghapus data driver <strong class='text-slate-800 font-bold'>{{ $d->full_name }}</strong> secara permanen dari sistem?"
-                                              data-confirm-type="danger"
-                                              data-confirm-text="Ya, Hapus Driver"
-                                              data-confirm-cancel="Batal">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="p-1.5 rounded-lg border border-slate-200 hover:border-rose-300 bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-all cursor-pointer shadow-2xs" title="Hapus Driver">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                            </button>
-                                        </form>
+                                        <span class="text-[11px] text-slate-400 block font-mono">
+                                            ID: #DRV-{{ str_pad($d->id, 2, '0', STR_PAD_LEFT) }}
+                                        </span>
                                     </div>
                                 </div>
-                                @empty
-                                <div class="p-6 text-center text-slate-400 text-xs italic">
-                                    Semua driver saat ini berstatus aktif.
+                                <div class="flex items-center gap-1.5 shrink-0">
+                                    <form action="{{ route('admin.drivers.status', $d->id) }}" method="POST" class="inline"
+                                          data-confirm-title="Aktifkan Kembali Driver"
+                                          data-confirm-message="Aktifkan kembali driver <strong class='text-slate-800 font-bold'>{{ $d->full_name }}</strong> untuk jadwal rotasi penugasan armada?"
+                                          data-confirm-type="success"
+                                          data-confirm-text="Ya, Aktifkan"
+                                          data-confirm-cancel="Batal">
+                                        @csrf
+                                        <button type="submit" class="p-1.5 rounded-lg border border-slate-200 hover:border-emerald-300 bg-white hover:bg-emerald-50 text-slate-400 hover:text-emerald-700 transition-all cursor-pointer shadow-2xs" title="Aktifkan Driver">
+                                            <x-icon name="check" class="w-3.5 h-3.5" />
+                                        </button>
+                                    </form>
+                                    <form action="{{ route('admin.drivers.destroy', $d->id) }}" method="POST" class="inline"
+                                          data-confirm-title="Hapus Driver"
+                                          data-confirm-message="Apakah Anda yakin ingin menghapus data driver <strong class='text-slate-800 font-bold'>{{ $d->full_name }}</strong> secara permanen dari sistem?"
+                                          data-confirm-type="danger"
+                                          data-confirm-text="Ya, Hapus Driver"
+                                          data-confirm-cancel="Batal">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="p-1.5 rounded-lg border border-slate-200 hover:border-rose-300 bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-all cursor-pointer shadow-2xs" title="Hapus Driver">
+                                            <x-icon name="trash" class="w-3.5 h-3.5" />
+                                        </button>
+                                    </form>
                                 </div>
-                                @endforelse
                             </div>
+                            @empty
+                            <div class="p-6 text-center text-slate-400 text-xs italic">
+                                Semua driver saat ini berstatus aktif.
+                            </div>
+                            @endforelse
                         </div>
-                    
                     </div>
                 </div>
             </div>
+        </div>
 
-        </main>
-    </div>
+    </main>
 
     <!-- MODAL: TAMBAH KENDARAAN / ARMADA JEEP BARU -->
     @php
@@ -267,12 +169,10 @@
                 <div class="p-5 sm:p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold shadow-xs">
-                            <svg class="w-5 h-5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 17a2 2 0 100-4 2 2 0 000 4zm8 0a2 2 0 100-4 2 2 0 000 4zM4 11h16M4 11l2-6h12l2 6M4 11v6a1 1 0 001 1h1m10 0h1a1 1 0 001-1v-6"/>
-                            </svg>
+                            <x-icon name="car" class="w-5 h-5 text-emerald-700" />
                         </div>
                         <div>
-                            <h3 class="font-extrabold text-slate-900 text-base">Tambah Kendaraan Baru</h3>
+                            <h3 class="font-extrabold text-slate-900 text-base font-display">Tambah Kendaraan Baru</h3>
                             <p class="text-xs text-slate-500">Nomor plat / unit diurutkan otomatis dari 1</p>
                         </div>
                     </div>
@@ -334,7 +234,7 @@
                         Batal
                     </button>
                     <button type="submit" class="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs hover:shadow transition-all cursor-pointer">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        <x-icon name="check" class="w-4 h-4" />
                         <span>Simpan Kendaraan</span>
                     </button>
                 </div>
@@ -343,60 +243,61 @@
     </div>
 
     <!-- SCRIPT MODAL ADD JEEP -->
-    <script>
-        function syncJeepName() {
-            const numInput = document.getElementById('jeep_plate_number');
-            const driverInput = document.getElementById('jeep_driver_name');
-            const modelInput = document.getElementById('jeep_model_name');
+    <x-slot:scripts>
+        <script>
+            function syncJeepName() {
+                const numInput = document.getElementById('jeep_plate_number');
+                const driverInput = document.getElementById('jeep_driver_name');
+                const modelInput = document.getElementById('jeep_model_name');
 
-            const num = numInput ? (numInput.value.trim() || '{{ $nextJeepNo }}') : '{{ $nextJeepNo }}';
-            const driver = driverInput ? driverInput.value.trim() : '';
+                const num = numInput ? (numInput.value.trim() || '{{ $nextJeepNo }}') : '{{ $nextJeepNo }}';
+                const driver = driverInput ? driverInput.value.trim() : '';
 
-            if (driver) {
-                modelInput.value = 'Jeep #' + num + ' (' + driver + ')';
-            } else {
-                modelInput.value = 'Jeep #' + num;
+                if (driver) {
+                    modelInput.value = 'Jeep #' + num + ' (' + driver + ')';
+                } else {
+                    modelInput.value = 'Jeep #' + num;
+                }
             }
-        }
 
-        function openAddJeepModal() {
-            const modal = document.getElementById('modalAddJeep');
-            const card = document.getElementById('modalAddJeepCard');
-            if (!modal) return;
-            modal.classList.remove('hidden');
-            requestAnimationFrame(() => {
-                card.classList.remove('scale-95', 'opacity-0');
-                card.classList.add('scale-100', 'opacity-100');
-                document.getElementById('jeep_driver_name')?.focus();
-            });
-        }
-
-        function closeAddJeepModal() {
-            const modal = document.getElementById('modalAddJeep');
-            const card = document.getElementById('modalAddJeepCard');
-            if (!modal) return;
-            card.classList.remove('scale-100', 'opacity-100');
-            card.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 150);
-        }
-
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeAddJeepModal();
+            function openAddJeepModal() {
+                const modal = document.getElementById('modalAddJeep');
+                const card = document.getElementById('modalAddJeepCard');
+                if (!modal) return;
+                modal.classList.remove('hidden');
+                requestAnimationFrame(() => {
+                    card.classList.remove('scale-95', 'opacity-0');
+                    card.classList.add('scale-100', 'opacity-100');
+                    document.getElementById('jeep_driver_name')?.focus();
+                });
             }
-        });
 
-        const modalAddJeep = document.getElementById('modalAddJeep');
-        if (modalAddJeep) {
-            modalAddJeep.addEventListener('click', function(e) {
-                if (e.target === modalAddJeep) {
+            function closeAddJeepModal() {
+                const modal = document.getElementById('modalAddJeep');
+                const card = document.getElementById('modalAddJeepCard');
+                if (!modal) return;
+                card.classList.remove('scale-100', 'opacity-100');
+                card.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 150);
+            }
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
                     closeAddJeepModal();
                 }
             });
-        }
-    </script>
-</body>
-</html>
 
+            const modalAddJeep = document.getElementById('modalAddJeep');
+            if (modalAddJeep) {
+                modalAddJeep.addEventListener('click', function(e) {
+                    if (e.target === modalAddJeep) {
+                        closeAddJeepModal();
+                    }
+                });
+            }
+        </script>
+    </x-slot:scripts>
+
+</x-admin-layout>

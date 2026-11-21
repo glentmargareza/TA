@@ -1,97 +1,51 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>QR Scanner E-Tiket & Pelunasan | Admin Jeep Wukirsari</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        wukirsari: {
-                            primary: '#143B1E',
-                            dark: '#0D2714',
-                            accent: '#1E5E30',
-                            light: '#EAF3EC',
-                            border: '#D7E5D9',
-                        }
-                    }
-                }
+<x-admin-layout title="QR Scanner E-Tiket & Pelunasan | Admin Jeep Wukirsari">
+    <x-slot:head>
+        <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+        <style>
+            /* Laser scanner animation */
+            @keyframes scanLaser {
+                0% { top: 6%; opacity: 0.8; }
+                50% { top: 90%; opacity: 1; }
+                100% { top: 6%; opacity: 0.8; }
             }
-        }
-    </script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800;900&display=swap');
-        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-        .font-display, h1, h2, h3, h4, h5, h6 { font-family: 'Poppins', 'Inter', sans-serif; }
+            .laser-line {
+                animation: scanLaser 2.2s ease-in-out infinite;
+            }
+
+            /* html5-qrcode video styling override */
+            #reader {
+                width: 100% !important;
+                border: none !important;
+            }
+            #reader video {
+                width: 100% !important;
+                height: auto !important;
+                max-height: 380px !important;
+                object-fit: cover !important;
+                border-radius: 1rem !important;
+            }
+            #reader__scan_region {
+                background: transparent !important;
+            }
+            #reader__dashboard {
+                display: none !important;
+            }
+        </style>
+    </x-slot:head>
         
-        /* Laser scanner animation */
-        @keyframes scanLaser {
-            0% { top: 6%; opacity: 0.8; }
-            50% { top: 90%; opacity: 1; }
-            100% { top: 6%; opacity: 0.8; }
-        }
-        .laser-line {
-            animation: scanLaser 2.2s ease-in-out infinite;
-        }
-
-        /* html5-qrcode video styling override */
-        #reader {
-            width: 100% !important;
-            border: none !important;
-        }
-        #reader video {
-            width: 100% !important;
-            height: auto !important;
-            max-height: 380px !important;
-            object-fit: cover !important;
-            border-radius: 1rem !important;
-        }
-        #reader__scan_region {
-            background: transparent !important;
-        }
-        #reader__dashboard {
-            display: none !important;
-        }
-    </style>
-</head>
-<body class="bg-[#F4F6F8] text-slate-800 min-h-screen flex flex-col md:flex-row antialiased">
-
-    @include('admin.partials.sidebar')
-
-    <!-- Main Content Area -->
-    <div class="flex-1 flex flex-col min-w-0 min-h-screen overflow-x-hidden">
-        
-        <!-- Header Banner -->
-        <header class="bg-white border-b border-slate-200 px-4 sm:px-8 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-0 z-20 shadow-2xs">
-            <div>
-                <div class="flex items-center gap-2">
-                    <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight font-display">
-                        QR Scanner E-Tiket
-                    </h1>
-                    <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold uppercase tracking-wide">
-                        Check-in & Pelunasan
-                    </span>
-                </div>
-                <p class="text-xs text-slate-500 mt-0.5">
-                    Pindai QR code e-tiket pelanggan untuk konfirmasi check-in dan proses pelunasan sisa tagihan DP di loket basecamp.
-                </p>
-            </div>
-            <div class="flex items-center gap-2.5 flex-wrap">
-                <a href="{{ route('admin.bookings') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold shadow-2xs transition-all cursor-pointer">
-                    <svg class="w-4 h-4 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                    <span>Daftar Booking</span>
-                </a>
-                <a href="{{ route('admin.armada') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-700 via-[#183c21] to-[#102b17] hover:from-emerald-600 hover:to-[#183c21] text-white text-xs font-bold shadow-xs hover:shadow transition-all cursor-pointer">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 17a2 2 0 100-4 2 2 0 000 4zm8 0a2 2 0 100-4 2 2 0 000 4zM4 11h16M4 11l2-6h12l2 6M4 11v6a1 1 0 001 1h1m10 0h1a1 1 0 001-1v-6"/></svg>
-                    <span>Monitoring Armada</span>
-                </a>
-            </div>
-        </header>
+    <!-- Header Banner -->
+    <x-admin.header title="QR Scanner E-Tiket" subtitle="Pindai QR code e-tiket pelanggan untuk konfirmasi check-in dan proses pelunasan sisa tagihan DP di loket basecamp." badge="Check-in & Pelunasan">
+        <x-slot:actions>
+            <a href="{{ route('admin.bookings') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold shadow-2xs transition-all cursor-pointer">
+                <x-icon name="calendar" class="w-4 h-4 text-emerald-700" />
+                <span>Daftar Booking</span>
+            </a>
+            <a href="{{ route('admin.armada') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-700 via-[#183c21] to-[#102b17] hover:from-emerald-600 hover:to-[#183c21] text-white text-xs font-bold shadow-xs hover:shadow transition-all cursor-pointer">
+                <x-icon name="car" class="w-4 h-4" />
+                <span>Monitoring Armada</span>
+            </a>
+        </x-slot:actions>
+    </x-admin.header>
 
         <!-- Main Body Content -->
         <main class="p-4 sm:p-6 lg:p-8 space-y-6">
@@ -975,37 +929,9 @@
         // Toast Notification Helper
         let toastTimeout = null;
         function showToast(type, title, message) {
-            const toast = document.getElementById('statusToast');
-            const icon = document.getElementById('toastIcon');
-            const titleEl = document.getElementById('toastTitle');
-            const msgEl = document.getElementById('toastMessage');
-
-            clearTimeout(toastTimeout);
-
-            toast.classList.remove('hidden', 'bg-emerald-50', 'border-emerald-200', 'text-emerald-900', 'bg-rose-50', 'border-rose-200', 'text-rose-900', 'bg-blue-50', 'border-blue-200', 'text-blue-900');
-
-            if (type === 'success') {
-                toast.classList.add('bg-emerald-50', 'border-emerald-200', 'text-emerald-900');
-                icon.innerHTML = '<svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>';
-            } else if (type === 'error') {
-                toast.classList.add('bg-rose-50', 'border-rose-200', 'text-rose-900');
-                icon.innerHTML = '<svg class="w-5 h-5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';
-            } else {
-                toast.classList.add('bg-blue-50', 'border-blue-200', 'text-blue-900');
-                icon.innerHTML = '<svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
+            if (typeof window.showToast === 'function') {
+                window.showToast(`${title}: ${message}`, type === 'danger' ? 'error' : type);
             }
-
-            titleEl.textContent = title;
-            msgEl.textContent = message;
-
-            toastTimeout = setTimeout(() => {
-                closeToast();
-            }, 5000);
-        }
-
-        function closeToast() {
-            document.getElementById('statusToast').classList.add('hidden');
         }
     </script>
-</body>
-</html>
+</x-admin-layout>
