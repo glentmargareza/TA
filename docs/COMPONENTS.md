@@ -152,46 +152,89 @@ Membungkus path SVG sehingga template bersih dan mudah dibaca.
 ---
 
 ### C. Komponen Tombol Aksi Tabel (`components/action-button.blade.php`)
-Membungkus tombol kecil di kolom aksi tabel (Edit, Detail, Hapus, Cetak) beserta warna hover dan ikon bawaannya.
+Membungkus tombol kecil di kolom aksi tabel (Detail, Edit, Hapus, Cetak, Pelunasan, Assign Driver, Kelola Foto, Kalender) dengan sistem warna semantik tonal lembut (*soft-tonal palette*) agar tidak flat dan langsung memiliki identitas visual.
 
 ```html
 @props([
-    'type' => 'view', // 'view' | 'edit' | 'delete' | 'print'
+    'type' => 'view', // 'view' | 'edit' | 'delete' | 'cancel' | 'print' | 'settle' | 'assign' | 'photo' | 'calendar' | 'toggle'
     'title' => '',
+    'as' => 'button', // 'button' | 'a' | 'submit'
+    'icon' => null,
 ])
 
 @php
     $configs = [
         'view' => [
             'icon' => 'eye',
-            'classes' => 'border-slate-200 bg-white hover:bg-blue-50 hover:border-blue-300 text-slate-600 hover:text-blue-700',
+            'classes' => 'bg-sky-50 border-sky-200 text-sky-700 hover:bg-sky-100 hover:border-sky-300 hover:text-sky-900',
             'defaultTitle' => 'Lihat Detail',
         ],
         'edit' => [
             'icon' => 'pencil',
-            'classes' => 'border-slate-200 bg-white hover:bg-emerald-50 hover:border-emerald-300 text-slate-600 hover:text-emerald-700',
+            'classes' => 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100 hover:border-amber-300 hover:text-amber-900',
             'defaultTitle' => 'Ubah Data',
         ],
         'delete' => [
+            'icon' => 'trash',
+            'classes' => 'bg-rose-50 border-rose-200 text-rose-600 hover:bg-rose-100 hover:border-rose-300 hover:text-rose-800',
+            'defaultTitle' => 'Hapus Data',
+        ],
+        'cancel' => [
             'icon' => 'x-mark',
-            'classes' => 'border-slate-200 bg-white hover:bg-rose-50 hover:border-rose-300 text-slate-400 hover:text-rose-600',
-            'defaultTitle' => 'Batalkan / Hapus',
+            'classes' => 'bg-rose-50 border-rose-200 text-rose-600 hover:bg-rose-100 hover:border-rose-300 hover:text-rose-800',
+            'defaultTitle' => 'Batalkan',
         ],
         'print' => [
             'icon' => 'printer',
-            'classes' => 'border-slate-200 bg-white hover:bg-slate-100 hover:border-slate-300 text-slate-600 hover:text-slate-900',
+            'classes' => 'bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200 hover:border-slate-400 hover:text-slate-900',
             'defaultTitle' => 'Cetak',
+        ],
+        'settle' => [
+            'icon' => 'cash',
+            'classes' => 'bg-emerald-50 border-emerald-300 text-emerald-800 hover:bg-emerald-100 hover:border-emerald-400 hover:text-emerald-950',
+            'defaultTitle' => 'Pelunasan Kasir Loket',
+        ],
+        'assign' => [
+            'icon' => 'car',
+            'classes' => 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100 hover:border-emerald-300 hover:text-emerald-900',
+            'defaultTitle' => 'Atur Supir / Armada',
+        ],
+        'photo' => [
+            'icon' => 'photo',
+            'classes' => 'bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100 hover:border-purple-300 hover:text-purple-900',
+            'defaultTitle' => 'Kelola Foto / Media',
+        ],
+        'calendar' => [
+            'icon' => 'calendar',
+            'classes' => 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100 hover:border-indigo-300 hover:text-indigo-900',
+            'defaultTitle' => 'Atur Jadwal',
+        ],
+        'toggle' => [
+            'icon' => 'check',
+            'classes' => 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100 hover:border-emerald-300 hover:text-emerald-900',
+            'defaultTitle' => 'Ubah Status',
         ],
     ];
 
     $config = $configs[$type] ?? $configs['view'];
+    $iconName = $icon ?? $config['icon'];
+    $tooltip = $title ?: $config['defaultTitle'];
+    $baseClasses = 'p-1.5 rounded-xl border text-xs shadow-2xs transition-all cursor-pointer inline-flex items-center justify-center shrink-0 ' . $config['classes'];
 @endphp
 
-<button type="button" 
-        title="{{ $title ?: $config['defaultTitle'] }}" 
-        {{ $attributes->merge(['class' => 'p-1.5 rounded-lg border text-xs shadow-2xs transition-all cursor-pointer ' . $config['classes']]) }}>
-    <x-icon :name="$config['icon']" class="w-4 h-4" />
-</button>
+@if($as === 'a')
+    <a title="{{ $tooltip }}" {{ $attributes->merge(['class' => $baseClasses]) }}>
+        <x-icon :name="$iconName" class="w-4 h-4" />
+    </a>
+@elseif($as === 'submit')
+    <button type="submit" title="{{ $tooltip }}" {{ $attributes->merge(['class' => $baseClasses]) }}>
+        <x-icon :name="$iconName" class="w-4 h-4" />
+    </button>
+@else
+    <button type="button" title="{{ $tooltip }}" {{ $attributes->merge(['class' => $baseClasses]) }}>
+        <x-icon :name="$iconName" class="w-4 h-4" />
+    </button>
+@endif
 ```
 
 ---
@@ -410,26 +453,48 @@ Diadopsi langsung dari standar **`C:\xampp\htdocs\pos-apotek`**: Notifikasi pop-
 ---
 
 ### F. Komponen Kartu Statistik Metrik (`components/stat-card.blade.php`)
-Digunakan pada ringkasan dashboard, paket, armada, pengeluaran, ulasan, dan laporan.
+Digunakan pada ringkasan dashboard, paket, armada, pengeluaran, ulasan, dan laporan. Mendukung `label` maupun `title`, serta palet warna `variant` (`emerald`, `sky`, `amber`, `indigo`, `rose`, `slate`).
 
 ```html
 @props([
-    'label',
+    'label' => null,
+    'title' => null,
     'value',
     'subtext' => null,
     'unit' => null,
     'trend' => null,
+    'icon' => null,
+    'iconWrapper' => null,
+    'variant' => null,
 ])
 
-<div {{ $attributes->merge(['class' => 'bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden flex items-center justify-between']) }}>
+@php
+    $cardLabel = $label ?? $title ?? '';
+    
+    $variantWrappers = [
+        'emerald' => 'bg-emerald-100 text-emerald-800',
+        'sky'     => 'bg-sky-100 text-sky-800',
+        'blue'    => 'bg-sky-100 text-sky-800',
+        'amber'   => 'bg-amber-100 text-amber-800',
+        'indigo'  => 'bg-indigo-100 text-indigo-800',
+        'purple'  => 'bg-purple-100 text-purple-800',
+        'rose'    => 'bg-rose-100 text-rose-800',
+        'red'     => 'bg-rose-100 text-rose-800',
+        'slate'   => 'bg-slate-100 text-slate-800',
+    ];
+
+    $resolvedWrapper = $iconWrapper ?? ($variant ? ($variantWrappers[$variant] ?? 'bg-emerald-50 text-emerald-800') : 'bg-emerald-50 text-emerald-800');
+@endphp
+
+<div {{ $attributes->merge(['class' => 'bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden flex items-center justify-between min-w-0 transition-all hover:shadow-sm']) }}>
     <div class="min-w-0 flex-1">
-        <span class="text-[11px] sm:text-xs font-semibold text-slate-500 block truncate">{{ $label }}</span>
+        <span class="text-[11px] sm:text-xs font-semibold text-slate-500 block truncate">{{ $cardLabel }}</span>
         <div class="flex items-baseline gap-1 mt-0.5 sm:mt-1">
             <span class="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight font-display">
                 {{ $value }}
             </span>
             @if($unit)
-            <span class="text-[11px] sm:text-xs font-normal text-slate-400">{{ $unit }}</span>
+            <span class="text-[10px] sm:text-xs font-normal text-slate-400">{{ $unit }}</span>
             @endif
         </div>
         @if($subtext)
@@ -438,9 +503,13 @@ Digunakan pada ringkasan dashboard, paket, armada, pengeluaran, ulasan, dan lapo
         </span>
         @endif
     </div>
-    @if(isset($icon))
-    <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-800 flex items-center justify-center shrink-0">
-        {{ $icon }}
+    @if($icon || isset($iconSlot))
+    <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl {{ $resolvedWrapper }} flex items-center justify-center shrink-0 ml-3 shadow-2xs">
+        @if($icon)
+            <x-icon :name="$icon" class="w-5 h-5 sm:w-6 sm:h-6" />
+        @else
+            {{ $iconSlot }}
+        @endif
     </div>
     @endif
 </div>

@@ -77,16 +77,14 @@
                             <td class="py-3.5 px-4 text-center whitespace-nowrap">
                                 <div class="flex items-center justify-center gap-1.5">
                                     <!-- Tombol Edit Admin -->
-                                    <button type="button" 
+                                    <x-action-button 
+                                        type="edit"
                                         onclick="handleAdminEditReview(this)"
                                         data-id="{{ $rev->id }}"
                                         data-rating="{{ $rev->rating }}"
                                         data-city="{{ $rev->city }}"
                                         data-comment="{{ $rev->comment }}"
-                                        class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-emerald-50 hover:border-emerald-300 text-slate-600 hover:text-emerald-700 text-xs shadow-2xs transition-all cursor-pointer"
-                                        title="Edit Ulasan">
-                                        <x-icon name="pencil" class="w-4 h-4" />
-                                    </button>
+                                        title="Edit Ulasan" />
 
                                     <!-- Tombol Hapus Admin -->
                                     <form action="{{ route('reviews.destroy', $rev->id) }}" method="POST" class="inline"
@@ -97,9 +95,7 @@
                                           data-confirm-cancel="Batal">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-rose-50 hover:border-rose-300 text-slate-400 hover:text-rose-600 text-xs shadow-2xs transition-all cursor-pointer" title="Hapus Ulasan">
-                                            <x-icon name="trash" class="w-4 h-4" />
-                                        </button>
+                                        <x-action-button type="delete" as="submit" title="Hapus Ulasan" />
                                     </form>
                                 </div>
                             </td>

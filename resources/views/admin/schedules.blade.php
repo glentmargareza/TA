@@ -77,17 +77,15 @@
                                 <!-- Aksi (Edit & Hapus) -->
                                 <td class="py-4 px-4 text-center whitespace-nowrap">
                                     <div class="flex items-center justify-center gap-1.5">
-                                        <button type="button"
-                                            class="p-1.5 rounded-xl border border-slate-200 bg-white hover:bg-emerald-50 hover:border-emerald-300 text-slate-500 hover:text-emerald-700 text-xs shadow-2xs transition-all cursor-pointer"
+                                        <x-action-button 
+                                            type="edit"
                                             title="Edit Sesi Jadwal"
                                             data-id="{{ $slot->id }}"
                                             data-label="{{ $slot->slot_label }}"
                                             data-start="{{ $startTimeFormatted }}"
                                             data-end="{{ $endTimeFormatted }}"
                                             data-max="{{ $slot->max_jeeps }}"
-                                            onclick="handleEditScheduleClick(this)">
-                                            <x-icon name="pencil" class="w-4 h-4" />
-                                        </button>
+                                            onclick="handleEditScheduleClick(this)" />
                                         
                                         <!-- Tombol Hapus dengan Konfirmasi Modal Kustom -->
                                         <form action="{{ route('admin.schedules.destroy', $slot->id) }}" method="POST" class="inline-block"
@@ -98,9 +96,7 @@
                                               data-confirm-cancel="Batal">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="p-1.5 rounded-xl border border-slate-200 bg-white hover:bg-rose-50 hover:border-rose-300 text-slate-400 hover:text-rose-600 text-xs shadow-2xs transition-all cursor-pointer" title="Hapus Sesi">
-                                                <x-icon name="trash" class="w-4 h-4" />
-                                            </button>
+                                            <x-action-button type="delete" as="submit" title="Hapus Sesi" />
                                         </form>
                                     </div>
                                 </td>

@@ -150,29 +150,31 @@
                             <tr class="hover:bg-slate-50/70 transition-colors">
                                 <td class="py-3 px-4 text-center whitespace-nowrap">
                                     <div class="flex items-center justify-center gap-1.5">
-                                        <!-- 1. Ikon Pensil: Atur / Ganti Driver -->
+                                        <!-- 1. Ikon Driver: Atur / Ganti Driver -->
                                         @if($b->booking_status !== 'CANCELLED')
-                                        <button type="button" data-assign='@json($assignData)' onclick="openAssignModal(this)" class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-emerald-50 hover:border-emerald-300 text-slate-600 hover:text-emerald-700 text-xs font-semibold shadow-2xs transition-all cursor-pointer" title="{{ $assign ? 'Ganti Driver Paguyuban' : 'Atur / Pilih Driver Paguyuban' }}">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-                                        </button>
+                                        <x-action-button 
+                                            type="assign" 
+                                            :data-assign="json_encode($assignData)" 
+                                            onclick="openAssignModal(this)" 
+                                            title="{{ $assign ? 'Ganti Driver Paguyuban' : 'Atur / Pilih Driver Paguyuban' }}" />
                                         @endif
 
                                         <!-- 2. Ikon Mata: Detail Informasi Pemesan -->
-                                        <button type="button" data-booking='@json($detailData)' onclick="openBookingDetailModal(this)" class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-blue-50 hover:border-blue-300 text-slate-600 hover:text-blue-700 text-xs font-semibold shadow-2xs transition-all cursor-pointer" title="Lihat detail lengkap pemesan">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                                        </button>
+                                        <x-action-button 
+                                            type="view" 
+                                            :data-booking="json_encode($detailData)" 
+                                            onclick="openBookingDetailModal(this)" 
+                                            title="Lihat detail lengkap pemesan" />
 
                                         @if($b->booking_status === 'DP_PAID')
-                                        <form action="{{ route('admin.settle', $b->id) }}" method="POST"
+                                        <form action="{{ route('admin.settle', $b->id) }}" method="POST" class="inline"
                                               data-confirm-title="Konfirmasi Pelunasan Loket"
                                               data-confirm-message="Terima pelunasan sisa tagihan untuk booking <strong class='font-bold text-emerald-800'>#{{ $b->booking_code }}</strong> atas nama <strong class='text-slate-800'>{{ $b->customer_name }}</strong> sebesar <strong class='text-emerald-700 font-bold'>Rp {{ number_format($b->remaining_amount ?? 0, 0, ',', '.') }}</strong>?"
                                               data-confirm-type="success"
                                               data-confirm-text="Ya, Terima Pelunasan"
                                               data-confirm-cancel="Batal">
                                             @csrf
-                                            <button type="submit" class="px-2.5 py-1 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-[10px] shadow-xs cursor-pointer" title="Pelunasan Kasir Loket">
-                                                Pelunasan
-                                            </button>
+                                            <x-action-button type="settle" as="submit" title="Terima Pelunasan Kasir Loket" />
                                         </form>
                                         @endif
 
@@ -185,9 +187,7 @@
                                               data-confirm-text="Ya, Batalkan Booking"
                                               data-confirm-cancel="Kembali">
                                             @csrf
-                                            <button type="submit" class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-rose-50 hover:border-rose-300 text-slate-400 hover:text-rose-600 text-xs shadow-2xs transition-all cursor-pointer" title="Batalkan booking">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                                            </button>
+                                            <x-action-button type="cancel" as="submit" title="Batalkan booking" />
                                         </form>
                                         @endif
                                     </div>
@@ -215,9 +215,12 @@
                                     <div class="flex items-center gap-1.5 flex-wrap mt-0.5">
                                         <span class="text-slate-500 text-[11px]">{{ $b->trip_date ? $b->trip_date->translatedFormat('d/m/Y') : '-' }} &bull; {{ $b->slot ? substr((string)$b->slot->start_time, 0, 5) : '09:00' }} WIB</span>
                                         @if($b->booking_status !== 'CANCELLED')
-                                        <button type="button" data-reschedule='@json($rescheduleData)' onclick="openRescheduleModal(this)" class="p-1 rounded-md bg-slate-100 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 text-slate-500 hover:text-emerald-700 inline-flex items-center justify-center cursor-pointer transition-colors shadow-2xs" title="Ganti Jadwal / Reschedule">
-                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                        </button>
+                                        <x-action-button 
+                                            type="calendar" 
+                                            :data-reschedule="json_encode($rescheduleData)" 
+                                            onclick="openRescheduleModal(this)" 
+                                            title="Ganti Jadwal / Reschedule" 
+                                            class="!p-1 !rounded-md" />
                                         @endif
                                     </div>
                                 </td>

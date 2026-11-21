@@ -68,9 +68,7 @@
                                           data-confirm-text="Ya, Nonaktifkan"
                                           data-confirm-cancel="Batal">
                                         @csrf
-                                        <button type="submit" class="p-1.5 rounded-lg border border-slate-200 hover:border-amber-300 bg-white hover:bg-amber-50 text-slate-400 hover:text-amber-700 transition-all cursor-pointer shadow-2xs" title="Nonaktifkan Driver">
-                                            <x-icon name="x-mark" class="w-3.5 h-3.5" />
-                                        </button>
+                                        <x-action-button type="edit" icon="x-mark" as="submit" title="Nonaktifkan Driver" />
                                     </form>
                                     <form action="{{ route('admin.drivers.destroy', $d->id) }}" method="POST" class="inline"
                                           data-confirm-title="Hapus Driver"
@@ -80,9 +78,7 @@
                                           data-confirm-cancel="Batal">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="p-1.5 rounded-lg border border-slate-200 hover:border-rose-300 bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-all cursor-pointer shadow-2xs" title="Hapus Driver">
-                                            <x-icon name="trash" class="w-3.5 h-3.5" />
-                                        </button>
+                                        <x-action-button type="delete" as="submit" title="Hapus Driver" />
                                     </form>
                                 </div>
                             </div>
@@ -126,9 +122,7 @@
                                           data-confirm-text="Ya, Aktifkan"
                                           data-confirm-cancel="Batal">
                                         @csrf
-                                        <button type="submit" class="p-1.5 rounded-lg border border-slate-200 hover:border-emerald-300 bg-white hover:bg-emerald-50 text-slate-400 hover:text-emerald-700 transition-all cursor-pointer shadow-2xs" title="Aktifkan Driver">
-                                            <x-icon name="check" class="w-3.5 h-3.5" />
-                                        </button>
+                                        <x-action-button type="toggle" icon="check" as="submit" title="Aktifkan Driver" />
                                     </form>
                                     <form action="{{ route('admin.drivers.destroy', $d->id) }}" method="POST" class="inline"
                                           data-confirm-title="Hapus Driver"
@@ -138,9 +132,7 @@
                                           data-confirm-cancel="Batal">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="p-1.5 rounded-lg border border-slate-200 hover:border-rose-300 bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-all cursor-pointer shadow-2xs" title="Hapus Driver">
-                                            <x-icon name="trash" class="w-3.5 h-3.5" />
-                                        </button>
+                                        <x-action-button type="delete" as="submit" title="Hapus Driver" />
                                     </form>
                                 </div>
                             </div>
