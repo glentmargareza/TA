@@ -69,7 +69,7 @@
             <!-- TABEL DATA LENGKAP BOOKING -->
             <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs min-w-[760px]">
+                    <table class="w-full text-left text-xs min-w-[820px]">
                         <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider text-[10px] border-b border-slate-200">
                             <tr>
                                 <th class="py-3 px-4 text-center whitespace-nowrap">Aksi Loket</th>
@@ -159,7 +159,16 @@
                                             title="{{ $assign ? 'Ganti Driver Paguyuban' : 'Atur / Pilih Driver Paguyuban' }}" />
                                         @endif
 
-                                        <!-- 2. Ikon Mata: Detail Informasi Pemesan -->
+                                        <!-- 2. Ikon Jadwal: Ganti Jadwal / Reschedule -->
+                                        @if($b->booking_status !== 'CANCELLED')
+                                        <x-action-button 
+                                            type="calendar" 
+                                            :data-reschedule="json_encode($rescheduleData)" 
+                                            onclick="openRescheduleModal(this)" 
+                                            title="Ganti Jadwal / Reschedule" />
+                                        @endif
+
+                                        <!-- 3. Ikon Mata: Detail Informasi Pemesan -->
                                         <x-action-button 
                                             type="view" 
                                             :data-booking="json_encode($detailData)" 
@@ -178,7 +187,7 @@
                                         </form>
                                         @endif
 
-                                        <!-- 3. Ikon Silang: Batalkan Booking -->
+                                        <!-- 4. Ikon Silang: Batalkan Booking -->
                                         @if($b->booking_status !== 'CANCELLED' && $b->booking_status !== 'COMPLETED')
                                         <form action="{{ route('admin.cancel', $b->id) }}" method="POST"
                                               data-confirm-title="Batalkan Booking"
@@ -193,7 +202,7 @@
                                     </div>
                                 </td>
                                 <td class="py-3 px-4">
-                                    <button type="button" data-booking='@json($detailData)' onclick="openBookingDetailModal(this)" class="font-mono font-bold text-slate-800 hover:text-emerald-700 hover:underline flex items-center gap-1.5 cursor-pointer text-left" title="Klik untuk lihat detail">
+                                    <button type="button" data-booking="{{ json_encode($detailData) }}" onclick="openBookingDetailModal(this)" class="font-mono font-bold text-slate-800 hover:text-emerald-700 hover:underline flex items-center gap-1.5 cursor-pointer text-left" title="Klik untuk lihat detail">
                                         <span>{{ $b->booking_code }}</span>
                                         <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
                                     </button>
@@ -212,17 +221,7 @@
                                 </td>
                                 <td class="py-3 px-4">
                                     <span class="font-semibold text-slate-800 block">{{ $b->package?->name ?? 'Paket' }}</span>
-                                    <div class="flex items-center gap-1.5 flex-wrap mt-0.5">
-                                        <span class="text-slate-500 text-[11px]">{{ $b->trip_date ? $b->trip_date->translatedFormat('d/m/Y') : '-' }} &bull; {{ $b->slot ? substr((string)$b->slot->start_time, 0, 5) : '09:00' }} WIB</span>
-                                        @if($b->booking_status !== 'CANCELLED')
-                                        <x-action-button 
-                                            type="calendar" 
-                                            :data-reschedule="json_encode($rescheduleData)" 
-                                            onclick="openRescheduleModal(this)" 
-                                            title="Ganti Jadwal / Reschedule" 
-                                            class="!p-1 !rounded-md" />
-                                        @endif
-                                    </div>
+                                    <span class="text-slate-500 text-[11px] block mt-0.5">{{ $b->trip_date ? $b->trip_date->translatedFormat('d/m/Y') : '-' }} &bull; {{ $b->slot ? substr((string)$b->slot->start_time, 0, 5) : '09:00' }} WIB</span>
                                 </td>
                                 <td class="py-3 px-4">
                                     <span class="font-medium text-slate-700">{{ $b->jeep_quantity }} Jeep ({{ $b->passenger_count }} Org)</span>
