@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\SlotAvailabilityService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -22,6 +23,17 @@ class ScheduleSlot extends Model
         'max_jeeps' => 'integer',
     ];
 
+    protected static function booted()
+    {
+        static::saved(function () {
+            SlotAvailabilityService::clearCache();
+        });
+
+        static::deleted(function () {
+            SlotAvailabilityService::clearCache();
+        });
+    }
+
     public function bookings()
     {
         return $this->hasMany(Booking::class, 'slot_id');
@@ -30,32 +42,24 @@ class ScheduleSlot extends Model
     /**
      * Menghitung total armada jeep yang telah dipesan pada slot ini untuk tanggal tertentu.
      */
-    public function bookedJeepsCount(string $tripDate): int
+    public function bookedJeepsCount(string $tripDate, ?int $excludeBookingId = null): int
     {
-        return (int) $this->bookings()
-            ->where('trip_date', $tripDate)
-            ->whereIn('booking_status', ['PENDING', 'DP_PAID', 'FULL_PAID'])
-            ->where(function ($q) {
-                $q->whereNull('lock_expires_at')->orWhere('lock_expires_at', '>', now());
-            })
-            ->sum('jeep_quantity');
+        return SlotAvailabilityService::getBookedJeeps($this->id, $tripDate, $excludeBookingId);
     }
 
     /**
      * Memeriksa ketersediaan kuota armada jeep pada slot ini untuk tanggal tertentu.
      */
-    public function isAvailableFor(string $tripDate, int $requiredJeeps = 1): bool
+    public function isAvailableFor(string $tripDate, int $requiredJeeps = 1, ?int $excludeBookingId = null): bool
     {
-        $booked = $this->bookedJeepsCount($tripDate);
-        return ($booked + $requiredJeeps) <= $this->max_jeeps;
+        return SlotAvailabilityService::isSlotAvailable($this->id, $tripDate, $requiredJeeps, $excludeBookingId);
     }
 
     /**
      * Menghitung sisa armada jeep yang masih bisa dipesan pada slot ini.
      */
-    public function remainingJeepsFor(string $tripDate): int
+    public function remainingJeepsFor(string $tripDate, ?int $excludeBookingId = null): int
     {
-        $booked = $this->bookedJeepsCount($tripDate);
-        return max(0, $this->max_jeeps - $booked);
+        return SlotAvailabilityService::getRemainingJeeps($this->id, $tripDate, $excludeBookingId);
     }
 }

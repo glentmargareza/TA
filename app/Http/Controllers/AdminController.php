@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -243,6 +244,9 @@ class AdminController extends Controller
         $slots = ScheduleSlot::where('is_active', true)->orderBy('start_time')->get();
         $unreadNotificationsCount = ActivityLog::unread()->count();
 
+        $targetDate = !empty($tripDate) ? $tripDate : now('Asia/Jakarta')->toDateString();
+        $quotaSummary = $this->buildQuotaSummary($targetDate);
+
         return view('admin.bookings', compact(
             'bookings',
             'packages',
@@ -253,8 +257,70 @@ class AdminController extends Controller
             'tripDate',
             'packageId',
             'status',
-            'unreadNotificationsCount'
+            'unreadNotificationsCount',
+            'quotaSummary',
+            'targetDate'
         ));
+    }
+
+    /**
+     * Dapatkan total kapasitas armada Jeep fisik paguyuban.
+     * Prioritas sumber:
+     * (a) Jumlah jeep aktif dari tabel armada jika ada dan punya kolom status aktif yang jelas (misal is_active);
+     * (b) Jika tidak ada, nilai kuota sesi terbesar dari sesi aktif (max_jeeps tertinggi).
+     */
+    private function getTotalCapacity(): int
+    {
+        if (Schema::hasTable('jeeps') && Schema::hasColumn('jeeps', 'is_active')) {
+            $count = (int) Jeep::where('is_active', true)->count();
+            if ($count > 0) {
+                return $count;
+            }
+        }
+
+        // Sumber (b): nilai kuota sesi terbesar dari sesi aktif (max_jeeps tertinggi)
+        $maxSlotJeeps = (int) ScheduleSlot::where('is_active', true)->max('max_jeeps');
+
+        return $maxSlotJeeps > 0 ? $maxSlotJeeps : 20;
+    }
+
+    /**
+     * Membangun ringkasan kuota armada Jeep harian untuk tampilan Manajemen Booking Admin.
+     * 1. total_capacity = jumlah armada (max_jeeps tertinggi sesi aktif atau armada aktif).
+     * 2. total_booked = jumlah jeep terbanyak yang terpakai pada SATU sesi di tanggal itu (sesi terpadat).
+     * 3. total_remaining = max(0, total_capacity - total_booked).
+     * 4. peak_label = slot_label sesi terpadat, atau null jika belum ada booking.
+     * 5. Hanya sesi aktif (is_active = true) yang dihitung.
+     * 6. Status booking pengunci: PENDING aktif, WAITING_CONFIRMATION, DP_PAID, FULL_PAID via ScheduleSlot::bookedJeepsCount.
+     */
+    private function buildQuotaSummary(string $date): array
+    {
+        $totalCapacity = $this->getTotalCapacity();
+
+        // Hanya sesi aktif yang dihitung
+        $activeSlots = ScheduleSlot::where('is_active', true)->orderBy('start_time')->get();
+
+        $maxBooked = 0;
+        $peakLabel = null;
+
+        foreach ($activeSlots as $slot) {
+            $booked = $slot->bookedJeepsCount($date);
+            if ($booked > $maxBooked) {
+                $maxBooked = $booked;
+                $peakLabel = $slot->slot_label;
+            }
+        }
+
+        $totalBooked = min($maxBooked, $totalCapacity);
+        $totalRemaining = max(0, $totalCapacity - $totalBooked);
+
+        return [
+            'date'            => $date,
+            'total_capacity'  => $totalCapacity,
+            'total_booked'    => $totalBooked,
+            'total_remaining' => $totalRemaining,
+            'peak_label'      => $maxBooked > 0 ? $peakLabel : null,
+        ];
     }
 
     /**
@@ -629,7 +695,7 @@ class AdminController extends Controller
     /**
      * KELOLA JADWAL & SESI
      */
-    public function schedules()
+    public function schedules(Request $request)
     {
         /** @var User|null $user */
         $user = Auth::user();
@@ -637,25 +703,36 @@ class AdminController extends Controller
             return redirect()->route('login')->with('info', 'Silakan masuk dengan akun Admin.');
         }
 
+        $targetDate = $request->query('date', now('Asia/Jakarta')->toDateString());
         $slots = ScheduleSlot::withCount('bookings')->orderBy('start_time', 'asc')->get();
-        return view('admin.schedules', compact('slots'));
+
+        foreach ($slots as $slot) {
+            $slot->day_booked = \App\Services\SlotAvailabilityService::getBookedJeeps($slot->id, $targetDate);
+            $slot->day_remaining = max(0, $slot->max_jeeps - $slot->day_booked);
+        }
+
+        return view('admin.schedules', compact('slots', 'targetDate'));
     }
 
     public function storeSchedule(Request $request)
     {
+        $totalCapacity = $this->getTotalCapacity();
+
         $validated = $request->validate([
             'slot_label' => 'required|string|max:100',
             'start_time' => 'required',
-            'end_time' => 'required',
-            'max_jeeps' => 'nullable|integer|min:1|max:50',
+            'end_time'   => 'required',
+            'max_jeeps'  => "nullable|integer|min:1|max:{$totalCapacity}",
+        ], [
+            'max_jeeps.max' => "Jumlah kuota jeep per sesi tidak boleh melebihi total armada ({$totalCapacity} Jeep).",
         ]);
 
         ScheduleSlot::create([
             'slot_label' => $validated['slot_label'],
             'start_time' => $validated['start_time'],
-            'end_time' => $validated['end_time'],
-            'max_jeeps' => $validated['max_jeeps'] ?? 20,
-            'is_active' => true,
+            'end_time'   => $validated['end_time'],
+            'max_jeeps'  => $validated['max_jeeps'] ?? 20,
+            'is_active'  => true,
         ]);
 
         return redirect()->back()->with('success', "Sesi jadwal {$validated['slot_label']} berhasil ditambahkan!");
@@ -664,19 +741,22 @@ class AdminController extends Controller
     public function updateSchedule(Request $request, int $id)
     {
         $slot = ScheduleSlot::findOrFail($id);
+        $totalCapacity = $this->getTotalCapacity();
 
         $validated = $request->validate([
             'slot_label' => 'required|string|max:100',
             'start_time' => 'required',
-            'end_time' => 'required',
-            'max_jeeps' => 'nullable|integer|min:1|max:50',
+            'end_time'   => 'required',
+            'max_jeeps'  => "nullable|integer|min:1|max:{$totalCapacity}",
+        ], [
+            'max_jeeps.max' => "Jumlah kuota jeep per sesi tidak boleh melebihi total armada ({$totalCapacity} Jeep).",
         ]);
 
         $slot->update([
             'slot_label' => $validated['slot_label'],
             'start_time' => $validated['start_time'],
-            'end_time' => $validated['end_time'],
-            'max_jeeps' => $validated['max_jeeps'] ?? $slot->max_jeeps ?? 20,
+            'end_time'   => $validated['end_time'],
+            'max_jeeps'  => $validated['max_jeeps'] ?? $slot->max_jeeps ?? 20,
         ]);
 
         return redirect()->back()->with('success', "Jadwal sesi {$slot->slot_label} berhasil diperbarui!");
@@ -1150,7 +1230,6 @@ class AdminController extends Controller
             'force'      => 'nullable|boolean',
         ]);
 
-        $newSlot = ScheduleSlot::findOrFail($validated['slot_id']);
         $newTripDate = $validated['trip_date'];
         $oldTripDate = $booking->trip_date ? $booking->trip_date->format('Y-m-d') : '-';
         $oldSlotLabel = $booking->slot ? ($booking->slot->slot_label . ' (' . $booking->slot->start_time . ' - ' . $booking->slot->end_time . ' WIB)') : '-';
@@ -1160,70 +1239,74 @@ class AdminController extends Controller
             return redirect()->back()->with('info', "Jadwal booking {$booking->booking_code} tidak berubah (tanggal dan sesi waktu sama).");
         }
 
-        // Cek bentrok kuota slot target (kecuali jika admin memaksa/force override paguyuban)
-        $isSameSlotAndDate = ($oldTripDate === $newTripDate && (int)$booking->slot_id === (int)$validated['slot_id']);
-        if (!$isSameSlotAndDate) {
-            $bookedJeeps = $newSlot->bookedJeepsCount($newTripDate);
-            $remaining = max(0, $newSlot->max_jeeps - $bookedJeeps);
-
-            if ($booking->jeep_quantity > $remaining && !$request->boolean('force')) {
-                return redirect()->back()->with('error', "Bentrok Jadwal / Kuota Penuh: Sesi {$newSlot->slot_label} pada tanggal " . date('d/m/Y', strtotime($newTripDate)) . " hanya tersisa {$remaining} Jeep (booking ini butuh {$booking->jeep_quantity} Jeep). Silakan pilih sesi lain atau centang 'Tetap Jadwalkan (Override Kuota Paguyuban)'.");
-            }
-        }
-
         $reason = $validated['reason'] ?? 'Penyelesaian Bentrok / Reschedule';
         $note = $validated['admin_note'] ?? null;
 
-        DB::transaction(function () use ($booking, $newTripDate, $newSlot, $oldTripDate, $oldSlotLabel, $reason, $note, $user) {
-            $booking->trip_date = $newTripDate;
-            $booking->slot_id = $newSlot->id;
+        try {
+            DB::transaction(function () use ($booking, $newTripDate, $validated, $oldTripDate, $oldSlotLabel, $reason, $note, $user, $request) {
+                // Lock baris ScheduleSlot tujuan
+                $newSlot = ScheduleSlot::whereKey($validated['slot_id'])->lockForUpdate()->firstOrFail();
 
-            // Catat log reschedule ke customer_notes untuk jejak audit
-            $rescheduleNote = "[Reschedule: " . date('d/m/Y H:i') . " oleh " . ($user->name ?? 'Admin') . " - {$reason}";
-            if ($note) {
-                $rescheduleNote .= " ({$note})";
-            }
-            $rescheduleNote .= "]";
+                // Hitung sisa sesi tujuan dengan MENGECUALIKAN booking yang sedang diubah
+                $remaining = \App\Services\SlotAvailabilityService::getRemainingJeeps($newSlot->id, $newTripDate, $booking->id);
 
-            if (!empty($booking->customer_notes)) {
-                $booking->customer_notes .= "\n" . $rescheduleNote;
-            } else {
-                $booking->customer_notes = $rescheduleNote;
-            }
+                if ($booking->jeep_quantity > $remaining && !$request->boolean('force')) {
+                    throw new \DomainException("Bentrok Jadwal / Kuota Penuh: Sesi {$newSlot->slot_label} pada tanggal " . date('d/m/Y', strtotime($newTripDate)) . " hanya tersisa {$remaining} Jeep (booking ini butuh {$booking->jeep_quantity} Jeep). Silakan pilih sesi lain atau centang 'Tetap Jadwalkan (Override Kuota Paguyuban)'.");
+                }
 
-            $booking->save();
+                $booking->trip_date = $newTripDate;
+                $booking->slot_id = $newSlot->id;
 
-            // Perbarui status armada Jeep jika tanggal dipindahkan ke atau dari hari ini
-            $assignment = $booking->assignments->first();
-            if ($assignment && $assignment->jeep) {
-                if ($booking->trip_date->isToday()) {
-                    $assignment->jeep->update(['status' => 'ON_TRIP']);
+                // Catat log reschedule ke customer_notes untuk jejak audit
+                $rescheduleNote = "[Reschedule: " . date('d/m/Y H:i') . " oleh " . ($user->name ?? 'Admin') . " - {$reason}";
+                if ($note) {
+                    $rescheduleNote .= " ({$note})";
+                }
+                $rescheduleNote .= "]";
+
+                if (!empty($booking->customer_notes)) {
+                    $booking->customer_notes .= "\n" . $rescheduleNote;
                 } else {
-                    if ($assignment->jeep->status === 'ON_TRIP') {
-                        $hasOtherTripToday = BookingAssignment::where('jeep_id', $assignment->jeep_id)
-                            ->where('booking_id', '!=', $booking->id)
-                            ->whereHas('booking', function ($q) {
-                                $q->whereDate('trip_date', now()->toDateString())
-                                  ->whereIn('booking_status', ['DP_PAID', 'FULL_PAID']);
-                            })->exists();
+                    $booking->customer_notes = $rescheduleNote;
+                }
 
-                        if (!$hasOtherTripToday) {
-                            $assignment->jeep->update(['status' => 'READY']);
+                $booking->save();
+
+                // Perbarui status armada Jeep jika tanggal dipindahkan ke atau dari hari ini
+                $assignment = $booking->assignments->first();
+                if ($assignment && $assignment->jeep) {
+                    if ($booking->trip_date->isToday()) {
+                        $assignment->jeep->update(['status' => 'ON_TRIP']);
+                    } else {
+                        if ($assignment->jeep->status === 'ON_TRIP') {
+                            $hasOtherTripToday = BookingAssignment::where('jeep_id', $assignment->jeep_id)
+                                ->where('booking_id', '!=', $booking->id)
+                                ->whereHas('booking', function ($q) {
+                                    $q->whereDate('trip_date', now()->toDateString())
+                                      ->whereIn('booking_status', ['DP_PAID', 'FULL_PAID']);
+                                })->exists();
+
+                            if (!$hasOtherTripToday) {
+                                $assignment->jeep->update(['status' => 'READY']);
+                            }
                         }
                     }
                 }
-            }
 
-            // Catat riwayat aktivitas admin & notifikasi sistem
-            ActivityLog::logAdmin(
-                'Perubahan Jadwal Booking (Reschedule)',
-                "Mengubah jadwal booking #{$booking->booking_code} ({$booking->customer_name}) dari {$oldTripDate} ({$oldSlotLabel}) menjadi {$newTripDate} sesi {$newSlot->slot_label} ({$newSlot->start_time} - {$newSlot->end_time} WIB). Alasan: {$reason}.",
-                'schedule',
-                route('admin.bookings', ['search' => $booking->booking_code])
-            );
-        });
+                // Catat riwayat aktivitas admin & notifikasi sistem
+                ActivityLog::logAdmin(
+                    'Perubahan Jadwal Booking (Reschedule)',
+                    "Mengubah jadwal booking #{$booking->booking_code} ({$booking->customer_name}) dari {$oldTripDate} ({$oldSlotLabel}) menjadi {$newTripDate} sesi {$newSlot->slot_label} ({$newSlot->start_time} - {$newSlot->end_time} WIB). Alasan: {$reason}.",
+                    'schedule',
+                    route('admin.bookings', ['search' => $booking->booking_code])
+                );
+            });
+        } catch (\DomainException $de) {
+            return redirect()->back()->with('error', $de->getMessage());
+        }
 
-        return redirect()->back()->with('success', "Jadwal booking {$booking->booking_code} berhasil diubah ke tanggal " . date('d F Y', strtotime($newTripDate)) . " ({$newSlot->slot_label})!");
+        $newSlot = ScheduleSlot::find($validated['slot_id']);
+        return redirect()->back()->with('success', "Jadwal booking {$booking->booking_code} berhasil diubah ke tanggal " . date('d F Y', strtotime($newTripDate)) . " ({$newSlot?->slot_label})!");
     }
 
     /**
@@ -1234,37 +1317,10 @@ class AdminController extends Controller
         $date = $request->query('date', date('Y-m-d'));
         $excludeBookingId = (int) $request->query('exclude_booking_id', 0);
 
-        $slots = ScheduleSlot::where('is_active', true)->orderBy('start_time')->get();
+        $result = \App\Services\SlotAvailabilityService::getSlotAvailability($date, 1, $excludeBookingId);
 
-        $data = $slots->map(function ($s) use ($date, $excludeBookingId) {
-            $query = $s->bookings()
-                ->whereDate('trip_date', $date)
-                ->whereIn('booking_status', ['PENDING', 'DP_PAID', 'FULL_PAID']);
-
-            if ($excludeBookingId > 0) {
-                $query->where('id', '!=', $excludeBookingId);
-            }
-
-            $booked = (int) $query->sum('jeep_quantity');
-            $remaining = max(0, $s->max_jeeps - $booked);
-
-            return [
-                'id' => $s->id,
-                'slot_label' => $s->slot_label,
-                'start_time' => $s->start_time,
-                'end_time' => $s->end_time,
-                'time_range' => $s->start_time . ' - ' . $s->end_time . ' WIB',
-                'max_jeeps' => $s->max_jeeps,
-                'booked_jeeps' => $booked,
-                'remaining_jeeps' => $remaining,
-                'is_full' => $remaining <= 0,
-            ];
-        });
-
-        return response()->json([
-            'date' => $date,
-            'slots' => $data,
-        ]);
+        return response()->json($result)
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
     }
 
     /**

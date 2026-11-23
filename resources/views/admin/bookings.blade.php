@@ -63,6 +63,52 @@
             </div>
             @endif
 
+            @if(isset($quotaSummary))
+            <!-- RINGKASAN KUOTA JEEP (Sinkron dengan Kalender Wisatawan) -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+                    <div>
+                        <div class="flex items-center gap-1.5 text-xs text-slate-500 font-semibold">
+                            <span>Total Armada</span>
+                            <span class="text-[10px] text-slate-400 font-mono">({{ date('d/m/Y', strtotime($targetDate)) }})</span>
+                        </div>
+                        <span class="text-2xl font-black text-slate-800 block mt-1 tracking-tight">
+                            {{ $quotaSummary['total_capacity'] }} <span class="text-xs font-normal text-slate-400">Jeep</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 sm:p-5 rounded-2xl border border-amber-200/80 bg-amber-50/20 shadow-xs flex items-center justify-between">
+                    <div>
+                        <div class="flex items-center gap-1.5 text-xs text-amber-800 font-semibold">
+                            <span>Jeep Dipesan</span>
+                            <span class="text-[10px] text-amber-600 font-mono">({{ date('d/m/Y', strtotime($targetDate)) }})</span>
+                        </div>
+                        <span class="text-2xl font-black text-amber-700 block mt-1 tracking-tight">
+                            {{ $quotaSummary['total_booked'] }} <span class="text-xs font-normal text-amber-600/70">Jeep</span>
+                        </span>
+                        @if(!empty($quotaSummary['peak_label']))
+                        <div class="text-[11px] text-amber-700/80 mt-0.5 font-medium">
+                            sesi terpadat: {{ $quotaSummary['peak_label'] }}
+                        </div>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 sm:p-5 rounded-2xl border border-emerald-200/80 bg-emerald-50/20 shadow-xs flex items-center justify-between">
+                    <div>
+                        <div class="flex items-center gap-1.5 text-xs text-emerald-800 font-semibold">
+                            <span>Jeep Tersedia</span>
+                            <span class="text-[10px] text-emerald-600 font-mono">({{ date('d/m/Y', strtotime($targetDate)) }})</span>
+                        </div>
+                        <span class="text-2xl font-black text-emerald-700 block mt-1 tracking-tight">
+                            {{ $quotaSummary['total_remaining'] }} <span class="text-xs font-normal text-emerald-600/70">Jeep</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            @endif
+
             <!-- CARD FORM PENCARIAN & FILTER LENGKAP -->
             <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5">
                 <form method="GET" action="{{ route('admin.bookings') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
@@ -1172,6 +1218,25 @@
                         forceCheckbox.checked = false;
                     }
                 }
+
+                // Auto-refresh realtime: polling data setiap 25 detik saat tab aktif dan modal tertutup
+                setInterval(() => {
+                    if (document.visibilityState === 'visible') {
+                        const modalDetail = document.getElementById('modalBookingDetail');
+                        const modalAssign = document.getElementById('modalAssignDriver');
+                        const modalReschedule = document.getElementById('modalRescheduleBooking');
+                        const modalProof = document.getElementById('modalProofLightbox');
+
+                        const isModalOpen = (modalDetail && !modalDetail.classList.contains('hidden')) ||
+                                            (modalAssign && !modalAssign.classList.contains('hidden')) ||
+                                            (modalReschedule && !modalReschedule.classList.contains('hidden')) ||
+                                            (modalProof && !modalProof.classList.contains('hidden'));
+
+                        if (!isModalOpen) {
+                            window.location.reload();
+                        }
+                    }
+                }, 25000);
 
                 document.addEventListener('keydown', function(e) {
                     if (e.key === 'Escape') {

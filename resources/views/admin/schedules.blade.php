@@ -127,13 +127,15 @@
             <div class="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
                 <div class="p-5 sm:p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-slate-50 to-white">
                     <div class="flex items-center gap-3">
-                        
                         <div>
                             <h3 class="text-base font-extrabold text-slate-900 font-display tracking-tight">Daftar Slot Waktu Keberangkatan Jeep</h3>
                             <p class="text-xs text-slate-500 mt-0.5">Wisatawan hanya dapat memilih sesi yang berstatus aktif saat melakukan pemesanan tiket.</p>
                         </div>
                     </div>
-                    
+                    <form method="GET" action="{{ route('admin.schedules') }}" class="flex items-center gap-2">
+                        <span class="text-xs font-semibold text-slate-500 whitespace-nowrap">Pantau Kuota Tanggal:</span>
+                        <input type="date" name="date" value="{{ $targetDate ?? date('Y-m-d') }}" onchange="this.form.submit()" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-2xs cursor-pointer">
+                    </form>
                 </div>
 
                 <div class="overflow-x-auto">
@@ -143,7 +145,8 @@
                                 <th class="py-4 px-4 w-12 text-center">No</th>
                                 <th class="py-4 px-5 min-w-[220px]">Nama Sesi</th>
                                 <th class="py-4 px-5 min-w-[180px] whitespace-nowrap">Rentang Waktu (WIB)</th>
-                                <th class="py-4 px-5 text-center min-w-[130px] whitespace-nowrap">Total Reservasi</th>
+                                <th class="py-4 px-5 text-center min-w-[180px] whitespace-nowrap">Kuota Armada ({{ date('d/m/Y', strtotime($targetDate ?? date('Y-m-d'))) }})</th>
+                                <th class="py-4 px-5 text-center min-w-[110px] whitespace-nowrap">Total Reservasi</th>
                                 <th class="py-4 px-5 text-center whitespace-nowrap">Status Operasional</th>
                                 <th class="py-4 px-5 text-right whitespace-nowrap">Aksi</th>
                             </tr>
@@ -183,10 +186,19 @@
                                         </div>
                                     </td>
 
+                                    <!-- Kuota Armada -->
+                                    <td class="py-4 px-5 text-center whitespace-nowrap">
+                                        <div class="inline-flex flex-col items-center">
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold {{ ($slot->day_remaining ?? $slot->max_jeeps) > 0 ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200' }}">
+                                                <span>Sisa {{ $slot->day_remaining ?? $slot->max_jeeps }} dari {{ $slot->max_jeeps }} Jeep</span>
+                                            </span>
+                                            <span class="text-[10px] text-slate-400 mt-0.5">({{ $slot->day_booked ?? 0 }} dipesan)</span>
+                                        </div>
+                                    </td>
+
                                     <!-- Total Reservasi -->
                                     <td class="py-4 px-5 text-center whitespace-nowrap">
                                         <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200/80 shadow-2xs">
-                                            
                                             <span>{{ $slot->bookings_count ?? 0 }} Tiket</span>
                                         </span>
                                     </td>
@@ -414,6 +426,19 @@
                 modal.classList.add('hidden');
             }, 150);
         }
+
+        // Auto-refresh jadwal & kuota setiap 25 detik saat tab aktif
+        setInterval(() => {
+            if (document.visibilityState === 'visible') {
+                const modalCreate = document.getElementById('modalCreateSchedule');
+                const modalEdit = document.getElementById('modalEditSchedule');
+                const isModalOpen = (modalCreate && !modalCreate.classList.contains('hidden')) ||
+                                    (modalEdit && !modalEdit.classList.contains('hidden'));
+                if (!isModalOpen) {
+                    window.location.reload();
+                }
+            }
+        }, 25000);
 
         // Close on ESC
         document.addEventListener('keydown', function(e) {

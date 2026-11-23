@@ -372,7 +372,7 @@ const bookingDataEl = document.getElementById('booking-data');
 const D              = bookingDataEl ? JSON.parse(bookingDataEl.textContent || '{}') : (window.BOOKING_DATA || {});
 window.BOOKING_DATA  = D;
 const PER_JEEP       = 4;
-const PACKAGES       = D.packages || [];
+let PACKAGES         = D.packages || [];
 let SESSIONS         = D.slots || [];
  
 const $ = s => document.querySelector(s);
@@ -389,7 +389,8 @@ const isSunrisePkgObj = p => !!(p && (p.is_sunrise || /sunrise/i.test(p.slug || 
 const pkgsEl = $('#pkgs');
 
 // --- Render kartu paket ---
-if (pkgsEl && PACKAGES.length) {
+function renderPackageCards() {
+  if (!pkgsEl || !PACKAGES.length) return;
   pkgsEl.innerHTML = PACKAGES.map(p => `
     <button type="button" class="pkg ${String(p.id)===String(state.pkg)?'sel':''} p-4 rounded-2xl border border-wukirsari-border bg-white text-left transition-all flex flex-col justify-between gap-3 cursor-pointer hover:border-wukirsari-primary/50 relative group" data-id="${p.id}">
       <div>
@@ -400,6 +401,7 @@ if (pkgsEl && PACKAGES.length) {
       <span class="absolute top-3 right-3 w-5 h-5 rounded-full bg-wukirsari-primary text-white text-[10px] font-bold flex items-center justify-center opacity-0 group-[.sel]:opacity-100 transition-opacity">✓</span>
     </button>`).join('');
 }
+renderPackageCards();
 
 // --- Terapkan perubahan paket (setelah user konfirmasi) ---
 function applyPackageChange(newId){
@@ -784,21 +786,45 @@ function fetchSlotAvailability(date, jeeps, updateDateSelection = true){
         cachedMonthBookings = data.month_bookings;
       }
 
+      // Sinkronkan daftar paket terbaru jika ada perubahan dari admin tanpa reload
+      if (Array.isArray(data.packages) && data.packages.length > 0) {
+        if (JSON.stringify(data.packages) !== JSON.stringify(PACKAGES)) {
+          PACKAGES = data.packages;
+          const stillExist = PACKAGES.find(p => String(p.id) === String(state.pkg));
+          if (!stillExist) {
+            state.pkg = PACKAGES[0].id;
+            toast('Daftar paket diperbarui oleh pengelola. Pilihan paket disesuaikan.');
+          }
+          renderPackageCards();
+          update();
+        }
+      }
+
       if (updateDateSelection) {
         // Abaikan respons basi: user sudah pindah ke tanggal lain
         if (date !== dateEl.value) return;
 
         latestAvailabilityData = data;
-        SESSIONS = SESSIONS.map(s => {
-          const found = data.slots.find(x => String(x.id) === String(s.id));
-          return found ? {
-            ...s,
-            remaining: found.remaining,
-            booked_jeeps: found.booked_jeeps ?? 0,
-            available: found.available,
-            passed: found.passed
-          } : s;
-        });
+        const prevSession = state.session;
+
+        // Perbarui SESSIONS secara langsung dari server
+        SESSIONS = data.slots;
+
+        // Cek apakah sesi yang sebelumnya dipilih masih tersedia
+        if (prevSession) {
+          const curSess = SESSIONS.find(x => String(x.id) === String(prevSession));
+          const isSunrisePkg = isSunrisePkgObj(curPkg());
+          const isSunSlot = curSess ? (curSess.is_sunrise || curSess.time === '04:30' || /sunrise/i.test(curSess.label)) : false;
+          const mismatch = isSunrisePkg ? !isSunSlot : isSunSlot;
+          const isFull = curSess && (typeof curSess.remaining === 'number' && curSess.remaining < state.qty);
+          const passed = curSess && isSlotPassed(curSess);
+
+          if (!curSess || mismatch || isFull || passed) {
+            state.session = null;
+            toast('Sesi yang sebelumnya Anda pilih sudah penuh atau tidak lagi tersedia.');
+          }
+        }
+
         renderSessionOptions();
         renderDateDetectionPanel(data);
         update();
@@ -879,25 +905,56 @@ dateEl.addEventListener('change', () => {
 });
  
 /* ====== 3. KAPASITAS & ARMADA ====== */
+const minJeepFor = pax => Math.ceil(pax / PER_JEEP);
+let qtyManual = false; // true jika pengunjung menambah jeep sendiri melebihi kebutuhan
+
+// Sesuaikan jumlah jeep dengan jumlah penumpang (naik DAN turun)
+function syncQtyWithPax(){
+  const need = minJeepFor(state.pax);
+  state.qty = qtyManual ? Math.max(state.qty, need) : need;
+  if (state.qty <= need) qtyManual = false;
+  state.qty = Math.min(state.qty, 10);
+}
+
+// Setelah jeep berubah, segarkan kartu sesi (kuota "kurang untuk N jeep") dan ringkasan
+function afterCapacityChange(){
+  renderSessions();
+  update();
+  setStep(3);
+}
+
 $('#paxPlus').onclick = () => {
   if(state.pax < 40){
     state.pax++;
-    state.qty = Math.max(state.qty, Math.ceil(state.pax / PER_JEEP));
-    update(); setStep(3);
+    syncQtyWithPax();
+    afterCapacityChange();
   }
 };
 $('#paxMinus').onclick = () => {
-  if(state.pax > 1){ state.pax--; update(); setStep(3); }
+  if(state.pax > 1){
+    state.pax--;
+    syncQtyWithPax();
+    afterCapacityChange();
+  }
 };
 $('#plus').onclick = () => {
-  if(state.qty < 10){ state.qty++; update(); setStep(3); }
+  if(state.qty < 10){
+    state.qty++;
+    if (state.qty > minJeepFor(state.pax)) qtyManual = true;
+    afterCapacityChange();
+  }
 };
 $('#minus').onclick = () => {
-  const minJeep = Math.ceil(state.pax / PER_JEEP);
-  if(state.qty > minJeep){ state.qty--; update(); }
-  else toast('Minimal butuh ' + minJeep + ' jeep untuk ' + state.pax + ' orang penumpang (maksimal 4 orang per jeep).');
+  const need = minJeepFor(state.pax);
+  if(state.qty > need){
+    state.qty--;
+    if (state.qty <= need) qtyManual = false;
+    afterCapacityChange();
+  } else {
+    toast('Minimal butuh ' + need + ' jeep untuk ' + state.pax + ' orang penumpang (maksimal 4 orang per jeep).');
+  }
 };
- 
+
 /* ====== SKEMA PEMBAYARAN ====== */
 document.querySelectorAll('.po').forEach(b => b.onclick = () => {
   state.pay = b.dataset.p;
@@ -1132,5 +1189,18 @@ $('#notes').addEventListener('input', e => {
 renderInteractiveCalendar();
 renderSessions();
 update();
+
+// Auto-refresh data kuota & sesi secara berkala (setiap 20 detik saat tab aktif)
+setInterval(() => {
+  if (document.visibilityState === 'visible' && dateEl && dateEl.value) {
+    fetchSlotAvailability(dateEl.value, state.qty, true);
+  }
+}, 20000);
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && dateEl && dateEl.value) {
+    fetchSlotAvailability(dateEl.value, state.qty, true);
+  }
+});
 </script>
 @endsection
