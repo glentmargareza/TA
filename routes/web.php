@@ -128,6 +128,7 @@ Route::post('/register', [AuthController::class, 'register'])->name('register.po
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/profile', [AuthController::class, 'profile'])->name('profile');
 Route::put('/profile', [AuthController::class, 'updateProfile'])->name('profile.update');
+Route::post('/profile/claim-booking', [AuthController::class, 'claimBooking'])->middleware('auth')->name('booking.claim');
 
 // 7. Ulasan & Review Wisatawan (Wajib Login untuk menulis)
 Route::get('/ulasan', [\App\Http\Controllers\ReviewController::class, 'index'])->name('reviews.index');

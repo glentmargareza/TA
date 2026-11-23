@@ -430,6 +430,8 @@ class BookingController extends Controller
             'snap_token' => $snapToken,
         ]);
 
+        session(['pending_booking_code' => $booking->booking_code]);
+
         return redirect()->route('booking.payment', $booking->booking_code);
     }
 
@@ -745,6 +747,10 @@ class BookingController extends Controller
         }
 
         $booking->loadMissing(['assignments.driver', 'assignments.jeep']);
+
+        if (!Auth::check()) {
+            session(['pending_booking_code' => $booking->booking_code]);
+        }
 
         return view('booking.success', compact('booking'));
     }
