@@ -3,68 +3,77 @@
 @section('title', 'Profil Akun Wisatawan | Jeep Wukirsari')
 
 @section('content')
-<div class="py-10 bg-wukirsari-cream min-h-[calc(100vh-80px)]">
+<div class="py-8 sm:py-12 bg-wukirsari-cream">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
 
+        @if(session('success'))
+        <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs">
+            <span class="font-bold block">{{ session('success') }}</span>
+        </div>
+        @endif
+
+        @if(session('info'))
+        <div class="p-4 bg-sky-50 border border-sky-200 text-sky-800 rounded-2xl text-xs">
+            <span class="font-bold block">{{ session('info') }}</span>
+        </div>
+        @endif
+
+        @if(session('error'))
+        <div class="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs">
+            <span class="font-bold block">{{ session('error') }}</span>
+        </div>
+        @endif
+
         @if($errors->any())
-        <div class="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs flex items-start gap-2.5">
-            <svg class="w-4 h-4 text-rose-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-            <div>
-                <span class="font-bold block">Gagal memperbarui profil:</span>
-                <ul class="list-disc list-inside mt-1 space-y-0.5">
-                    @foreach($errors->all() as $err)
-                    <li>{{ $err }}</li>
-                    @endforeach
-                </ul>
-            </div>
+        <div class="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs">
+            <span class="font-bold block">Gagal memperbarui profil:</span>
+            <ul class="list-disc list-inside mt-1 space-y-0.5">
+                @foreach($errors->all() as $err)
+                <li>{{ $err }}</li>
+                @endforeach
+            </ul>
         </div>
         @endif
 
         <!-- Header Profile Card -->
-        <div class="bg-white rounded-3xl border border-wukirsari-border p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6">
-            <div class="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
-                <div class="w-20 h-20 rounded-3xl bg-wukirsari-sage text-wukirsari-primary flex items-center justify-center text-3xl font-extrabold shadow-sm font-display">
+        <div class="bg-white rounded-3xl border border-wukirsari-border p-5 sm:p-7 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-5 sm:gap-6">
+            <div class="flex flex-col sm:flex-row items-center sm:items-center gap-4 sm:gap-5 text-center sm:text-left">
+                <div class="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-wukirsari-sage/80 border border-wukirsari-border/60 text-wukirsari-primary flex items-center justify-center text-2xl sm:text-3xl font-extrabold shadow-2xs font-display shrink-0">
                     {{ strtoupper(substr($user->name, 0, 1)) }}
                 </div>
                 <div class="space-y-1">
-                    <div class="flex items-center justify-center sm:justify-start gap-2">
-                        <h1 class="text-xl sm:text-2xl font-bold text-merapiText-primary font-display">
+                    <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                        <h1 class="text-xl sm:text-2xl font-bold text-merapiText-primary font-display leading-tight">
                             {{ $user->name }}
                         </h1>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-wukirsari-sage text-wukirsari-primary">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-wukirsari-sage text-wukirsari-primary border border-wukirsari-border/70">
                             Wisatawan
                         </span>
                     </div>
-                    <p class="text-xs text-merapiText-secondary flex items-center justify-center sm:justify-start gap-1.5">
-                        <span class="flex items-center gap-1">
-                            <svg class="w-3.5 h-3.5 text-wukirsari-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                            {{ $user->email }}
-                        </span>
+                    <div class="text-xs text-merapiText-secondary flex flex-wrap items-center justify-center sm:justify-start gap-x-2 gap-y-0.5 pt-0.5">
+                        <span>{{ $user->email }}</span>
                         @if($user->phone)
-                        <span class="flex items-center gap-1">
-                            • <svg class="w-3.5 h-3.5 text-wukirsari-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-                            {{ $user->phone }}
-                        </span>
+                        <span class="text-merapiText-muted/60">•</span>
+                        <span>{{ $user->phone }}</span>
                         @endif
-                    </p>
+                    </div>
                     <p class="text-[11px] text-merapiText-muted">
-                        Bergabung sejak: {{ $user->created_at->format('d M Y') }}
+                        Bergabung sejak: {{ $user->created_at->translatedFormat('d M Y') }}
                     </p>
                 </div>
             </div>
 
             <!-- Action Logout & Booking & Edit Profil -->
-            <div class="flex flex-wrap items-center gap-2.5 w-full sm:w-auto justify-center sm:justify-end">
-                <button type="button" onclick="openEditProfileModal()" class="px-4 py-2.5 rounded-full border border-wukirsari-border text-merapiText-primary hover:border-wukirsari-primary hover:text-wukirsari-primary text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 bg-white cursor-pointer active:scale-95">
-                    <svg class="w-3.5 h-3.5 text-wukirsari-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                    <span>Ubah Profil</span>
+            <div class="flex flex-wrap items-center gap-2 sm:gap-2.5 w-full md:w-auto justify-center md:justify-end pt-3 md:pt-0 border-t border-wukirsari-border/50 md:border-t-0">
+                <button type="button" onclick="openEditProfileModal()" class="px-4 py-2 sm:py-2.5 rounded-full border border-wukirsari-border bg-white text-merapiText-primary hover:border-wukirsari-primary hover:text-wukirsari-primary text-xs font-semibold shadow-2xs transition-all cursor-pointer active:scale-95">
+                    Ubah Profil
                 </button>
-                <a href="{{ route('booking.create') }}" class="px-5 py-2.5 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5">
-                    <span>+ Booking Baru</span>
+                <a href="{{ route('booking.create') }}" class="px-5 py-2 sm:py-2.5 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-xs font-semibold shadow-xs transition-all active:scale-95">
+                    Booking Baru
                 </a>
-                <form action="{{ route('logout') }}" method="POST">
+                <form action="{{ route('logout') }}" method="POST" class="inline">
                     @csrf
-                    <button type="submit" class="px-4 py-2.5 rounded-full border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-semibold transition-all cursor-pointer">
+                    <button type="submit" class="px-4 py-2 sm:py-2.5 rounded-full border border-rose-200/80 bg-white text-rose-700 hover:bg-rose-50 text-xs font-semibold transition-all cursor-pointer active:scale-95">
                         Keluar
                     </button>
                 </form>
@@ -73,86 +82,108 @@
 
         <!-- Section Riwayat Pemesanan (My Bookings) -->
         <div class="space-y-4">
-            <div class="flex items-center justify-between">
-                <h2 class="text-lg font-bold text-merapiText-primary font-display flex items-center gap-2">
-                    <span>Riwayat Tiket & Pesanan Saya</span>
-                    <span class="text-xs font-semibold px-2 py-0.5 bg-wukirsari-sage text-wukirsari-primary rounded-full">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex items-center gap-2.5">
+                    <h2 class="text-lg font-bold text-merapiText-primary font-display">
+                        Riwayat Tiket & Pesanan Saya
+                    </h2>
+                    <span class="text-xs font-bold px-2.5 py-0.5 bg-wukirsari-sage text-wukirsari-primary rounded-full border border-wukirsari-border/60">
                         {{ $myBookings->count() }}
                     </span>
-                </h2>
-                <a href="{{ route('ticket.check') }}" class="text-xs font-semibold text-wukirsari-primary hover:underline">
-                    Lacak Tiket dengan Kode →
-                </a>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 text-xs">
+                    <a href="{{ route('ticket.check') }}" class="px-3.5 py-1.5 rounded-full border border-wukirsari-border bg-white text-merapiText-secondary hover:text-wukirsari-primary hover:border-wukirsari-primary text-xs font-medium transition-colors shadow-2xs">
+                        Lacak Tiket dengan Kode
+                    </a>
+                    <button type="button" onclick="openClaimModal()" class="px-3.5 py-1.5 rounded-full border border-wukirsari-primary/20 bg-wukirsari-sage/60 hover:bg-wukirsari-primary hover:text-white text-wukirsari-primary text-xs font-semibold transition-all shadow-2xs cursor-pointer">
+                        Klaim Booking dengan Kode
+                    </button>
+                </div>
             </div>
 
             @if($myBookings->isEmpty())
-            <div class="bg-white rounded-3xl border border-wukirsari-border p-8 text-center space-y-4">
-                <div class="w-16 h-16 rounded-full bg-wukirsari-sage/50 text-wukirsari-primary flex items-center justify-center mx-auto">
-                    <svg class="w-8 h-8 text-wukirsari-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1"/></svg>
-                </div>
-                <div class="space-y-1">
+            <div class="bg-white rounded-3xl border border-wukirsari-border p-6 sm:p-8 text-center space-y-4 shadow-2xs">
+                <div class="space-y-1.5">
                     <h3 class="text-base font-bold text-merapiText-primary font-display">Belum Ada Riwayat Pemesanan</h3>
-                    <p class="text-xs text-merapiText-muted max-w-md mx-auto">
+                    <p class="text-xs text-merapiText-muted max-w-md mx-auto leading-relaxed">
                         Anda belum memiliki tiket tour jeep. Pilih paket petualangan seru lereng Merapi sekarang dan nikmati liburan tak terlupakan!
                     </p>
                 </div>
-                <a href="{{ route('booking.create') }}" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-wukirsari-primary text-white text-xs font-bold shadow-md shadow-wukirsari-primary/20 hover:scale-102 transition-all">
-                    <span>Pilih Paket & Booking Sekarang</span>
-                </a>
+                <div class="flex flex-col sm:flex-row gap-2.5 justify-center pt-1">
+                    <a href="{{ route('booking.create') }}" class="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-wukirsari-primary text-white text-xs font-bold shadow-xs hover:bg-wukirsari-hover transition-all active:scale-95">
+                        Pilih Paket & Booking Sekarang
+                    </a>
+                    <button type="button" onclick="openClaimModal()" class="inline-flex items-center justify-center px-6 py-2.5 rounded-full border border-wukirsari-border bg-white text-wukirsari-primary text-xs font-bold hover:bg-wukirsari-sage/50 transition-all cursor-pointer active:scale-95 shadow-2xs">
+                        Klaim Booking dengan Kode
+                    </button>
+                </div>
             </div>
             @else
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 @foreach($myBookings as $booking)
-                <div class="bg-white rounded-3xl border border-wukirsari-border p-5 shadow-xs space-y-4 hover:border-wukirsari-primary/50 transition-all">
-                    <div class="flex items-start justify-between border-b border-wukirsari-border pb-3">
-                        <div>
-                            <span class="text-[10px] uppercase font-extrabold tracking-wider text-merapiText-muted">Kode Booking</span>
-                            <h3 class="text-base font-bold font-mono text-wukirsari-primary">
+                <div class="bg-white rounded-3xl border border-wukirsari-border p-5 shadow-xs space-y-4 hover:border-wukirsari-primary/40 transition-all">
+                    <div class="flex items-start justify-between border-b border-wukirsari-border/70 pb-3 gap-3">
+                        <div class="min-w-0">
+                            <span class="text-[10px] uppercase font-bold tracking-wider text-merapiText-muted block">Kode Booking</span>
+                            <h3 class="text-base font-bold font-mono text-wukirsari-primary truncate">
                                 {{ $booking->booking_code }}
                             </h3>
                         </div>
-                        <div>
+                        <div class="shrink-0">
                             @if($booking->booking_status === 'FULL_PAID')
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-600 text-white">
-                                <span>●</span> Lunas (100%)
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200/90 shadow-2xs tracking-wide">
+                                Lunas (100%)
                             </span>
                             @elseif($booking->booking_status === 'DP_PAID')
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-wukirsari-sage text-wukirsari-primary">
-                                <span>●</span> DP (Sisa Rp {{ number_format($booking->remaining_amount, 0, ',', '.') }})
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-900 border border-amber-200/90 shadow-2xs tracking-wide">
+                                DP (Sisa Rp {{ number_format($booking->remaining_amount, 0, ',', '.') }})
+                            </span>
+                            @elseif($booking->booking_status === 'PENDING')
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200/90 shadow-2xs tracking-wide">
+                                Menunggu Pembayaran
+                            </span>
+                            @elseif($booking->booking_status === 'CANCELLED')
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200/90 shadow-2xs tracking-wide">
+                                Dibatalkan
                             </span>
                             @else
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200/90 shadow-2xs tracking-wide">
                                 {{ $booking->booking_status }}
                             </span>
                             @endif
                         </div>
                     </div>
 
-                    <div class="space-y-1.5 text-xs">
-                        <div class="flex justify-between">
-                            <span class="text-merapiText-muted">Paket Wisata:</span>
-                            <span class="font-bold text-merapiText-primary">{{ $booking->package->name ?? '-' }}</span>
+                    <div class="space-y-2 text-xs py-0.5">
+                        <div class="flex items-start justify-between gap-3">
+                            <span class="text-merapiText-muted shrink-0">Paket Wisata</span>
+                            <span class="font-bold text-merapiText-primary text-right">{{ $booking->package->name ?? '-' }}</span>
                         </div>
-                        <div class="flex justify-between">
-                            <span class="text-merapiText-muted">Jadwal Tour:</span>
-                            <span class="font-semibold text-merapiText-primary">{{ \Carbon\Carbon::parse($booking->trip_date)->translatedFormat('d M Y') }} • {{ $booking->slot->slot_label ?? '' }}</span>
+                        <div class="flex items-start justify-between gap-3">
+                            <span class="text-merapiText-muted shrink-0">Jadwal Tour</span>
+                            <span class="font-semibold text-merapiText-primary text-right">
+                                {{ \Carbon\Carbon::parse($booking->trip_date)->translatedFormat('d M Y') }}
+                                @if($booking->slot)
+                                <span class="text-merapiText-muted font-normal">• {{ $booking->slot->slot_label }}</span>
+                                @endif
+                            </span>
                         </div>
-                        <div class="flex justify-between">
-                            <span class="text-merapiText-muted">Jumlah Armada:</span>
-                            <span class="font-semibold text-merapiText-primary">{{ $booking->jeep_quantity }} Jeep ({{ $booking->passenger_count }} Orang)</span>
+                        <div class="flex items-start justify-between gap-3">
+                            <span class="text-merapiText-muted shrink-0">Jumlah Armada</span>
+                            <span class="font-semibold text-merapiText-primary text-right">{{ $booking->jeep_quantity }} Jeep <span class="text-merapiText-muted font-normal">({{ $booking->passenger_count }} Orang)</span></span>
                         </div>
-                        <div class="flex justify-between pt-1 border-t border-dashed border-wukirsari-border">
-                            <span class="text-merapiText-muted">Total Tagihan:</span>
-                            <span class="font-bold text-merapiText-primary">Rp {{ number_format($booking->total_amount, 0, ',', '.') }}</span>
+                        <div class="flex items-center justify-between pt-2.5 border-t border-dashed border-wukirsari-border">
+                            <span class="text-merapiText-muted font-medium">Total Tagihan</span>
+                            <span class="font-bold text-sm text-merapiText-primary">Rp {{ number_format($booking->total_amount, 0, ',', '.') }}</span>
                         </div>
                     </div>
 
-                    <div class="pt-2 flex items-center justify-between">
+                    <div class="pt-2.5 flex items-center justify-between border-t border-wukirsari-border/60">
                         <span class="text-[11px] text-merapiText-muted">
                             {{ $booking->created_at->diffForHumans() }}
                         </span>
-                        <a href="{{ route('booking.success', $booking->booking_code) }}" class="inline-flex items-center gap-1 px-4 py-2 rounded-xl bg-wukirsari-sage text-wukirsari-primary text-xs font-bold hover:bg-wukirsari-primary hover:text-white transition-all">
-                            <span>Buka E-Tiket →</span>
+                        <a href="{{ route('booking.success', $booking->booking_code) }}" class="inline-flex items-center justify-center px-4 py-1.5 rounded-full border border-wukirsari-primary/20 bg-wukirsari-sage/70 hover:bg-wukirsari-primary hover:text-white text-wukirsari-primary text-xs font-bold transition-all shadow-2xs active:scale-95">
+                            Buka E-Tiket
                         </a>
                     </div>
                 </div>
@@ -162,67 +193,66 @@
         </div>
 
         <!-- Section Ulasan & Testimoni Saya -->
-        <div class="space-y-4 pt-4 border-t border-wukirsari-border">
+        <div class="space-y-4 pt-6 border-t border-wukirsari-border">
             <div class="flex items-center justify-between">
-                <h2 class="text-lg font-bold text-merapiText-primary font-display flex items-center gap-2">
-                    <span>⭐ Ulasan & Testimoni Saya</span>
-                    <span class="text-xs font-semibold px-2 py-0.5 bg-wukirsari-sage text-wukirsari-primary rounded-full">
+                <div class="flex items-center gap-2.5">
+                    <h2 class="text-lg font-bold text-merapiText-primary font-display">
+                        Ulasan & Testimoni Saya
+                    </h2>
+                    <span class="text-xs font-bold px-2.5 py-0.5 bg-wukirsari-sage text-wukirsari-primary rounded-full border border-wukirsari-border/60">
                         {{ $myReviews->count() }}
                     </span>
-                </h2>
-                <a href="{{ route('home') }}#tulis-ulasan" class="text-xs font-semibold text-wukirsari-primary hover:underline">
-                    + Tulis Ulasan Baru →
+                </div>
+                <a href="{{ route('home') }}#tulis-ulasan" class="px-3.5 py-1.5 rounded-full border border-wukirsari-border bg-white text-wukirsari-primary hover:bg-wukirsari-sage/50 text-xs font-semibold transition-colors shadow-2xs">
+                    Tulis Ulasan Baru
                 </a>
             </div>
 
             @if($myReviews->isEmpty())
-            <div class="bg-white rounded-3xl border border-wukirsari-border p-8 text-center space-y-2">
-                <p class="text-xs text-merapiText-muted">
+            <div class="bg-white rounded-3xl border border-wukirsari-border p-6 sm:p-8 text-center space-y-3 shadow-2xs">
+                <p class="text-xs sm:text-sm text-merapiText-secondary max-w-md mx-auto leading-relaxed">
                     Anda belum menuliskan ulasan. Bagikan cerita keseruan Anda setelah trip offroad lereng Merapi!
                 </p>
-                <a href="{{ route('home') }}#tulis-ulasan" class="inline-block text-xs font-bold text-wukirsari-primary hover:underline">
-                    Tulis Ulasan Sekarang →
-                </a>
+                <div>
+                    <a href="{{ route('home') }}#tulis-ulasan" class="inline-flex items-center px-5 py-2.5 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-xs font-semibold transition-all shadow-xs active:scale-95">
+                        Tulis Ulasan Sekarang
+                    </a>
+                </div>
             </div>
             @else
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 @foreach($myReviews as $rev)
-                <div class="bg-white rounded-3xl border border-wukirsari-border p-5 shadow-xs space-y-3 hover:border-wukirsari-primary/40 transition-all flex flex-col justify-between">
-                    <div class="space-y-3">
+                <div class="bg-white rounded-3xl border border-wukirsari-border p-5 shadow-2xs space-y-3 hover:border-wukirsari-primary/40 transition-all flex flex-col justify-between">
+                    <div class="space-y-2.5">
                         <div class="flex items-start justify-between gap-3">
                             <div>
                                 <span class="text-xs font-bold text-merapiText-primary font-display block">
                                     {{ $rev->package->name ?? 'Tour Jeep Wukirsari' }}
                                 </span>
-                                <div class="flex items-center gap-1 text-yellow-400 text-xs mt-0.5">
-                                    @for($i = 1; $i <= 5; $i++)
-                                        @if($i <= $rev->rating) ★ @else ☆ @endif
-                                    @endfor
-                                    <span class="text-[11px] font-bold text-slate-700 ml-1">{{ $rev->rating }}.0</span>
+                                <div class="text-xs mt-0.5 text-merapiText-secondary">
+                                    <span>Nilai: <strong class="text-merapiText-primary font-bold">{{ $rev->rating }}.0 / 5.0</strong></span>
                                 </div>
                             </div>
 
                             <!-- Tombol Edit & Delete -->
                             <div class="flex items-center gap-1.5 shrink-0">
-                                <button type="button" 
+                                <button type="button"
                                     onclick="handleEditReviewClick(this)"
                                     data-id="{{ $rev->id }}"
                                     data-rating="{{ $rev->rating }}"
                                     data-city="{{ $rev->city }}"
                                     data-comment="{{ $rev->comment }}"
-                                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-wukirsari-sage/70 hover:bg-wukirsari-sage text-wukirsari-primary text-[11px] font-bold border border-wukirsari-border transition-all cursor-pointer shadow-xs" 
+                                    class="px-2.5 py-1 rounded-full bg-wukirsari-sage/70 hover:bg-wukirsari-sage text-wukirsari-primary text-[11px] font-semibold border border-wukirsari-border/70 transition-all cursor-pointer shadow-2xs"
                                     title="Edit Ulasan">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                                    <span>Edit</span>
+                                    Edit
                                 </button>
                                 <form action="{{ route('reviews.destroy', $rev->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus ulasan ini?');" class="inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" 
-                                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 text-[11px] font-bold border border-rose-200 transition-all cursor-pointer shadow-xs" 
+                                    <button type="submit"
+                                        class="px-2.5 py-1 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 text-[11px] font-semibold border border-rose-200/80 transition-all cursor-pointer shadow-2xs"
                                         title="Hapus Ulasan">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                        <span>Delete</span>
+                                        Hapus
                                     </button>
                                 </form>
                             </div>
@@ -233,7 +263,7 @@
                         </p>
                     </div>
 
-                    <div class="pt-2 border-t border-wukirsari-border text-[10px] text-merapiText-muted flex items-center justify-between">
+                    <div class="pt-2 border-t border-wukirsari-border/60 text-[10px] text-merapiText-muted flex items-center justify-between">
                         <span>Kota: {{ $rev->city ?? 'Wisatawan' }}</span>
                         <span>{{ $rev->created_at->diffForHumans() }}</span>
                     </div>
@@ -246,25 +276,56 @@
     </div>
 </div>
 
-<!-- MODAL: Ubah Profil -->
-<div id="editProfileModal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 {{ $errors->any() ? '' : 'hidden' }}">
-    <div class="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-wukirsari-border animate-in fade-in zoom-in-95 duration-200">
-        <div class="p-6 border-b border-wukirsari-border flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-xs z-10">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-2xl bg-wukirsari-sage text-wukirsari-primary flex items-center justify-center">
-                    <svg class="w-5 h-5 text-wukirsari-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                </div>
-                <div>
-                    <h3 class="text-base font-bold text-merapiText-primary font-display">Ubah Profil Saya</h3>
-                    <p class="text-xs text-merapiText-secondary">Perbarui informasi data diri atau kata sandi akun</p>
-                </div>
+<!-- MODAL: Klaim Booking dengan Kode -->
+<div id="claimBookingModal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-wukirsari-border animate-in fade-in zoom-in-95 duration-200">
+        <div class="p-5 sm:p-6 border-b border-wukirsari-border flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-xs z-10 rounded-t-3xl">
+            <div>
+                <h3 class="text-base font-bold text-merapiText-primary font-display">Klaim Booking Saya</h3>
+                <p class="text-xs text-merapiText-secondary">Hubungkan tiket booking ke akun profil Anda</p>
             </div>
-            <button type="button" onclick="closeEditProfileModal()" class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 flex items-center justify-center font-bold text-sm transition-colors cursor-pointer">
-                ✕
+            <button type="button" onclick="closeClaimModal()" class="px-3 py-1.5 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-700 text-xs font-semibold transition-colors cursor-pointer">
+                Tutup
             </button>
         </div>
 
-        <form action="{{ route('profile.update') }}" method="POST" class="p-6 space-y-4">
+        <form action="{{ route('booking.claim') }}" method="POST" class="p-5 sm:p-6 space-y-4">
+            @csrf
+            <div>
+                <label class="block text-xs font-semibold text-merapiText-primary mb-1.5">Kode Booking *</label>
+                <input type="text" name="booking_code" required placeholder="Contoh: WKR-XXXXXXXX" maxlength="20"
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-wukirsari-border text-xs font-mono uppercase focus:outline-none focus:border-wukirsari-primary tracking-widest"
+                    oninput="this.value = this.value.toUpperCase()">
+                <p class="text-[11px] text-merapiText-muted mt-1.5 leading-relaxed">
+                    Kode booking tercantum di halaman konfirmasi atau pesan WhatsApp yang Anda terima saat memesan.
+                </p>
+            </div>
+            <div class="flex items-center justify-end gap-2.5 pt-2">
+                <button type="button" onclick="closeClaimModal()" class="px-5 py-2.5 rounded-full border border-wukirsari-border text-merapiText-secondary hover:bg-slate-50 text-xs font-semibold transition-all cursor-pointer">
+                    Batal
+                </button>
+                <button type="submit" class="px-6 py-2.5 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95">
+                    Klaim Booking
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL: Ubah Profil -->
+<div id="editProfileModal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 {{ $errors->any() ? '' : 'hidden' }}">
+    <div class="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-wukirsari-border animate-in fade-in zoom-in-95 duration-200">
+        <div class="p-5 sm:p-6 border-b border-wukirsari-border flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-xs z-10 rounded-t-3xl">
+            <div>
+                <h3 class="text-base font-bold text-merapiText-primary font-display">Ubah Profil Saya</h3>
+                <p class="text-xs text-merapiText-secondary">Perbarui informasi data diri atau kata sandi akun</p>
+            </div>
+            <button type="button" onclick="closeEditProfileModal()" class="px-3 py-1.5 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-700 text-xs font-semibold transition-colors cursor-pointer">
+                Tutup
+            </button>
+        </div>
+
+        <form action="{{ route('profile.update') }}" method="POST" class="p-5 sm:p-6 space-y-4">
             @csrf
             @method('PUT')
 
@@ -291,23 +352,11 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-merapiText-secondary mb-1">Kata Sandi Baru</label>
-                        <div class="relative">
-                            <input type="password" name="password" id="profileNewPassword" placeholder="Minimal 6 karakter" class="w-full pl-3.5 pr-10 py-2.5 rounded-xl border border-wukirsari-border text-xs focus:outline-none focus:border-wukirsari-primary">
-                            <button type="button" onclick="togglePasswordVisibility('profileNewPassword', this)" class="absolute inset-y-0 right-0 pr-3 flex items-center text-merapiText-muted hover:text-wukirsari-primary transition-colors cursor-pointer" title="Lihat / Sembunyikan Kata Sandi" tabindex="-1">
-                                <svg class="eye-open w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                                <svg class="eye-slash w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>
-                            </button>
-                        </div>
+                        <input type="password" name="password" id="profileNewPassword" placeholder="Minimal 6 karakter" class="w-full px-3.5 py-2.5 rounded-xl border border-wukirsari-border text-xs focus:outline-none focus:border-wukirsari-primary">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-merapiText-secondary mb-1">Konfirmasi Sandi Baru</label>
-                        <div class="relative">
-                            <input type="password" name="password_confirmation" id="profileConfirmPassword" placeholder="Ketik ulang sandi" class="w-full pl-3.5 pr-10 py-2.5 rounded-xl border border-wukirsari-border text-xs focus:outline-none focus:border-wukirsari-primary">
-                            <button type="button" onclick="togglePasswordVisibility('profileConfirmPassword', this)" class="absolute inset-y-0 right-0 pr-3 flex items-center text-merapiText-muted hover:text-wukirsari-primary transition-colors cursor-pointer" title="Lihat / Sembunyikan Kata Sandi" tabindex="-1">
-                                <svg class="eye-open w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                                <svg class="eye-slash w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>
-                            </button>
-                        </div>
+                        <input type="password" name="password_confirmation" id="profileConfirmPassword" placeholder="Ketik ulang sandi" class="w-full px-3.5 py-2.5 rounded-xl border border-wukirsari-border text-xs focus:outline-none focus:border-wukirsari-primary">
                     </div>
                 </div>
             </div>
@@ -316,7 +365,7 @@
                 <button type="button" onclick="closeEditProfileModal()" class="px-5 py-2.5 rounded-full border border-wukirsari-border text-merapiText-secondary hover:bg-slate-50 text-xs font-semibold transition-all cursor-pointer">
                     Batal
                 </button>
-                <button type="submit" class="px-6 py-2.5 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-xs font-bold transition-all shadow-sm cursor-pointer active:scale-95">
+                <button type="submit" class="px-6 py-2.5 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95">
                     Simpan Perubahan
                 </button>
             </div>
@@ -335,17 +384,14 @@
         if (modal) modal.classList.add('hidden');
     }
 
-    function togglePasswordVisibility(inputId, btn) {
-        const input = document.getElementById(inputId);
-        if (!input) return;
-        const isPass = input.type === 'password';
-        input.type = isPass ? 'text' : 'password';
-        const eyeOpen = btn.querySelector('.eye-open');
-        const eyeSlash = btn.querySelector('.eye-slash');
-        if (eyeOpen && eyeSlash) {
-            eyeOpen.classList.toggle('hidden', isPass);
-            eyeSlash.classList.toggle('hidden', !isPass);
-        }
+    function openClaimModal() {
+        const modal = document.getElementById('claimBookingModal');
+        if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeClaimModal() {
+        const modal = document.getElementById('claimBookingModal');
+        if (modal) modal.classList.add('hidden');
     }
 </script>
 @endsection

@@ -79,6 +79,15 @@
                 </div>
             </a>
 
+            <!-- 2b. QR Scanner E-Tiket -->
+            <a href="{{ route('admin.scanner') }}" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs transition-all duration-200 {{ request()->routeIs('admin.scanner*') ? 'bg-gradient-to-r from-emerald-600 via-emerald-600/90 to-emerald-700/80 text-white font-extrabold shadow-md shadow-emerald-950/60 border border-emerald-400/40' : 'text-white/80 hover:bg-white/10 hover:text-white' }}">
+                <div class="flex items-center gap-3">
+                    <svg class="w-4 h-4 {{ request()->routeIs('admin.scanner*') ? 'text-white' : 'text-emerald-300' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+                    <span>QR Scanner E-Tiket</span>
+                </div>
+                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/30 text-emerald-200 border border-emerald-400/30">Scan</span>
+            </a>
+
             <!-- 3. Monitoring Armada -->
             <a href="{{ route('admin.armada') }}" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs transition-all duration-200 {{ request()->routeIs('admin.armada*') ? 'bg-gradient-to-r from-emerald-600 via-emerald-600/90 to-emerald-700/80 text-white font-extrabold shadow-md shadow-emerald-950/60 border border-emerald-400/40' : 'text-white/80 hover:bg-white/10 hover:text-white' }}">
                 <div class="flex items-center gap-3">
@@ -103,11 +112,21 @@
                 </div>
             </a>
 
-            <!-- 6. Laporan Penjualan -->
+            <!-- 6. Pengeluaran Operasional -->
+            <a href="{{ route('admin.expenses') }}" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs transition-all duration-200 {{ request()->routeIs('admin.expenses*') ? 'bg-gradient-to-r from-emerald-600 via-emerald-600/90 to-emerald-700/80 text-white font-extrabold shadow-md shadow-emerald-950/60 border border-emerald-400/40' : 'text-white/80 hover:bg-white/10 hover:text-white' }}">
+                <div class="flex items-center gap-3">
+                    <svg class="w-4 h-4 {{ request()->routeIs('admin.expenses*') ? 'text-white' : 'text-emerald-300' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                    <span>Pengeluaran</span>
+                </div>
+            </a>
+
+            <!-- 7. Laporan Penjualan & Laba Rugi -->
             <a href="{{ route('admin.reports') }}" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs transition-all duration-200 {{ request()->routeIs('admin.reports*') ? 'bg-gradient-to-r from-emerald-600 via-emerald-600/90 to-emerald-700/80 text-white font-extrabold shadow-md shadow-emerald-950/60 border border-emerald-400/40' : 'text-white/80 hover:bg-white/10 hover:text-white' }}">
                 <div class="flex items-center gap-3">
                     <svg class="w-4 h-4 {{ request()->routeIs('admin.reports*') ? 'text-white' : 'text-emerald-300' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-                    <span>Laporan Penjualan</span>
+                    <span>Laporan & Laba Rugi</span>
                 </div>
             </a>
 

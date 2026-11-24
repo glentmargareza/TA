@@ -248,6 +248,46 @@ class QuotaIntegrationTest extends TestCase
     public function test_target_date_24_nov_2026_and_active_booking_consistency(): void
     {
         $date = '2026-11-24';
+        $package = Package::first();
+
+        // Pastikan booking fixture untuk Slot 3 dan Slot 4 ada di dalam transaksi test
+        Booking::firstOrCreate(
+            ['booking_code' => 'WKR-3YNUTI'],
+            [
+                'customer_name' => 'Peserta Sesi Pagi 2',
+                'customer_phone' => '081234567891',
+                'package_id' => $package->id,
+                'slot_id' => 3,
+                'trip_date' => $date,
+                'jeep_quantity' => 1,
+                'passenger_count' => 4,
+                'package_subtotal' => 450000,
+                'total_amount' => 450000,
+                'paid_amount' => 450000,
+                'payment_mode' => 'FULL',
+                'booking_status' => 'FULL_PAID',
+            ]
+        );
+
+        Booking::firstOrCreate(
+            ['booking_code' => 'WKR-XW2UUY'],
+            [
+                'customer_name' => 'Peserta Sesi Siang',
+                'customer_phone' => '081234567892',
+                'package_id' => $package->id,
+                'slot_id' => 4,
+                'trip_date' => $date,
+                'jeep_quantity' => 1,
+                'passenger_count' => 4,
+                'package_subtotal' => 450000,
+                'total_amount' => 450000,
+                'paid_amount' => 450000,
+                'payment_mode' => 'FULL',
+                'booking_status' => 'FULL_PAID',
+                'lock_expires_at' => now()->subHours(5),
+            ]
+        );
+
         $res = $this->getJson("/booking/slot-availability?trip_date={$date}&jeep_quantity=1");
         $res->assertStatus(200);
 

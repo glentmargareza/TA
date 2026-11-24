@@ -30,19 +30,25 @@ Route::get('/api/place-details', [BookingController::class, 'placesDetail'])->mi
 Route::get('/api/places/search', [BookingController::class, 'placesSearch'])->middleware('throttle:60,1')->name('places.search');
 Route::get('/api/places/detail', [BookingController::class, 'placesDetail'])->middleware('throttle:60,1')->name('places.detail');
 Route::get('/booking/{code}/payment', [BookingController::class, 'payment'])->name('booking.payment');
-Route::post('/booking/{code}/confirm-transfer', [BookingController::class, 'confirmTransfer'])->name('booking.confirm_transfer');
 Route::post('/booking/{code}/confirm-cash', [BookingController::class, 'confirmCash'])->name('booking.confirm_cash');
 Route::post('/booking/{code}/charge', [PaymentController::class, 'charge'])->name('booking.charge');
 Route::get('/booking/{code}/status', [PaymentController::class, 'status'])->name('booking.status');
 Route::get('/booking/{code}/active-payment', [PaymentController::class, 'activePayment'])->name('booking.active_payment');
 Route::get('/booking/distance', [BookingController::class, 'distance'])->middleware('throttle:60,1')->name('booking.distance');
+Route::get('/booking/finish', [PaymentController::class, 'finish'])->name('booking.finish');
 Route::get('/booking/{code}/success', [BookingController::class, 'success'])->name('booking.success');
 Route::get('/lokasi-jemput', [BookingController::class, 'placesSearch'])->middleware('throttle:60,1')->name('booking.location');
 Route::get('/lokasi-jemput/reverse', [BookingController::class, 'reverseLocation'])->middleware('throttle:60,1')->name('booking.reverse');
 Route::get('/lokasi-jemput/nearby', [BookingController::class, 'nearbyLodging'])->name('booking.nearby');
 
-// 3. Pelacakan Tiket Mandiri (Wajib Login)
+// 3. Pelacakan Tiket Mandiri (Wajib Login untuk /cek-tiket)
 Route::get('/cek-tiket', [TicketController::class, 'check'])->middleware('auth')->name('ticket.check');
+
+// 3b. Verifikasi Tiket via QR Code (Publik — tidak butuh login)
+// URL ini di-encode ke dalam QR Code E-Ticket wisatawan.
+// Customer scan → tampilkan status booking.
+// Admin scan (sudah login) → auto-redirect ke /admin/scan/{code}.
+Route::get('/tiket/{code}', [TicketController::class, 'show'])->name('ticket.show');
 
 // 4. Portal Admin & Loket Basecamp
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -51,11 +57,20 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/armada', [AdminController::class, 'armada'])->name('armada');
     Route::get('/notifikasi', [AdminController::class, 'notifications'])->name('notifications');
 
+    // QR Scanner E-Tiket untuk Pelunasan & Check-in Loket
+    Route::get('/scanner', [AdminController::class, 'qrScanner'])->name('scanner');
+    Route::post('/scanner/lookup', [AdminController::class, 'scanQrLookup'])->name('scanner.lookup');
+    Route::post('/scanner/settle', [AdminController::class, 'scanQrSettle'])->name('scanner.settle');
+
     Route::post('/bookings/{id}/settle', [AdminController::class, 'settleDp'])->name('settle');
     Route::post('/bookings/{id}/assign', [AdminController::class, 'assignDriver'])->name('assign');
     Route::post('/bookings/{id}/reschedule', [AdminController::class, 'rescheduleBooking'])->name('reschedule');
     Route::get('/bookings/slot-availability', [AdminController::class, 'checkSlotAvailability'])->name('slot-availability');
     Route::post('/bookings/{id}/cancel', [AdminController::class, 'cancelBooking'])->name('cancel');
+    Route::post('/bookings/{id}/verify-payment', [AdminController::class, 'verifyPayment'])->name('verify_payment');
+    Route::post('/bookings/{id}/reject-payment', [AdminController::class, 'rejectPayment'])->name('reject_payment');
+    Route::post('/bookings/{id}/confirm-cash', [AdminController::class, 'confirmCashPayment'])->name('confirm_cash');
+    Route::get('/bookings/{id}/proof/{paymentId}', [AdminController::class, 'viewProof'])->name('proof');
     Route::post('/jeep', [AdminController::class, 'storeJeep'])->name('jeeps.store');
     Route::post('/jeep/{id}/status', [AdminController::class, 'updateJeepStatus'])->name('jeeps.status');
     Route::delete('/jeep/{id}', [AdminController::class, 'destroyJeep'])->name('jeeps.destroy');
@@ -72,6 +87,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/paket', [AdminController::class, 'packages'])->name('packages');
     Route::post('/paket', [AdminController::class, 'storePackage'])->name('packages.store');
     Route::put('/paket/{id}', [AdminController::class, 'updatePackage'])->name('packages.update');
+    Route::post('/paket/{id}/photos', [AdminController::class, 'updatePackagePhotos'])->name('packages.updatePhotos');
     Route::post('/paket/{id}/toggle', [AdminController::class, 'togglePackage'])->name('packages.toggle');
     Route::delete('/paket/{id}', [AdminController::class, 'destroyPackage'])->name('packages.destroy');
 
@@ -81,6 +97,16 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::put('/jadwal/{id}', [AdminController::class, 'updateSchedule'])->name('schedules.update');
     Route::post('/jadwal/{id}/toggle', [AdminController::class, 'toggleSchedule'])->name('schedules.toggle');
     Route::delete('/jadwal/{id}', [AdminController::class, 'destroySchedule'])->name('schedules.destroy');
+
+    // Scan QR Code Tiket (Verifikasi di Loket Basecamp)
+    Route::get('/scan/{code}', [AdminController::class, 'scanTicket'])->name('scan');
+    Route::post('/scan/{code}/settle', [AdminController::class, 'settleTicket'])->name('settle_ticket');
+    // Manajemen Pengeluaran Operasional
+    Route::get('/pengeluaran', [AdminController::class, 'expenses'])->name('expenses');
+    Route::post('/pengeluaran', [AdminController::class, 'storeExpense'])->name('expenses.store');
+    Route::get('/pengeluaran/{id}', [AdminController::class, 'showExpense'])->name('expenses.show');
+    Route::put('/pengeluaran/{id}', [AdminController::class, 'updateExpense'])->name('expenses.update');
+    Route::delete('/pengeluaran/{id}', [AdminController::class, 'destroyExpense'])->name('expenses.destroy');
 
     // Manajemen Ulasan
     Route::get('/ulasan', [AdminController::class, 'reviews'])->name('reviews');
@@ -102,6 +128,7 @@ Route::post('/register', [AuthController::class, 'register'])->name('register.po
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/profile', [AuthController::class, 'profile'])->name('profile');
 Route::put('/profile', [AuthController::class, 'updateProfile'])->name('profile.update');
+Route::post('/profile/claim-booking', [AuthController::class, 'claimBooking'])->middleware('auth')->name('booking.claim');
 
 // 7. Ulasan & Review Wisatawan (Wajib Login untuk menulis)
 Route::get('/ulasan', [\App\Http\Controllers\ReviewController::class, 'index'])->name('reviews.index');

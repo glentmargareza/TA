@@ -1,0 +1,9 @@
+
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/jeepwukisari/public_html
+    - /bin/cp -R public/. $DEPLOYPATH/
+    - /bin/sed -i "s#../vendor/autoload.php#../repositories/TA/vendor/autoload.php#g" $DEPLOYPATH/index.php
+    - /bin/sed -i "s#../bootstrap/app.php#../repositories/TA/bootstrap/app.php#g" $DEPLOYPATH/index.php
+    - /bin/sed -i "s#../storage/#../repositories/TA/storage/#g" $DEPLOYPATH/index.php

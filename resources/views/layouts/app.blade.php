@@ -100,7 +100,7 @@
                             JEEP WUKIRSARI
                         </span>
                         <span class="block text-[9px] sm:text-[10px] font-medium {{ request()->routeIs('home') ? 'text-emerald-300' : 'text-merapiText-secondary' }} uppercase tracking-widest mt-0.5">
-                            ADVENTURE TOUR
+                            ADVENTURE
                         </span>
                     </div>
                 </a>
@@ -125,23 +125,16 @@
                     <a href="{{ route('home') }}#kontak" class="text-xs xl:text-sm font-medium {{ request()->routeIs('home') ? 'text-white/85 hover:text-white' : 'text-merapiText-secondary hover:text-wukirsari-primary' }} transition-colors py-1 whitespace-nowrap">
                         Kontak
                     </a>
-                    @if(!request()->routeIs('home'))
-                    <a href="{{ route('reviews.index') }}" class="text-xs xl:text-sm py-1 relative whitespace-nowrap transition-colors {{ request()->routeIs('reviews.*') ? 'font-semibold text-wukirsari-primary' : 'font-medium text-merapiText-secondary hover:text-wukirsari-primary' }}">
+                    <a href="{{ route('home') }}#ulasan" class="text-xs xl:text-sm font-medium {{ request()->routeIs('home') ? 'text-white/85 hover:text-white' : (request()->routeIs('reviews.*') ? 'font-semibold text-wukirsari-primary' : 'text-merapiText-secondary hover:text-wukirsari-primary') }} transition-colors py-1 relative whitespace-nowrap">
                         Ulasan
                         @if(request()->routeIs('reviews.*'))
                         <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-wukirsari-primary rounded-full"></span>
                         @endif
                     </a>
-                    @endif
                 </nav>
 
                 <!-- Right Action -->
                 <div class="hidden lg:flex items-center gap-2 xl:gap-3 shrink-0">
-                    <a href="{{ route('home') }}#paket" class="p-2 rounded-full {{ request()->routeIs('home') ? 'hover:bg-white/15 text-white/85 hover:text-white' : 'hover:bg-wukirsari-sage text-merapiText-secondary hover:text-wukirsari-primary' }} transition-colors shrink-0" title="Cari Paket Wisata">
-                        <svg class="w-4 h-4 xl:w-5 xl:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                    </a>
 
                     <!-- MENU PROFIL / LOGIN (USER & ADMIN - Sesuai Image 2) -->
                     @auth
@@ -162,10 +155,10 @@
                                     <p class="text-[11px] text-gray-500 truncate">{{ Auth::user()->email }}</p>
                                 </div>
                                 <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-semibold text-gray-800 hover:bg-[#EAF3EB]/60 hover:text-[#1E3F20] transition-colors">
-                                    Dashboard Loket & Armada
+                                    Dashboard
                                 </a>
                                 <a href="{{ route('home') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-semibold text-gray-800 hover:bg-[#EAF3EB]/60 hover:text-[#1E3F20] transition-colors">
-                                    Beranda Wisatawan
+                                    Beranda
                                 </a>
                                 <div class="border-t border-gray-100">
                                     <form action="{{ route('logout') }}" method="POST"
@@ -231,7 +224,6 @@
 
                     <a href="{{ route('booking.create') }}" class="whitespace-nowrap shrink-0 inline-flex items-center gap-1.5 px-5 xl:px-6 py-2.5 rounded-full bg-[#245329] hover:bg-[#2d6633] text-white text-xs font-bold border border-white/20 transition-all shadow-md hover:scale-[1.02]">
                         <span>Booking Sekarang</span>
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                     </a>
                 </div>
 
@@ -241,7 +233,7 @@
                         <svg class="w-4 h-4 fill-none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
                     </a>
 
-                    <a href="{{ route('booking.create') }}" class="px-3.5 sm:px-4 py-1.5 rounded-full {{ request()->routeIs('home') ? 'bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-sm' : 'bg-[#245329] hover:bg-[#2d6633] text-white' }} border border-white/20 text-xs font-bold transition-all shrink-0 active:scale-95">
+                    <a href="{{ route('booking.create') }}" class="px-3.5 sm:px-4 py-1.5 rounded-full {{ request()->routeIs('home') ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm' : 'bg-[#245329] hover:bg-[#2d6633] text-white' }} border border-white/20 text-xs font-bold transition-all shrink-0 active:scale-95">
                         Booking
                     </a>
 
@@ -299,7 +291,7 @@
                         </div>
                         <div class="grid grid-cols-2 gap-2 pt-1">
                             <a href="{{ route('admin.dashboard') }}" class="px-3 py-2 rounded-xl bg-wukirsari-primary text-white text-xs font-semibold text-center shadow-xs">
-                                Dashboard Loket
+                                Dashboard
                             </a>
                             <form action="{{ route('logout') }}" method="POST">
                                 @csrf
@@ -369,7 +361,11 @@
                     <span>Galeri Momen</span>
                 </a>
 
-                <a href="{{ route('reviews.index') }}" class="mobile-nav-link flex items-center px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold transition-colors {{ request()->routeIs('reviews.*') ? 'bg-wukirsari-sage/70 text-wukirsari-primary font-bold' : 'text-merapiText-primary hover:bg-slate-50' }}">
+                <a href="{{ route('home') }}#kontak" class="mobile-nav-link flex items-center px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold text-merapiText-primary hover:bg-slate-50 transition-colors">
+                    <span>Kontak</span>
+                </a>
+
+                <a href="{{ route('home') }}#ulasan" class="mobile-nav-link flex items-center px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold text-merapiText-primary hover:bg-slate-50 transition-colors">
                     <span>Ulasan Wisatawan</span>
                 </a>
             </nav>
@@ -378,7 +374,7 @@
         <!-- Bottom Drawer Actions -->
         <div class="p-5 border-t border-wukirsari-border space-y-3 bg-wukirsari-cream/40">
             <a href="{{ route('booking.create') }}" class="w-full py-3.5 px-4 rounded-full bg-wukirsari-primary text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-md shadow-wukirsari-primary/20 hover:bg-wukirsari-hover transition-all">
-                <span>Booking Jeep Sekarang →</span>
+                <span>Booking Jeep Sekarang</span>
             </a>
 
             <a href="https://wa.me/6281228677843" target="_blank" class="w-full py-2.5 px-4 rounded-full border border-wukirsari-border bg-white text-merapiText-primary text-xs font-semibold flex items-center justify-center gap-2 hover:bg-wukirsari-sage/40 transition-colors">
@@ -490,7 +486,7 @@
             </div>
         </div>
 
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 Slg:px-8 relative z-10">
 
             <!-- MAIN 3-COLUMN FOOTER CONTENT -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12 pb-12 items-start">
@@ -627,38 +623,6 @@
     </footer>
     @endif
 
-    <!-- STICKY BOTTOM BAR (MOBILE ONLY - DISEMBUNYIKAN DI FORM BOOKING / ADMIN) -->
-    @if(!View::hasSection('hide_floating_cta') && !request()->routeIs('admin.*'))
-    <div id="mobileStickyBottomBar" class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-wukirsari-border px-4 py-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom,0px))] shadow-lg flex items-center justify-between gap-3 {{ request()->routeIs('home') ? 'transform translate-y-full opacity-0 pointer-events-none transition-all duration-300' : '' }}">
-        <div>
-            <span class="block text-[10px] font-medium text-merapiText-muted uppercase tracking-wider">Mulai dari</span>
-            <span class="text-sm font-extrabold text-merapiText-primary leading-tight">Rp 450.000<span class="text-[11px] font-normal text-merapiText-secondary">/jeep</span></span>
-        </div>
-        <a href="{{ route('booking.create') }}" class="flex-1 max-w-[200px] py-2 px-3.5 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-wukirsari-primary/20 active:scale-95 transition-all">
-            <span>Booking Sekarang</span>
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-        </a>
-    </div>
-    @if(request()->routeIs('home'))
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const bar = document.getElementById('mobileStickyBottomBar');
-            if (!bar) return;
-            const heroSection = document.querySelector('section');
-            function updateBarVisibility() {
-                const threshold = heroSection ? (heroSection.offsetHeight - 140) : 320;
-                if (window.scrollY > threshold) {
-                    bar.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none');
-                } else {
-                    bar.classList.add('translate-y-full', 'opacity-0', 'pointer-events-none');
-                }
-            }
-            window.addEventListener('scroll', updateBarVisibility, { passive: true });
-            updateBarVisibility();
-        });
-    </script>
-    @endif
-    @endif
 
     <!-- MODAL EDIT ULASAN WISATAWAN -->
     <div id="editReviewModal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
