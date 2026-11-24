@@ -28,6 +28,11 @@
     :tableTarget="$tableTarget"
     :paginationTarget="$paginationTarget"
     {{ $attributes }}>
+    @if(isset($header))
+        <x-slot:header>
+            {{ $header }}
+        </x-slot:header>
+    @endif
     {{ $slot }}
     @if(isset($actions))
         <x-slot:actions>

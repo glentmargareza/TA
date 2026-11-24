@@ -603,6 +603,12 @@ Diadopsi langsung dari arsitektur filter **`C:\xampp\htdocs\pos-apotek`**: Menye
 4. **Auto-resolver Target**: Otomatis mendeteksi kartu tabel pembungkus (`data-table-container="true"` atau `.table-custom-container`) di halaman.
 5. **Sinkronisasi Otomatis**: Menyinkronkan teks summary/badge total, bilah aksi `<x-slot:actions>`, dan memicu event `live-filter:updated` untuk re-binding modal konfirmasi `data-confirm-...`.
 
+**Halaman yang Menggunakan Komponen Ini:**
+- `resources/views/admin/bookings.blade.php` (Filter booking: search, trip date, package, status)
+- `resources/views/admin/expenses.blade.php` (Filter pengeluaran: search, category, period, custom dates, action slot summary)
+- `resources/views/admin/reviews.blade.php` (Filter ulasan: radio pill rating bintang 1-5, live text search)
+- `resources/views/admin/reports.blade.php` (Filter laporan: tab Laba Rugi dengan period mode header slot & tab Penjualan)
+
 ```html
 <x-admin.filter-card 
     :action="route('admin.bookings')" 

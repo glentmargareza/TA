@@ -13,44 +13,48 @@
         </div>
 
         <!-- FILTER & PENCARIAN -->
-        <div class="bg-white p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 sm:gap-4">
-            <!-- Filter Bintang -->
+        <x-admin.filter-card 
+            :action="route('admin.reviews')" 
+            :resetUrl="route('admin.reviews')"
+            :grid="false"
+            submitLabel="Cari"
+            class="p-3.5 sm:p-4 mb-4 sm:mb-6">
+
+            <!-- Filter Bintang (Radio Pills) -->
             <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 w-full md:w-auto text-xs no-scrollbar">
                 <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1 shrink-0">Bintang:</span>
-                <a href="{{ route('admin.reviews', array_filter(['search' => $search])) }}" class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 {{ empty($rating) ? 'bg-gradient-to-r from-emerald-700 to-[#102b17] text-white shadow-xs font-bold' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
-                    Semua
-                </a>
+                
+                <label class="cursor-pointer shrink-0">
+                    <input type="radio" name="rating" value="" class="sr-only peer" {{ empty($rating) ? 'checked' : '' }}>
+                    <span class="px-3 py-1.5 rounded-xl text-xs font-semibold inline-block transition-all bg-slate-100 text-slate-600 hover:bg-slate-200 peer-checked:bg-gradient-to-r peer-checked:from-emerald-700 peer-checked:to-[#102b17] peer-checked:text-white peer-checked:shadow-xs peer-checked:font-bold">
+                        Semua
+                    </span>
+                </label>
+
                 @for($s = 5; $s >= 1; $s--)
-                <a href="{{ route('admin.reviews', array_filter(['rating' => $s, 'search' => $search])) }}" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 {{ (string)$rating === (string)$s ? 'bg-emerald-700 text-white shadow-xs font-bold' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
-                    <x-icon name="star" class="w-3.5 h-3.5 {{ (string)$rating === (string)$s ? 'text-amber-300' : 'text-amber-500' }}" />
-                    <span>{{ $s }}</span>
-                </a>
+                <label class="cursor-pointer shrink-0">
+                    <input type="radio" name="rating" value="{{ $s }}" class="sr-only peer" {{ (string)$rating === (string)$s ? 'checked' : '' }}>
+                    <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all bg-slate-100 text-slate-600 hover:bg-slate-200 peer-checked:bg-emerald-700 peer-checked:text-white peer-checked:shadow-xs peer-checked:font-bold">
+                        <x-icon name="star" class="w-3.5 h-3.5 text-amber-500 peer-checked:text-amber-300" />
+                        <span>{{ $s }}</span>
+                    </span>
+                </label>
                 @endfor
             </div>
 
-            <!-- Form Search -->
-            <form method="GET" action="{{ route('admin.reviews') }}" class="flex items-center gap-2 w-full md:w-auto">
-                @if($rating)
-                <input type="hidden" name="rating" value="{{ $rating }}">
-                @endif
-                <input type="text" name="search" value="{{ $search }}" placeholder="Cari nama, kota, ulasan..." class="flex-1 sm:w-64 px-3.5 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50 shadow-2xs">
-                <button type="submit" class="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-700 to-[#14351C] hover:from-emerald-600 hover:to-[#1a4424] text-white text-xs font-semibold shadow-xs hover:shadow transition-all shrink-0 active:scale-95 cursor-pointer">
-                    Cari
-                </button>
-                @if($rating || $search)
-                <a href="{{ route('admin.reviews') }}" class="px-3 py-2 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-semibold transition-colors shrink-0 shadow-2xs" title="Reset filter">
-                    Reset
-                </a>
-                @endif
-            </form>
-        </div>
+            <!-- Input Search -->
+            <div class="flex-1 sm:w-64 md:ml-auto">
+                <input type="text" name="search" value="{{ $search }}" placeholder="Cari nama, kota, ulasan..." class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50 shadow-2xs">
+            </div>
+
+        </x-admin.filter-card>
 
         <!-- TABEL DAFTAR ULASAN -->
         <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden table-custom-container" data-table-container="true">
             <div class="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between">
                 <div>
                     <h3 class="font-bold text-slate-800 text-sm font-display">Daftar Seluruh Ulasan Masuk</h3>
-                    <p class="text-xs text-slate-400 mt-0.5">Total ditampilkan: {{ $reviews->total() }} ulasan wisatawan</p>
+                    <p class="text-xs text-slate-400 mt-0.5">Total ditampilkan: <span data-summary-badge="true">{{ $reviews->total() }}</span> ulasan wisatawan</p>
                 </div>
             </div>
 

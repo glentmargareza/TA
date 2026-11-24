@@ -33,6 +33,10 @@
             @csrf
         @endif
 
+        @if(isset($header))
+            {{ $header }}
+        @endif
+
         @if($grid)
             <div class="grid {{ $gridCols }} gap-3">
                 {{ $slot }}

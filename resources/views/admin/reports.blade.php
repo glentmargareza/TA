@@ -96,176 +96,170 @@
                 </p>
             </div>
 
-            <!-- FILTER BOX (NO PRINT) -->
-            <div id="filter-box" class="bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs no-print space-y-4">
-                @if($activeTab === 'laba_rugi')
-                <!-- Mode Filter Periode: Harian, Bulanan, Tahunan, Rentang Tanggal -->
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
-                    <div class="flex items-center gap-2 flex-wrap">
-                        <span class="text-xs font-bold text-slate-700">Pilihan Periode:</span>
-                        <div class="inline-flex p-1 bg-slate-100 rounded-xl gap-1">
-                            <button type="button" onclick="setPeriodMode('daily')" id="btn-period-daily"
-                                class="px-3 py-1.5 rounded-lg text-xs transition-all cursor-pointer {{ $period === 'daily' ? 'bg-emerald-700 text-white font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900 font-semibold' }}">
-                                Harian
-                            </button>
-                            <button type="button" onclick="setPeriodMode('monthly')" id="btn-period-monthly"
-                                class="px-3 py-1.5 rounded-lg text-xs transition-all cursor-pointer {{ $period === 'monthly' ? 'bg-emerald-700 text-white font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900 font-semibold' }}">
-                                Bulanan
-                            </button>
-                            <button type="button" onclick="setPeriodMode('yearly')" id="btn-period-yearly"
-                                class="px-3 py-1.5 rounded-lg text-xs transition-all cursor-pointer {{ $period === 'yearly' ? 'bg-emerald-700 text-white font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900 font-semibold' }}">
-                                Tahunan
-                            </button>
-                            <button type="button" onclick="setPeriodMode('custom')" id="btn-period-custom"
-                                class="px-3 py-1.5 rounded-lg text-xs transition-all cursor-pointer {{ $period === 'custom' ? 'bg-emerald-700 text-white font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900 font-semibold' }}">
-                                Rentang Tanggal
-                            </button>
+            @if($activeTab === 'laba_rugi')
+            <!-- FILTER CARD: TAB LABA RUGI -->
+            <x-admin.filter-card 
+                id="filter-box"
+                :action="route('admin.reports')" 
+                :resetUrl="route('admin.reports', ['tab' => 'laba_rugi'])"
+                :liveSearch="false"
+                submitLabel="Terapkan Filter"
+                gridCols="grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
+                class="no-print">
+                
+                <x-slot:header>
+                    <!-- Mode Filter Periode: Harian, Bulanan, Tahunan, Rentang Tanggal -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-xs font-bold text-slate-700">Pilihan Periode:</span>
+                            <div class="inline-flex p-1 bg-slate-100 rounded-xl gap-1">
+                                <button type="button" onclick="setPeriodMode('daily')" id="btn-period-daily"
+                                    class="px-3 py-1.5 rounded-lg text-xs transition-all cursor-pointer {{ $period === 'daily' ? 'bg-emerald-700 text-white font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900 font-semibold' }}">
+                                    Harian
+                                </button>
+                                <button type="button" onclick="setPeriodMode('monthly')" id="btn-period-monthly"
+                                    class="px-3 py-1.5 rounded-lg text-xs transition-all cursor-pointer {{ $period === 'monthly' ? 'bg-emerald-700 text-white font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900 font-semibold' }}">
+                                    Bulanan
+                                </button>
+                                <button type="button" onclick="setPeriodMode('yearly')" id="btn-period-yearly"
+                                    class="px-3 py-1.5 rounded-lg text-xs transition-all cursor-pointer {{ $period === 'yearly' ? 'bg-emerald-700 text-white font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900 font-semibold' }}">
+                                    Tahunan
+                                </button>
+                                <button type="button" onclick="setPeriodMode('custom')" id="btn-period-custom"
+                                    class="px-3 py-1.5 rounded-lg text-xs transition-all cursor-pointer {{ $period === 'custom' ? 'bg-emerald-700 text-white font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900 font-semibold' }}">
+                                    Rentang Tanggal
+                                </button>
+                            </div>
+                        </div>
+                        <div class="text-xs text-slate-500 font-semibold">
+                            Laporan: <span class="text-emerald-800 font-bold">{{ $periodLabel }}</span>
                         </div>
                     </div>
-                    <div class="text-xs text-slate-500 font-semibold">
-                        Laporan: <span class="text-emerald-800 font-bold">{{ $periodLabel }}</span>
-                    </div>
+                </x-slot:header>
+
+                <input type="hidden" name="tab" value="laba_rugi">
+                <input type="hidden" name="period" id="periodInput" value="{{ $period }}">
+
+                <!-- Input Periode Harian -->
+                <div id="period-sec-daily" class="{{ $period === 'daily' ? '' : 'hidden' }}">
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">
+                        Pilih Tanggal Operasional
+                    </label>
+                    <input type="date" name="date" value="{{ $selectedDate }}" class="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white shadow-2xs">
                 </div>
 
-                <form method="GET" action="{{ route('admin.reports') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 items-end">
-                    <input type="hidden" name="tab" value="laba_rugi">
-                    <input type="hidden" name="period" id="periodInput" value="{{ $period }}">
-
-                    <!-- Input Periode Harian -->
-                    <div id="period-sec-daily" class="{{ $period === 'daily' ? '' : 'hidden' }}">
-                        <label class="block text-xs font-bold text-slate-700 mb-1.5">
-                            Pilih Tanggal Operasional
-                        </label>
-                        <input type="date" name="date" value="{{ $selectedDate }}" class="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white shadow-2xs">
+                <!-- Input Periode Bulanan -->
+                <div id="period-sec-monthly" class="{{ $period === 'monthly' ? '' : 'hidden' }} grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Bulan</label>
+                        <select name="month" class="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white shadow-2xs">
+                            @php
+                            $allMonths = [
+                            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                            ];
+                            @endphp
+                            @foreach($allMonths as $mNum => $mName)
+                            <option value="{{ $mNum }}" {{ (int)$selectedMonth === (int)$mNum ? 'selected' : '' }}>
+                                {{ $mName }}
+                            </option>
+                            @endforeach
+                        </select>
                     </div>
-
-                    <!-- Input Periode Bulanan -->
-                    <div id="period-sec-monthly" class="{{ $period === 'monthly' ? '' : 'hidden' }} grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1.5">Bulan</label>
-                            <select name="month" class="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white shadow-2xs">
-                                @php
-                                $allMonths = [
-                                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-                                5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-                                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
-                                ];
-                                @endphp
-                                @foreach($allMonths as $mNum => $mName)
-                                <option value="{{ $mNum }}" {{ (int)$selectedMonth === (int)$mNum ? 'selected' : '' }}>
-                                    {{ $mName }}
-                                </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1.5">Tahun</label>
-                            <select name="year" class="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white shadow-2xs">
-                                @for($y = 2024; $y <= 2030; $y++)
-                                    <option value="{{ $y }}" {{ (int)$selectedYear === $y ? 'selected' : '' }}>{{ $y }}</option>
-                                    @endfor
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Input Periode Tahunan -->
-                    <div id="period-sec-yearly" class="{{ $period === 'yearly' ? '' : 'hidden' }}">
-                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Pilih Tahun</label>
-                        <select name="year_annual" onchange="document.querySelector('#period-sec-monthly select[name=year]').value = this.value" class="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white shadow-2xs">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Tahun</label>
+                        <select name="year" class="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white shadow-2xs">
                             @for($y = 2024; $y <= 2030; $y++)
                                 <option value="{{ $y }}" {{ (int)$selectedYear === $y ? 'selected' : '' }}>{{ $y }}</option>
                                 @endfor
                         </select>
                     </div>
+                </div>
 
-                    <!-- Input Periode Rentang Tanggal -->
-                    <div id="period-sec-custom" class="{{ $period === 'custom' ? '' : 'hidden' }} grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1.5">Dari Tanggal</label>
-                            <input type="date" name="start_date" value="{{ $startDate }}" class="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white shadow-2xs">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1.5">Sampai Tanggal</label>
-                            <input type="date" name="end_date" value="{{ $endDate }}" class="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white shadow-2xs">
-                        </div>
-                    </div>
+                <!-- Input Periode Tahunan -->
+                <div id="period-sec-yearly" class="{{ $period === 'yearly' ? '' : 'hidden' }}">
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Pilih Tahun</label>
+                    <select name="year_annual" onchange="document.querySelector('#period-sec-monthly select[name=year]').value = this.value" class="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white shadow-2xs">
+                        @for($y = 2024; $y <= 2030; $y++)
+                            <option value="{{ $y }}" {{ (int)$selectedYear === $y ? 'selected' : '' }}>{{ $y }}</option>
+                            @endfor
+                    </select>
+                </div>
 
-                    <!-- Filter Paket Wisata -->
+                <!-- Input Periode Rentang Tanggal -->
+                <div id="period-sec-custom" class="{{ $period === 'custom' ? '' : 'hidden' }} grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Paket Wisata</label>
-                        <select name="package_id" class="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white shadow-2xs">
-                            <option value="">Semua Paket Wisata</option>
-                            @foreach($packages as $pkg)
-                            <option value="{{ $pkg->id }}" {{ (string)$packageId === (string)$pkg->id ? 'selected' : '' }}>
-                                {{ $pkg->name }}
-                            </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="flex items-center gap-2">
-                        <button type="submit" class="flex-1 py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-emerald-700 to-[#183c21] hover:from-emerald-600 hover:to-[#183c21] text-white text-xs font-bold transition-all shadow-xs hover:shadow cursor-pointer flex items-center justify-center gap-1.5">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                            </svg>
-                            <span>Terapkan Filter</span>
-                        </button>
-                        <a href="{{ route('admin.reports', ['tab' => 'laba_rugi']) }}" class="px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-bold transition-colors shadow-2xs" title="Reset filter ke bulan ini">
-                            Reset
-                        </a>
-                    </div>
-                </form>
-
-                @else
-                <!-- Form Filter untuk Rekapitulasi Penjualan & Kas -->
-                <form method="GET" action="{{ route('admin.reports') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 items-end">
-                    <input type="hidden" name="tab" value="penjualan">
-
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Dari Tanggal Trip</label>
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Dari Tanggal</label>
                         <input type="date" name="start_date" value="{{ $startDate }}" class="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white shadow-2xs">
                     </div>
-
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1.5">Sampai Tanggal</label>
                         <input type="date" name="end_date" value="{{ $endDate }}" class="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white shadow-2xs">
                     </div>
+                </div>
 
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Status Tagihan</label>
-                        <select name="status" class="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white shadow-2xs">
-                            <option value="ALL" {{ $status === 'ALL' ? 'selected' : '' }}>Semua Status</option>
-                            <option value="FULL_PAID" {{ $status === 'FULL_PAID' ? 'selected' : '' }}>LUNAS (100%)</option>
-                            <option value="DP_PAID" {{ $status === 'DP_PAID' ? 'selected' : '' }}>DP Terbayar (Sisa Loket)</option>
-                            <option value="PENDING" {{ $status === 'PENDING' ? 'selected' : '' }}>Menunggu Bayar</option>
-                            <option value="CANCELLED" {{ $status === 'CANCELLED' ? 'selected' : '' }}>Dibatalkan</option>
-                        </select>
-                    </div>
+                <!-- Filter Paket Wisata -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Paket Wisata</label>
+                    <select name="package_id" class="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white shadow-2xs">
+                        <option value="">Semua Paket Wisata</option>
+                        @foreach($packages as $pkg)
+                        <option value="{{ $pkg->id }}" {{ (string)$packageId === (string)$pkg->id ? 'selected' : '' }}>
+                            {{ $pkg->name }}
+                        </option>
+                        @endforeach
+                    </select>
+                </div>
 
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Paket Wisata</label>
-                        <select name="package_id" class="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white shadow-2xs">
-                            <option value="">Semua Paket Wisata</option>
-                            @foreach($packages as $pkg)
-                            <option value="{{ $pkg->id }}" {{ (string)$packageId === (string)$pkg->id ? 'selected' : '' }}>{{ $pkg->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
+            </x-admin.filter-card>
 
-                    <div class="flex items-center gap-2">
-                        <button type="submit" class="flex-1 py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-emerald-700 to-[#183c21] hover:from-emerald-600 hover:to-[#183c21] text-white text-xs font-bold transition-all shadow-xs hover:shadow cursor-pointer flex items-center justify-center gap-1.5">
-                            <span>Terapkan Filter</span>
-                        </button>
-                        @if($startDate || $endDate || ($status && $status !== 'ALL') || $packageId)
-                        <a href="{{ route('admin.reports', ['tab' => 'penjualan']) }}" class="px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-bold transition-colors shadow-2xs" title="Reset filter">
-                            Reset
-                        </a>
-                        @endif
-                    </div>
-                </form>
-                @endif
-            </div>
+            @else
+            <!-- FILTER CARD: TAB PENJUALAN & KAS -->
+            <x-admin.filter-card 
+                id="filter-box"
+                :action="route('admin.reports')" 
+                :resetUrl="route('admin.reports', ['tab' => 'penjualan'])"
+                :liveSearch="false"
+                submitLabel="Terapkan Filter"
+                gridCols="grid-cols-1 sm:grid-cols-2 lg:grid-cols-5"
+                class="no-print">
+
+                <input type="hidden" name="tab" value="penjualan">
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Dari Tanggal Trip</label>
+                    <input type="date" name="start_date" value="{{ $startDate }}" class="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white shadow-2xs">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Sampai Tanggal</label>
+                    <input type="date" name="end_date" value="{{ $endDate }}" class="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white shadow-2xs">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Status Tagihan</label>
+                    <select name="status" class="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white shadow-2xs">
+                        <option value="ALL" {{ $status === 'ALL' ? 'selected' : '' }}>Semua Status</option>
+                        <option value="FULL_PAID" {{ $status === 'FULL_PAID' ? 'selected' : '' }}>LUNAS (100%)</option>
+                        <option value="DP_PAID" {{ $status === 'DP_PAID' ? 'selected' : '' }}>DP Terbayar (Sisa Loket)</option>
+                        <option value="PENDING" {{ $status === 'PENDING' ? 'selected' : '' }}>Menunggu Bayar</option>
+                        <option value="CANCELLED" {{ $status === 'CANCELLED' ? 'selected' : '' }}>Dibatalkan</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Paket Wisata</label>
+                    <select name="package_id" class="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white shadow-2xs">
+                        <option value="">Semua Paket Wisata</option>
+                        @foreach($packages as $pkg)
+                        <option value="{{ $pkg->id }}" {{ (string)$packageId === (string)$pkg->id ? 'selected' : '' }}>{{ $pkg->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+            </x-admin.filter-card>
+            @endif
 
             @if($activeTab === 'laba_rugi')
             <!-- ========================================== -->
