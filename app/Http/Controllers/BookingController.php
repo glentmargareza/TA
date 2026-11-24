@@ -450,6 +450,7 @@ class BookingController extends Controller
 
         // 3. Perbarui status booking
         $booking->booking_status = $booking->payment_mode === 'DP' ? 'DP_PAID' : 'FULL_PAID';
+        $booking->lock_expires_at = null;
         $booking->save();
 
         // Otomatis alokasikan Driver dan Armada Jeep saat bukti transfer diterima
@@ -493,6 +494,7 @@ class BookingController extends Controller
         ]);
 
         $booking->booking_status = $booking->payment_mode === 'DP' ? 'DP_PAID' : 'FULL_PAID';
+        $booking->lock_expires_at = null;
         $booking->save();
 
         // Otomatis alokasikan Driver dan Armada Jeep untuk pembayaran kasir loket

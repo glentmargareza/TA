@@ -815,6 +815,7 @@ class AdminController extends Controller
                 'booking_status' => 'FULL_PAID',
                 'paid_amount' => $booking->total_amount,
                 'remaining_amount' => 0.00,
+                'lock_expires_at' => null,
             ]);
 
             // Otomatis alokasikan Driver dan Armada Jeep saat pelunasan di loket

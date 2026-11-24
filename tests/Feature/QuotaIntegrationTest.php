@@ -204,4 +204,72 @@ class QuotaIntegrationTest extends TestCase
             $custSlots->firstWhere('id', $slotB->id)['remaining']
         );
     }
+
+    /**
+     * f) Booking FULL_PAID dengan lock_expires_at di masa lalu tetap terhitung menahan kuota.
+     */
+    public function test_paid_booking_with_past_lock_expires_at_still_counts_in_quota(): void
+    {
+        $slot = ScheduleSlot::where('is_active', true)->first();
+        $date = date('Y-m-d', strtotime('+9 days'));
+        $remBefore = SlotAvailabilityService::getRemainingJeeps($slot->id, $date);
+
+        // Buat booking FULL_PAID namun lock_expires_at di masa lalu (misal 2 jam lalu)
+        $booking = Booking::create([
+            'booking_code' => 'PASTLOCK-01',
+            'customer_name' => 'Peserta Lunas Lock Masa Lalu',
+            'customer_phone' => '081233344499',
+            'package_id' => Package::first()->id,
+            'slot_id' => $slot->id,
+            'trip_date' => $date,
+            'jeep_quantity' => 1,
+            'passenger_count' => 4,
+            'package_subtotal' => 450000,
+            'total_amount' => 450000,
+            'paid_amount' => 450000,
+            'payment_mode' => 'FULL',
+            'booking_status' => 'FULL_PAID',
+            'lock_expires_at' => now()->subHours(2),
+        ]);
+
+        // Kuota tetap harus berkurang 1
+        $remAfter = SlotAvailabilityService::getRemainingJeeps($slot->id, $date);
+        $this->assertEquals($remBefore - 1, $remAfter);
+
+        // Endpoint wisatawan juga harus menampilkan 1 dipesan
+        $res = $this->getJson("/booking/slot-availability?trip_date={$date}&jeep_quantity=1");
+        $slotData = collect($res->json('slots'))->firstWhere('id', $slot->id);
+        $this->assertEquals(1, $slotData['booked_jeeps']);
+    }
+
+    /**
+     * g) Verifikasi kuota tanggal 24/11/2026 dan konsistensi data booking aktif dengan endpoint ketersediaan.
+     */
+    public function test_target_date_24_nov_2026_and_active_booking_consistency(): void
+    {
+        $date = '2026-11-24';
+        $res = $this->getJson("/booking/slot-availability?trip_date={$date}&jeep_quantity=1");
+        $res->assertStatus(200);
+
+        $slots = collect($res->json('slots'));
+        $slotPagi2 = $slots->firstWhere('id', 3);
+        $slotSiang = $slots->firstWhere('id', 4);
+
+        // WKR-3YNUTI di Slot 3 (Sesi Pagi 2) terhitung
+        $this->assertNotNull($slotPagi2);
+        $this->assertEquals(1, $slotPagi2['booked_jeeps']);
+        $this->assertEquals(19, $slotPagi2['remaining']);
+
+        // WKR-XW2UUY di Slot 4 (Sesi Siang) terhitung meskipun lock_expires_at sudah lewat di masa lalu
+        $this->assertNotNull($slotSiang);
+        $this->assertGreaterThanOrEqual(1, $slotSiang['booked_jeeps']);
+        $this->assertLessThanOrEqual(19, $slotSiang['remaining']);
+
+        // Jumlah booking aktif di database untuk tanggal tersebut sama persis dengan total_booked_jeeps di endpoint
+        $activeBookingsCount = Booking::whereDate('trip_date', $date)
+            ->whereIn('booking_status', ['FULL_PAID', 'DP_PAID'])
+            ->sum('jeep_quantity');
+
+        $this->assertEquals($activeBookingsCount, $res->json('total_booked_jeeps'));
+    }
 }
