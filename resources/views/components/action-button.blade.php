@@ -1,5 +1,5 @@
 @props([
-    'type' => 'view', // 'view' | 'edit' | 'delete' | 'cancel' | 'print' | 'settle' | 'assign' | 'photo' | 'calendar' | 'toggle'
+    'type' => 'view', // 'view' | 'edit' | 'delete' | 'cancel' | 'print' | 'settle' | 'assign' | 'photo' | 'calendar' | 'toggle' | 'verify' | 'cash'
     'title' => '',
     'as' => 'button', // 'button' | 'a' | 'submit'
     'icon' => null,
@@ -56,6 +56,16 @@
             'icon' => 'check',
             'classes' => 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100 hover:border-emerald-300 hover:text-emerald-900',
             'defaultTitle' => 'Ubah Status',
+        ],
+        'verify' => [
+            'icon' => 'shield-check',
+            'classes' => 'bg-amber-50 border-amber-300 text-amber-800 hover:bg-amber-100 hover:border-amber-400 hover:text-amber-950',
+            'defaultTitle' => 'Verifikasi Bukti Transfer',
+        ],
+        'cash' => [
+            'icon' => 'cash',
+            'classes' => 'bg-teal-50 border-teal-300 text-teal-800 hover:bg-teal-100 hover:border-teal-400 hover:text-teal-950',
+            'defaultTitle' => 'Terima Pembayaran Kasir',
         ],
     ];
 

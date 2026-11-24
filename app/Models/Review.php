@@ -30,10 +30,6 @@ class Review extends Model
 
     public function package()
     {
-        $relation = $this->belongsTo(Package::class);
-        if (\Illuminate\Support\Facades\Schema::hasColumn('packages', 'deleted_at')) {
-            return $relation->withTrashed();
-        }
-        return $relation;
+        return $this->belongsTo(Package::class)->withTrashed();
     }
 }

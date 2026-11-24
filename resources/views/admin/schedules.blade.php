@@ -261,99 +261,16 @@
         </div>
     </div>
 
-    <script>
-        function openCreateScheduleModal() {
-            const modal = document.getElementById('modalCreateSchedule');
-            const card = document.getElementById('modalCreateScheduleCard');
-            if (!modal) return;
-            modal.classList.remove('hidden');
-            requestAnimationFrame(() => {
-                card.classList.remove('scale-95', 'opacity-0');
-                card.classList.add('scale-100', 'opacity-100');
-            });
-        }
-
-        function closeCreateScheduleModal() {
-            const modal = document.getElementById('modalCreateSchedule');
-            const card = document.getElementById('modalCreateScheduleCard');
-            if (!modal) return;
-            card.classList.remove('scale-100', 'opacity-100');
-            card.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 150);
-        }
-
-        function openEditScheduleModal(id, label, startTime, endTime, maxJeeps) {
-            const form = document.getElementById('editScheduleForm');
-            const modal = document.getElementById('modalEditSchedule');
-            const card = document.getElementById('modalEditScheduleCard');
-            if (!modal || !form) return;
-
-            form.action = '/admin/jadwal/' + id;
-            document.getElementById('edit_slot_label').value = label || '';
-            document.getElementById('edit_start_time').value = startTime || '';
-            document.getElementById('edit_end_time').value = endTime || '';
-            document.getElementById('edit_max_jeeps').value = maxJeeps || '';
-
-            modal.classList.remove('hidden');
-            requestAnimationFrame(() => {
-                card.classList.remove('scale-95', 'opacity-0');
-                card.classList.add('scale-100', 'opacity-100');
-            });
-        }
-
-        function handleEditScheduleClick(btn) {
-            const id = btn.getAttribute('data-id');
-            const label = btn.getAttribute('data-label');
-            const startTime = btn.getAttribute('data-start');
-            const endTime = btn.getAttribute('data-end');
-            const maxJeeps = btn.getAttribute('data-max');
-
-            openEditScheduleModal(id, label, startTime, endTime, maxJeeps);
-        }
-
-        function closeEditScheduleModal() {
-            const modal = document.getElementById('modalEditSchedule');
-            const card = document.getElementById('modalEditScheduleCard');
-            if (!modal) return;
-            card.classList.remove('scale-100', 'opacity-100');
-            card.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 150);
-        }
-
-        // Auto-refresh jadwal & kuota setiap 25 detik saat tab aktif
-        setInterval(() => {
-            if (document.visibilityState === 'visible') {
-                const modalCreate = document.getElementById('modalCreateSchedule');
-                const modalEdit = document.getElementById('modalEditSchedule');
-                const isModalOpen = (modalCreate && !modalCreate.classList.contains('hidden')) ||
-                                    (modalEdit && !modalEdit.classList.contains('hidden'));
-                if (!isModalOpen) {
-                    window.location.reload();
-                }
-            }
-        }, 25000);
-
-        // Close on ESC
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeCreateScheduleModal();
-                closeEditScheduleModal();
-            }
-        });
-
-        // Close on backdrop click
-        ['modalCreateSchedule', 'modalEditSchedule'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.addEventListener('click', function(e) {
-                    if (e.target === el) {
-                        if (id === 'modalCreateSchedule') closeCreateScheduleModal();
-                        if (id === 'modalEditSchedule') closeEditScheduleModal();
-                    }
+    <x-slot:scripts>
+        <script>
+            function openCreateScheduleModal() {
+                const modal = document.getElementById('modalCreateSchedule');
+                const card = document.getElementById('modalCreateScheduleCard');
+                if (!modal) return;
+                modal.classList.remove('hidden');
+                requestAnimationFrame(() => {
+                    card.classList.remove('scale-95', 'opacity-0');
+                    card.classList.add('scale-100', 'opacity-100');
                 });
             }
 
@@ -369,8 +286,8 @@
             }
 
             function openEditScheduleModal(id, label, startTime, endTime, maxJeeps) {
-                const modal = document.getElementById('modalEditSchedule');
                 const form = document.getElementById('editScheduleForm');
+                const modal = document.getElementById('modalEditSchedule');
                 const card = document.getElementById('modalEditScheduleCard');
                 if (!modal || !form) return;
 
@@ -407,6 +324,19 @@
                     modal.classList.add('hidden');
                 }, 150);
             }
+
+            // Auto-refresh jadwal & kuota setiap 25 detik saat tab aktif
+            setInterval(() => {
+                if (document.visibilityState === 'visible') {
+                    const modalCreate = document.getElementById('modalCreateSchedule');
+                    const modalEdit = document.getElementById('modalEditSchedule');
+                    const isModalOpen = (modalCreate && !modalCreate.classList.contains('hidden')) ||
+                                        (modalEdit && !modalEdit.classList.contains('hidden'));
+                    if (!isModalOpen) {
+                        window.location.reload();
+                    }
+                }
+            }, 25000);
 
             // Close on ESC
             document.addEventListener('keydown', function(e) {

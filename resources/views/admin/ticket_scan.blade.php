@@ -1,81 +1,26 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verifikasi Tiket {{ $booking?->booking_code ?? $code }} | Jeep Wukirsari</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        wukirsari: {
-                            primary: '#143B1E',
-                            dark: '#0D2714',
-                            accent: '#1E5E30',
-                            light: '#EAF3EC',
-                            border: '#D7E5D9',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap');
-        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-        h1, h2, h3, h4, h5, h6 { font-family: 'Poppins', 'Inter', sans-serif; }
-    </style>
-</head>
-<body class="bg-[#F4F6F8] text-slate-800 min-h-screen flex flex-col md:flex-row antialiased">
+<x-admin-layout :title="'Verifikasi Tiket ' . ($booking?->booking_code ?? $code) . ' | Jeep Wukirsari'">
 
-    @include('admin.partials.sidebar')
+    <!-- Header Banner -->
+    <x-admin.header title="Verifikasi Tiket" subtitle="Scan QR Code untuk verifikasi dan pelunasan tiket di loket basecamp.">
+        <x-slot:actions>
+            <a href="{{ route('admin.bookings') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-all border border-slate-200">
+                <x-icon name="arrow-left" class="w-3.5 h-3.5" />
+                <span>Semua Booking</span>
+            </a>
+        </x-slot:actions>
+    </x-admin.header>
 
-    <!-- Main Content Area -->
-    <div class="flex-1 flex flex-col min-w-0 min-h-screen overflow-x-hidden">
+    <!-- Page Content -->
+    <main class="flex-1 px-4 sm:px-8 py-6 sm:py-8">
 
-        <!-- Header Banner -->
-        <header class="bg-white border-b border-slate-200 px-4 sm:px-8 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-0 z-20 shadow-2xs">
-            <div>
-                <div class="flex items-center gap-2 mb-0.5">
-                    <a href="{{ route('admin.bookings') }}" class="text-slate-400 hover:text-slate-600 transition text-xs flex items-center gap-1">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-                        Manajemen Booking
-                    </a>
-                    <span class="text-slate-300 text-xs">/</span>
-                    <span class="text-slate-500 text-xs">Verifikasi Tiket</span>
-                </div>
-                <h1 class="text-lg sm:text-xl font-black text-slate-900 tracking-tight leading-tight">
-                    Verifikasi Tiket
-                </h1>
-                <p class="text-xs text-slate-500 mt-0.5">Scan QR Code untuk verifikasi dan pelunasan tiket di loket basecamp.</p>
-            </div>
-            <div class="flex items-center gap-3 shrink-0">
-                <a href="{{ route('admin.bookings') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-all border border-slate-200">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                    Semua Booking
-                </a>
-            </div>
-        </header>
+        {{-- Flash Messages --}}
+        @if(session('success'))
+        <x-alert type="success" :message="session('success')" class="mb-5" />
+        @endif
 
-        <!-- Page Content -->
-        <main class="flex-1 px-4 sm:px-8 py-6 sm:py-8">
-
-            {{-- Flash Messages --}}
-            @if(session('success'))
-            <div class="mb-5 flex items-start gap-3 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900">
-                <svg class="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <span class="text-sm font-medium">{{ session('success') }}</span>
-            </div>
-            @endif
-
-            @if(session('error'))
-            <div class="mb-5 flex items-start gap-3 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900">
-                <svg class="w-5 h-5 text-rose-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                <span class="text-sm font-medium">{{ session('error') }}</span>
-            </div>
-            @endif
+        @if(session('error'))
+        <x-alert type="danger" :message="session('error')" class="mb-5" />
+        @endif
 
             @if(!$booking)
             {{-- ===== TIKET TIDAK DITEMUKAN ===== --}}
@@ -340,10 +285,6 @@
             @endif
 
         </main>
-    </div>
 
-    @include('admin.partials.confirm-modal')
-
-</body>
-</html>
+</x-admin-layout>
 

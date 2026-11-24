@@ -10,14 +10,6 @@ class Package extends Model
 {
     use HasFactory, SoftDeletes;
 
-    /**
-     * Override bootSoftDeletes agar kompatibel dengan database yang belum memiliki kolom deleted_at.
-     */
-    public static function bootSoftDeletes()
-    {
-        // Jangan tambahkan SoftDeletingScope jika tabel packages tidak memiliki kolom deleted_at
-    }
-
     protected $fillable = [
         'name',
         'slug',

@@ -2087,13 +2087,8 @@ class AdminController extends Controller
                 if (!empty($booking->customer_notes)) {
                     $booking->customer_notes .= "\n" . $rescheduleNote;
                 } else {
-                    if ($assignment->jeep->status === 'ON_TRIP') {
-                        $hasOtherTripToday = BookingAssignment::where('jeep_id', $assignment->jeep_id)
-                            ->where('booking_id', '!=', $booking->id)
-                            ->whereHas('booking', function ($q) {
-                                $q->whereDate('trip_date', now()->toDateString())
-                                    ->whereIn('booking_status', ['DP_PAID', 'FULL_PAID']);
-                            })->exists();
+                    $booking->customer_notes = $rescheduleNote;
+                }
 
                 $booking->save();
 

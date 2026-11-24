@@ -151,6 +151,22 @@
                             <tr class="hover:bg-slate-50/70 transition-colors">
                                 <td class="py-3 px-4 text-center whitespace-nowrap">
                                     <div class="flex items-center justify-center gap-1.5">
+                                        @php
+                                            $pendingCash = $b->payments->where('payment_type', 'CASH')->where('payment_status', 'PENDING')->first();
+                                        @endphp
+
+                                        @if($b->booking_status === 'PENDING' && $pendingCash)
+                                        <form action="{{ route('admin.confirm_cash', $b->id) }}" method="POST" class="inline"
+                                              data-confirm-title="Konfirmasi Pembayaran Kasir"
+                                              data-confirm-message="Konfirmasi penerimaan pembayaran kasir <strong class='text-emerald-700 font-bold'>Rp {{ number_format($pendingCash->gross_amount, 0, ',', '.') }}</strong> untuk booking <strong class='font-bold text-emerald-800'>#{{ $b->booking_code }}</strong> atas nama <strong class='text-slate-800'>{{ $b->customer_name }}</strong>?"
+                                              data-confirm-type="success"
+                                              data-confirm-text="Ya, Terima Kasir"
+                                              data-confirm-cancel="Batal">
+                                            @csrf
+                                            <x-action-button type="cash" as="submit" title="Terima Pembayaran Kasir (Rp {{ number_format($pendingCash->gross_amount, 0, ',', '.') }})" />
+                                        </form>
+                                        @endif
+
                                         <!-- 1. Ikon Driver: Atur / Ganti Driver -->
                                         @if($b->booking_status !== 'CANCELLED')
                                         <x-action-button 
@@ -190,7 +206,7 @@
 
                                         <!-- 4. Ikon Silang: Batalkan Booking -->
                                         @if($b->booking_status !== 'CANCELLED' && $b->booking_status !== 'COMPLETED')
-                                        <form action="{{ route('admin.cancel', $b->id) }}" method="POST"
+                                        <form action="{{ route('admin.cancel', $b->id) }}" method="POST" class="inline"
                                               data-confirm-title="Batalkan Booking"
                                               data-confirm-message="Apakah Anda yakin ingin membatalkan booking <strong class='font-bold text-rose-700'>#{{ $b->booking_code }}</strong> atas nama <strong class='text-slate-800'>{{ $b->customer_name }}</strong>? Tindakan ini tidak dapat dibatalkan."
                                               data-confirm-type="danger"
@@ -311,80 +327,6 @@
                                         @endif
                                     </div>
                                     @endif
-                                </td>
-                                <td class="py-3 px-4 text-center">
-                                    <div class="flex items-center justify-center gap-1.5">
-                                        @php
-                                            $pendingManual = $b->payments->where('payment_type', 'MANUAL_BPD_DIY')->where('payment_status', 'PENDING')->first();
-                                            $pendingCash = $b->payments->where('payment_type', 'CASH')->where('payment_status', 'PENDING')->first();
-                                        @endphp
-
-                                        @if($b->booking_status === 'WAITING_CONFIRMATION' && $pendingManual)
-                                        <button type="button" 
-                                            onclick="openProofModal('{{ $b->id }}', '{{ $b->booking_code }}', '{{ addslashes($b->customer_name) }}', '{{ addslashes($pendingManual->sender_name ?? '-') }}', '{{ addslashes($pendingManual->sender_bank ?? '-') }}', '{{ number_format($pendingManual->gross_amount, 0, ',', '.') }}', '{{ $pendingManual->proof_image ? asset($pendingManual->proof_image) : ($pendingManual->payload_response['proof_url'] ?? '#') }}', '{{ route('admin.verify_payment', $b->id) }}', '{{ route('admin.reject_payment', $b->id) }}')"
-                                            class="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-bold text-[10px] shadow-xs cursor-pointer flex items-center gap-1"
-                                            title="Verifikasi Bukti Transfer">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                            <span>Verifikasi</span>
-                                        </button>
-                                        @endif
-
-                                        @if($b->booking_status === 'PENDING' && $pendingCash)
-                                        <form action="{{ route('admin.confirm_cash', $b->id) }}" method="POST" onsubmit="return confirm('Konfirmasi penerimaan pembayaran kasir Rp {{ number_format($pendingCash->gross_amount, 0, ',', '.') }} untuk booking #{{ $b->booking_code }}?')">
-                                            @csrf
-                                            <button type="submit" class="px-2.5 py-1 rounded-lg bg-teal-600 hover:bg-teal-700 text-white font-bold text-[10px] shadow-xs cursor-pointer flex items-center gap-1" title="Terima Pembayaran Kasir">
-                                                <span>Terima Kasir</span>
-                                            </button>
-                                        </form>
-                                        @endif
-
-                                        <!-- Tombol Detail Informasi Pemesan -->
-                                        <button type="button" data-booking='@json($detailData)' onclick="openBookingDetailModal(this)" class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-emerald-50 hover:border-emerald-300 text-slate-600 hover:text-emerald-700 text-xs font-semibold shadow-2xs transition-all cursor-pointer" title="Lihat detail lengkap pemesan">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                                        </button>
-
-                                        @if(!empty($detailData['proof_url']))
-                                        <!-- Tombol Akses Bukti Transfer Cepat (1 Tab / In-Page Modal) -->
-                                        <button type="button" 
-                                            data-proof-url="{{ $detailData['proof_url'] }}" 
-                                            data-booking-code="{{ $b->booking_code }}" 
-                                            data-sender-name="{{ $detailData['sender_name'] ?? 'Wisatawan' }}" 
-                                            data-sender-bank="{{ $detailData['sender_bank'] ?? 'Bank BPD DIY' }}" 
-                                            onclick="openProofFromBtn(this)" 
-                                            class="p-1.5 rounded-lg border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold shadow-2xs transition-all cursor-pointer" 
-                                            title="Lihat Bukti Transfer Pelanggan (Dalam Halaman)">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                        </button>
-                                        @endif
-
-                                        @if($b->booking_status === 'DP_PAID')
-                                        <form action="{{ route('admin.settle', $b->id) }}" method="POST"
-                                              data-confirm-title="Konfirmasi Pelunasan Loket"
-                                              data-confirm-message="Terima pelunasan sisa tagihan untuk booking <strong class='font-bold text-emerald-800'>#{{ $b->booking_code }}</strong> atas nama <strong class='text-slate-800'>{{ $b->customer_name }}</strong> sebesar <strong class='text-emerald-700 font-bold'>Rp {{ number_format($b->remaining_amount ?? 0, 0, ',', '.') }}</strong>?"
-                                              data-confirm-type="success"
-                                              data-confirm-text="Ya, Terima Pelunasan"
-                                              data-confirm-cancel="Batal">
-                                            @csrf
-                                            <button type="submit" class="px-2.5 py-1 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-[10px] shadow-xs cursor-pointer">
-                                                Pelunasan
-                                            </button>
-                                        </form>
-                                        @endif
-
-                                        @if($b->booking_status !== 'CANCELLED' && $b->booking_status !== 'COMPLETED')
-                                        <form action="{{ route('admin.cancel', $b->id) }}" method="POST"
-                                              data-confirm-title="Batalkan Booking"
-                                              data-confirm-message="Apakah Anda yakin ingin membatalkan booking <strong class='font-bold text-rose-700'>#{{ $b->booking_code }}</strong> atas nama <strong class='text-slate-800'>{{ $b->customer_name }}</strong>? Tindakan ini tidak dapat dibatalkan."
-                                              data-confirm-type="danger"
-                                              data-confirm-text="Ya, Batalkan Booking"
-                                              data-confirm-cancel="Kembali">
-                                            @csrf
-                                            <button type="submit" class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-rose-50 hover:border-rose-300 text-slate-400 hover:text-rose-600 text-xs shadow-2xs transition-all cursor-pointer" title="Batalkan booking">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                                            </button>
-                                        </form>
-                                        @endif
-                                    </div>
                                 </td>
                             </tr>
                             @empty
@@ -1236,10 +1178,5 @@
                 });
             </script>
         </main>
-    </div>
-
-    @include('admin.partials.modal-manual-proof')
-
-</body>
-</html>
+</x-admin-layout>
 
