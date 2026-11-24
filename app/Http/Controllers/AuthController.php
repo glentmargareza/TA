@@ -356,6 +356,6 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('home')->with('info', 'Anda telah berhasil keluar dari akun.');
+        return redirect()->route('home')->with('success', 'Anda telah berhasil keluar dari akun.');
     }
 }

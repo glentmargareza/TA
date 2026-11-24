@@ -11,10 +11,6 @@
 
     <main class="p-4 sm:p-8 space-y-5 sm:space-y-6 flex-1">
 
-        @if(session('success'))
-        <x-alert type="success" :message="session('success')" />
-        @endif
-
             <!-- CARD FORM PENCARIAN & FILTER LENGKAP -->
             <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5">
                 <form method="GET" action="{{ route('admin.bookings') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">

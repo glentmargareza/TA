@@ -5,11 +5,6 @@
 
     <main class="p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6 flex-1 overflow-y-auto">
 
-        <!-- Flash Alert -->
-        @if(session('success'))
-        <x-alert type="success" :message="session('success')" />
-        @endif
-
         <!-- 3 KARTU STATISTIK ULASAN -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5">
             <x-stat-card label="Total Ulasan Masuk" :value="$totalReviews" unit="Ulasan" subtext="Semua testimoni tersimpan" icon="users" />

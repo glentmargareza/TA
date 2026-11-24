@@ -24,6 +24,7 @@
         #mobileNavDrawer,
         #stickyActionBar,
         #flashToastContainer,
+        #global-toast-container,
         .no-print {
             display: none !important;
         }

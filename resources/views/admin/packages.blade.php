@@ -12,21 +12,6 @@
 
     <main class="p-4 sm:p-8 space-y-5 sm:space-y-6 flex-1 overflow-y-auto">
 
-        @if(session('success'))
-        <x-alert type="success" :message="session('success')" />
-        @endif
-
-        @if(isset($errors) && $errors->any())
-        <x-alert type="danger">
-            <span class="block font-bold mb-1">Gagal memproses data paket wisata:</span>
-            <ul class="list-disc list-inside space-y-0.5 text-xs font-normal">
-                @foreach($errors->all() as $err)
-                    <li>{{ $err }}</li>
-                @endforeach
-            </ul>
-        </x-alert>
-        @endif
-
         <!-- Ringkasan Statistik Paket -->
         @php
             $totalPackages = $packages->count();

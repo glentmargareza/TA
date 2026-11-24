@@ -49,9 +49,14 @@
                 <div>
                     <label class="block text-xs font-semibold text-merapiText-primary mb-1.5">Kata Sandi *</label>
                     <div class="relative">
-                        <input type="password" name="password" id="registerPassword" required placeholder="Minimal 6 karakter" class="w-full pl-3.5 pr-20 py-2.5 rounded-xl border border-wukirsari-border text-xs focus:outline-none focus:border-wukirsari-primary">
-                        <button type="button" onclick="togglePasswordVisibility('registerPassword', this)" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[11px] font-semibold text-merapiText-muted hover:text-wukirsari-primary transition-colors cursor-pointer" title="Lihat / Sembunyikan Kata Sandi" tabindex="-1">
-                            <span class="toggle-text">Lihat</span>
+                        <input type="password" name="password" id="registerPassword" required placeholder="Minimal 6 karakter" class="w-full pl-3.5 pr-10 py-2.5 rounded-xl border border-wukirsari-border text-xs focus:outline-none focus:border-wukirsari-primary">
+                        <button type="button" onclick="togglePasswordVisibility('registerPassword', this)" class="absolute inset-y-0 right-0 pr-3 flex items-center text-merapiText-muted hover:text-wukirsari-primary transition-colors cursor-pointer" title="Lihat / Sembunyikan Kata Sandi" aria-label="Lihat atau sembunyikan kata sandi" tabindex="-1">
+                            <span class="icon-eye flex items-center">
+                                <x-icon name="eye" class="w-4 h-4" />
+                            </span>
+                            <span class="icon-eye-slash hidden flex items-center">
+                                <x-icon name="eye-slash" class="w-4 h-4 text-wukirsari-primary" />
+                            </span>
                         </button>
                     </div>
                 </div>
@@ -59,9 +64,14 @@
                 <div>
                     <label class="block text-xs font-semibold text-merapiText-primary mb-1.5">Konfirmasi Kata Sandi *</label>
                     <div class="relative">
-                        <input type="password" name="password_confirmation" id="registerPasswordConfirmation" required placeholder="Ulangi kata sandi" class="w-full pl-3.5 pr-20 py-2.5 rounded-xl border border-wukirsari-border text-xs focus:outline-none focus:border-wukirsari-primary">
-                        <button type="button" onclick="togglePasswordVisibility('registerPasswordConfirmation', this)" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[11px] font-semibold text-merapiText-muted hover:text-wukirsari-primary transition-colors cursor-pointer" title="Lihat / Sembunyikan Kata Sandi" tabindex="-1">
-                            <span class="toggle-text">Lihat</span>
+                        <input type="password" name="password_confirmation" id="registerPasswordConfirmation" required placeholder="Ulangi kata sandi" class="w-full pl-3.5 pr-10 py-2.5 rounded-xl border border-wukirsari-border text-xs focus:outline-none focus:border-wukirsari-primary">
+                        <button type="button" onclick="togglePasswordVisibility('registerPasswordConfirmation', this)" class="absolute inset-y-0 right-0 pr-3 flex items-center text-merapiText-muted hover:text-wukirsari-primary transition-colors cursor-pointer" title="Lihat / Sembunyikan Kata Sandi" aria-label="Lihat atau sembunyikan kata sandi" tabindex="-1">
+                            <span class="icon-eye flex items-center">
+                                <x-icon name="eye" class="w-4 h-4" />
+                            </span>
+                            <span class="icon-eye-slash hidden flex items-center">
+                                <x-icon name="eye-slash" class="w-4 h-4 text-wukirsari-primary" />
+                            </span>
                         </button>
                     </div>
                 </div>
@@ -89,10 +99,15 @@
         if (!input) return;
         const isPass = input.type === 'password';
         input.type = isPass ? 'text' : 'password';
-        const label = btn.querySelector('.toggle-text');
-        if (label) {
-            label.textContent = isPass ? 'Sembunyikan' : 'Lihat';
+        
+        const eyeIcon = btn.querySelector('.icon-eye');
+        const eyeSlashIcon = btn.querySelector('.icon-eye-slash');
+        if (eyeIcon && eyeSlashIcon) {
+            eyeIcon.classList.toggle('hidden', isPass);
+            eyeSlashIcon.classList.toggle('hidden', !isPass);
         }
+        
+        btn.setAttribute('title', isPass ? 'Sembunyikan Kata Sandi' : 'Lihat Kata Sandi');
     }
 </script>
 @endsection

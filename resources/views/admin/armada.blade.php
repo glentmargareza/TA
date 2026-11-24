@@ -12,14 +12,6 @@
 
     <main class="p-4 sm:p-8 space-y-5 sm:space-y-7 flex-1">
 
-        @if(session('success'))
-        <x-alert type="success" :message="session('success')" />
-        @endif
-
-        @if($errors->any())
-        <x-alert type="danger" :message="$errors->first()" />
-        @endif
-
         <!-- 3 KARTU RINGKASAN: JUMLAH KENDARAAN, DRIVER AKTIF, DRIVER NONAKTIF -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-5">
             <x-stat-card label="Jumlah Kendaraan" :value="$totalJeepsCount" unit="Unit" subtext="Total Armada Paguyuban" icon="car" />
@@ -84,10 +76,7 @@
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-1.5 shrink-0">
-                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#DCFCE7] text-[#16A34A] border border-emerald-200/60 inline-flex items-center gap-1">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                        Siap Jalan
-                                    </span>
+                                    
                                     <form action="{{ route('admin.drivers.status', $d->id) }}" method="POST" class="inline"
                                           data-confirm-title="Nonaktifkan Driver"
                                           data-confirm-message="Ubah status driver <strong class='text-slate-800 font-bold'>{{ $d->full_name }}</strong> menjadi <strong class='text-amber-700 font-bold'>TIDAK AKTIF</strong>? Driver sementara tidak akan dialokasikan ke booking."
@@ -146,10 +135,7 @@
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-1.5 shrink-0">
-                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200/60 inline-flex items-center gap-1">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                                        Libur / Izin
-                                    </span>
+                                    
                                     <form action="{{ route('admin.drivers.status', $d->id) }}" method="POST" class="inline"
                                           data-confirm-title="Aktifkan Kembali Driver"
                                           data-confirm-message="Aktifkan kembali driver <strong class='text-slate-800 font-bold'>{{ $d->full_name }}</strong> untuk jadwal rotasi penugasan armada?"

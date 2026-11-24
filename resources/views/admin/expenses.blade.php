@@ -19,25 +19,6 @@
 
     <main class="p-4 sm:p-8 space-y-6 flex-1 overflow-y-auto">
 
-        <!-- Flash Alert Notifikasi -->
-        @if(session('success'))
-            <x-alert type="success" dismissible>{{ session('success') }}</x-alert>
-        @endif
-
-        @if(session('error'))
-            <x-alert type="danger" dismissible>{{ session('error') }}</x-alert>
-        @endif
-
-        @if(!empty($errors) && $errors->any())
-            <x-alert type="danger" title="Perhatian: Terjadi kesalahan validasi">
-                <ul class="list-disc list-inside space-y-0.5 pl-2">
-                    @foreach($errors->all() as $err)
-                    <li>{{ $err }}</li>
-                    @endforeach
-                </ul>
-            </x-alert>
-        @endif
-
         <!-- A. RINGKASAN PENGELUARAN (4 KARTU STATISTIK) -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <!-- 1. Total Pengeluaran Bulan Ini -->

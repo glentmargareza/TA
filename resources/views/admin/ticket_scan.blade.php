@@ -13,15 +13,6 @@
     <!-- Page Content -->
     <main class="flex-1 px-4 sm:px-8 py-6 sm:py-8">
 
-        {{-- Flash Messages --}}
-        @if(session('success'))
-        <x-alert type="success" :message="session('success')" class="mb-5" />
-        @endif
-
-        @if(session('error'))
-        <x-alert type="danger" :message="session('error')" class="mb-5" />
-        @endif
-
             @if(!$booking)
             {{-- ===== TIKET TIDAK DITEMUKAN ===== --}}
             <div class="max-w-lg mx-auto text-center py-16">

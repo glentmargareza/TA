@@ -76,6 +76,41 @@
             </div>
         @endif
     @endforeach
+
+    {{-- Fallback jika terdapat validation error redirect back tanpa session('error') --}}
+    @if (!empty($errors) && $errors->any() && !session('error'))
+        <div class="toast-card pointer-events-auto w-full bg-white/95 backdrop-blur-md rounded-2xl border shadow-2xl overflow-hidden transform translate-y-0 opacity-100 scale-100 transition-all duration-300 {{ $flashTypes['error']['border'] }}"
+             role="status"
+             data-toast-type="error">
+            <div class="p-3.5 sm:p-4 flex items-start gap-3.5">
+                <div class="w-10 h-10 rounded-xl {{ $flashTypes['error']['iconWrapper'] }} flex items-center justify-center shrink-0">
+                    <x-icon :name="$flashTypes['error']['icon']" class="w-5 h-5" />
+                </div>
+
+                <div class="flex-1 min-w-0 pt-0.5">
+                    <div class="flex items-center justify-between gap-2 mb-1">
+                        <span class="text-[11px] font-bold uppercase tracking-wider {{ $flashTypes['error']['titleColor'] }}">Gagal Validasi</span>
+                        <span class="text-[10px] text-slate-400 font-medium">Baru saja</span>
+                    </div>
+                    <p class="text-xs font-semibold text-slate-700 leading-snug break-words">
+                        {{ $errors->first() }}
+                    </p>
+                </div>
+
+                <button type="button"
+                        onclick="dismissToast(this.closest('.toast-card'))"
+                        class="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors shrink-0 -mr-1 -mt-1 cursor-pointer"
+                        aria-label="Tutup notifikasi">
+                    <x-icon name="x-mark" class="w-4 h-4" />
+                </button>
+            </div>
+
+            {{-- Animated Progress Bar Countdown --}}
+            <div class="h-1 w-full bg-slate-100 overflow-hidden">
+                <div class="toast-progress-bar h-full {{ $flashTypes['error']['barColor'] }}" style="animation: toastProgressBar 3800ms linear forwards;"></div>
+            </div>
+        </div>
+    @endif
 </div>
 
 <style>

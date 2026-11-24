@@ -109,10 +109,6 @@
         <!-- MAIN DASHBOARD CONTENT -->
         <main class="p-6 sm:p-8 space-y-7 flex-1">
             
-            @if(session('success'))
-            <x-alert type="success" :message="session('success')" />
-            @endif
-
             <!-- ROW 1: 4 METRIC CARDS (Persis Gambar Referensi Atas - Data Dinamis Riil) -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
                 

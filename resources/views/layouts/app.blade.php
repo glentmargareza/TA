@@ -388,50 +388,8 @@
         </div>
     </aside>
 
-    <!-- FLOATING TOAST NOTIFICATIONS (Floating overlay: 0 layout height/gap) -->
-    <div id="flashToastContainer" class="fixed top-24 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4 pointer-events-none flex flex-col items-center gap-2 transition-all">
-        @if(session('success'))
-        <div class="toast-item pointer-events-auto bg-white/95 backdrop-blur-md border border-emerald-300 text-emerald-900 px-4 py-2.5 rounded-2xl text-xs flex items-center justify-between gap-3 shadow-xl shadow-black/10 transition-all duration-300">
-            <div class="flex items-center gap-2">
-                <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                <span class="font-semibold">{{ session('success') }}</span>
-            </div>
-            <button type="button" onclick="this.closest('.toast-item').remove()" class="text-slate-400 hover:text-slate-700 font-bold px-1.5 py-0.5 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors">✕</button>
-        </div>
-        @endif
-
-        @if(session('info'))
-        <div class="toast-item pointer-events-auto bg-white/95 backdrop-blur-md border border-emerald-300 text-emerald-950 px-4 py-2.5 rounded-2xl text-xs flex items-center justify-between gap-3 shadow-xl shadow-black/10 transition-all duration-300">
-            <div class="flex items-center gap-2">
-                <svg class="w-4 h-4 text-emerald-700 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <span class="font-semibold">{{ session('info') }}</span>
-            </div>
-            <button type="button" onclick="this.closest('.toast-item').remove()" class="text-slate-400 hover:text-slate-700 font-bold px-1.5 py-0.5 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors">✕</button>
-        </div>
-        @endif
-
-        @if(session('error'))
-        <div class="toast-item pointer-events-auto bg-white/95 backdrop-blur-md border border-rose-300 text-rose-950 px-4 py-2.5 rounded-2xl text-xs flex items-center justify-between gap-3 shadow-xl shadow-black/10 transition-all duration-300">
-            <div class="flex items-center gap-2">
-                <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                <span class="font-semibold">{{ session('error') }}</span>
-            </div>
-            <button type="button" onclick="this.closest('.toast-item').remove()" class="text-slate-400 hover:text-slate-700 font-bold px-1.5 py-0.5 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors">✕</button>
-        </div>
-        @endif
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            setTimeout(function () {
-                document.querySelectorAll('.toast-item').forEach(function (el) {
-                    el.style.opacity = '0';
-                    el.style.transform = 'translateY(-10px)';
-                    setTimeout(function () { el.remove(); }, 300);
-                });
-            }, 5000);
-        });
-    </script>
+    <!-- Pop-up Toast Melayang (Standar POS-Apotek) -->
+    <x-toast />
 
     <!-- CONTENT WRAPPER -->
     <main class="flex-1 pb-20 md:pb-0">

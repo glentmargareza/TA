@@ -17,10 +17,6 @@
 
     <main class="p-4 sm:p-8 space-y-4 sm:space-y-5 flex-1 max-w-5xl w-full mx-auto overflow-y-auto">
 
-        @if(session('success'))
-        <x-alert type="success" :message="session('success')" />
-        @endif
-
         @php
             \Carbon\Carbon::setLocale('id');
             $totalAll = $totalActivities ?? ($activities->total() ?? 0);
