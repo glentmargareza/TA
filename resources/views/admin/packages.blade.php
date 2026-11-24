@@ -1,136 +1,45 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kelola Paket Wisata | Admin Jeep Wukirsari</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        wukirsari: {
-                            primary: '#143B1E',
-                            dark: '#0D2714',
-                            accent: '#1E5E30',
-                            light: '#EAF3EC',
-                            border: '#D7E5D9',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800;900&display=swap');
-        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-        .font-display, h1, h2, h3, h4, h5, h6 { font-family: 'Poppins', 'Inter', sans-serif; }
-    </style>
-</head>
-<body class="bg-[#F4F6F8] text-slate-800 min-h-screen flex flex-col md:flex-row antialiased">
+<x-admin-layout title="Kelola Paket Wisata | Admin Jeep Wukirsari">
 
-    @include('admin.partials.sidebar')
+    <!-- Header Banner -->
+    <x-admin.header title="Kelola Paket Wisata Jeep" subtitle="Atur paket tour Merapi, tarif per armada jeep, rute destinasi, dan ketersediaan paket pemesanan.">
+        <x-slot:actions>
+            <button type="button" onclick="openCreatePackageModal()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-700 via-[#183c21] to-[#102b17] hover:from-emerald-600 hover:to-[#183c21] text-white text-xs font-bold shadow-xs hover:shadow transition-all cursor-pointer active:scale-95">
+                <x-icon name="plus" class="w-4 h-4" />
+                <span>Tambah Paket Baru</span>
+            </button>
+        </x-slot:actions>
+    </x-admin.header>
 
-    <!-- Main Content -->
-    <div class="flex-1 flex flex-col min-w-0 min-h-screen overflow-x-hidden">
-        
-        <!-- Header Banner -->
-        <header class="bg-white border-b border-slate-200 px-4 sm:px-8 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-0 z-20 shadow-2xs">
-            <div>
-                <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight font-display">
-                    Kelola Paket Wisata Jeep
-                </h1>
-                <p class="text-xs text-slate-500 mt-0.5">Atur paket tour Merapi, tarif per armada jeep, rute destinasi, dan ketersediaan paket pemesanan.</p>
-            </div>
-            <div class="flex items-center gap-2.5 flex-wrap">
-               
-                <button type="button" onclick="openCreatePackageModal()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-700 via-[#183c21] to-[#102b17] hover:from-emerald-600 hover:to-[#183c21] text-white text-xs font-bold shadow-xs hover:shadow transition-all cursor-pointer active:scale-95">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                    <span>Tambah Paket Baru</span>
-                </button>
-                
-            </div>
-        </header>
+    <main class="p-4 sm:p-8 space-y-5 sm:space-y-6 flex-1 overflow-y-auto">
 
-        <main class="p-4 sm:p-8 space-y-5 sm:space-y-6 flex-1 overflow-y-auto">
+        @if(session('success'))
+        <x-alert type="success" :message="session('success')" />
+        @endif
 
-            @if(session('success'))
-            <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs sm:text-sm font-semibold flex items-center justify-between shadow-xs">
-                <div class="flex items-center gap-2.5">
-                    <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm shrink-0">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                    </span>
-                    <span>{{ session('success') }}</span>
-                </div>
-                <button type="button" onclick="this.parentElement.remove()" class="text-emerald-700 hover:text-emerald-950 font-bold text-sm cursor-pointer">&times;</button>
-            </div>
-            @endif
+        @if(isset($errors) && $errors->any())
+        <x-alert type="danger">
+            <span class="block font-bold mb-1">Gagal memproses data paket wisata:</span>
+            <ul class="list-disc list-inside space-y-0.5 text-xs font-normal">
+                @foreach($errors->all() as $err)
+                    <li>{{ $err }}</li>
+                @endforeach
+            </ul>
+        </x-alert>
+        @endif
 
-            @if(isset($errors) && $errors->any())
-            <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 text-xs sm:text-sm shadow-xs space-y-1">
-                <div class="font-bold flex items-center gap-2">
-                    <span class="w-6 h-6 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center font-bold text-sm shrink-0">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                    </span>
-                    <span>Gagal memproses data paket wisata:</span>
-                </div>
-                <ul class="list-disc list-inside space-y-0.5 text-rose-800 pl-8 text-xs font-medium">
-                    @foreach($errors->all() as $err)
-                        <li>{{ $err }}</li>
-                    @endforeach
-                </ul>
-            </div>
-            @endif
-
-            <!-- Ringkasan Statistik Paket -->
-            @php
-                $totalPackages = $packages->count();
-                $activePackages = $packages->where('is_active', true)->count();
-                $inactivePackages = $packages->where('is_active', false)->count();
-                $avgPrice = $packages->avg('price_per_jeep') ?: 0;
-            @endphp
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 md:gap-5">
-                <!-- 1. Total Paket -->
-                <div class="bg-white p-3 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden flex items-center justify-between min-w-0">
-                    <div class="min-w-0">
-                        <span class="text-[11px] sm:text-xs font-semibold text-slate-500 block truncate">Total Paket Wisata</span>
-                        <span class="text-lg sm:text-2xl md:text-3xl font-extrabold text-slate-900 block mt-0.5 sm:mt-1 tracking-tight font-display">
-                            {{ $totalPackages }} <span class="text-[10px] sm:text-xs font-normal text-slate-400">Rute</span>
-                        </span>
-                    </div>
-                </div>
-
-                <!-- 2. Paket Aktif (Tampil) -->
-                <div class="bg-white p-3 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden flex items-center justify-between min-w-0">
-                    <div class="min-w-0">
-                        <span class="text-[11px] sm:text-xs font-semibold text-slate-500 block truncate">Paket Aktif (Tampil)</span>
-                        <span class="text-lg sm:text-2xl md:text-3xl font-extrabold text-emerald-800 block mt-0.5 sm:mt-1 tracking-tight font-display">
-                            {{ $activePackages }} <span class="text-[10px] sm:text-xs font-normal text-slate-400">Paket</span>
-                        </span>
-                    </div>
-                </div>
-
-                <!-- 3. Non-Aktif / Draft -->
-                <div class="bg-white p-3 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden flex items-center justify-between min-w-0">
-                    <div class="min-w-0">
-                        <span class="text-[11px] sm:text-xs font-semibold text-slate-500 block truncate">Non-Aktif / Draft</span>
-                        <span class="text-lg sm:text-2xl md:text-3xl font-extrabold text-amber-700 block mt-0.5 sm:mt-1 tracking-tight font-display">
-                            {{ $inactivePackages }} <span class="text-[10px] sm:text-xs font-normal text-slate-400">Paket</span>
-                        </span>
-                    </div>
-                </div>
-
-                <!-- 4. Rata-rata Tarif / Jeep -->
-                <div class="bg-white p-3 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden flex items-center justify-between min-w-0">
-                    <div class="min-w-0">
-                        <span class="text-[11px] sm:text-xs font-semibold text-slate-500 block truncate">Rata-rata Tarif / Jeep</span>
-                        <span class="text-base sm:text-xl md:text-2xl font-black text-slate-900 block mt-0.5 sm:mt-1 tracking-tight font-display text-emerald-800 truncate">
-                            Rp {{ number_format($avgPrice, 0, ',', '.') }}
-                        </span>
-                    </div>
-                </div>
-            </div>
+        <!-- Ringkasan Statistik Paket -->
+        @php
+            $totalPackages = $packages->count();
+            $activePackages = $packages->where('is_active', true)->count();
+            $inactivePackages = $packages->where('is_active', false)->count();
+            $avgPrice = $packages->avg('price_per_jeep') ?: 0;
+        @endphp
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 md:gap-5">
+            <x-stat-card label="Total Paket Wisata" :value="$totalPackages" unit="Rute" subtext="Paket Terdaftar" />
+            <x-stat-card label="Paket Aktif (Tampil)" :value="$activePackages" unit="Paket" subtext="Tampil di Beranda" iconWrapper="bg-emerald-100 text-emerald-800" />
+            <x-stat-card label="Non-Aktif / Draft" :value="$inactivePackages" unit="Paket" subtext="Draft / Disembunyikan" iconWrapper="bg-amber-100 text-amber-800" />
+            <x-stat-card label="Rata-rata Tarif / Jeep" :value="'Rp ' . number_format($avgPrice, 0, ',', '.')" subtext="Tarif Rata-rata" />
+        </div>
 
             <!-- TABEL DAFTAR PAKET WISATA -->
             <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
@@ -172,19 +81,20 @@
                                         </span>
                                     </td>
 
-                                    <!-- Aksi (Edit & Hapus) -->
+                                    <!-- Aksi (Foto, Edit & Hapus) -->
                                     <td class="py-4 px-4 text-center whitespace-nowrap">
                                         <div class="flex items-center justify-center gap-1.5">
                                             <!-- Tombol Buka Detail & Kelola Foto -->
-                                            <a href="{{ route('packages.show', $pkg->slug) }}"
-                                               target="_blank"
-                                               class="p-1.5 rounded-xl border border-slate-200 bg-white hover:bg-emerald-50 hover:border-emerald-300 text-slate-500 hover:text-emerald-700 text-xs shadow-2xs transition-all cursor-pointer inline-flex items-center justify-center"
-                                               title="Buka Detail & Kelola Foto Paket">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                            </a>
+                                            <x-action-button 
+                                                type="photo" 
+                                                as="a" 
+                                                href="{{ route('packages.show', $pkg->slug) }}" 
+                                                target="_blank" 
+                                                title="Buka Detail & Kelola Foto Paket" />
 
-                                            <button type="button"
-                                                class="p-1.5 rounded-xl border border-slate-200 bg-white hover:bg-emerald-50 hover:border-emerald-300 text-slate-500 hover:text-emerald-700 text-xs shadow-2xs transition-all cursor-pointer"
+                                            <!-- Tombol Edit Paket -->
+                                            <x-action-button 
+                                                type="edit"
                                                 title="Edit Paket Wisata"
                                                 data-id="{{ $pkg->id }}"
                                                 data-name="{{ $pkg->name }}"
@@ -196,9 +106,7 @@
                                                 data-cover-image="{{ $pkg->cover_image }}"
                                                 data-description="{{ $pkg->description }}"
                                                 data-routes="{{ $routesRawText }}"
-                                                onclick="handleEditPackageClick(this)">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                            </button>
+                                                onclick="handleEditPackageClick(this)" />
 
                                             <!-- Tombol Hapus dengan Konfirmasi Modal Kustom -->
                                             <form action="{{ route('admin.packages.destroy', $pkg->id) }}" method="POST" class="inline"
@@ -209,9 +117,7 @@
                                                   data-confirm-cancel="Batal">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="p-1.5 rounded-xl border border-slate-200 bg-white hover:bg-rose-50 hover:border-rose-300 text-slate-400 hover:text-rose-600 text-xs shadow-2xs transition-all cursor-pointer" title="Hapus Paket">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                                </button>
+                                                <x-action-button type="delete" as="submit" title="Hapus Paket" />
                                             </form>
                                         </div>
                                     </td>
@@ -743,5 +649,4 @@
             }
         });
     </script>
-</body>
-</html>
+</x-admin-layout>

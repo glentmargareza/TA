@@ -1,46 +1,8 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard & Monitoring Operasional | Jeep Wukirsari</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        wukirsari: {
-                            primary: '#143B1E',
-                            dark: '#0D2714',
-                            accent: '#1E5E30',
-                            light: '#EAF3EC',
-                            border: '#D7E5D9',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap');
-        body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-        }
-        h1, h2, h3, h4, h5, h6 {
-            font-family: 'Poppins', 'Inter', sans-serif;
-        }
-    </style>
-</head>
-<body class="bg-[#F4F6F8] text-slate-800 min-h-screen flex flex-col md:flex-row antialiased">
-
-    @include('admin.partials.sidebar')
-
-    <!-- Main Content Area -->
-    <div class="flex-1 flex flex-col min-w-0 min-h-screen overflow-x-hidden">
+<x-admin-layout title="Dashboard & Monitoring Operasional | Jeep Wukirsari">
+    <x-slot:head>
+        <!-- Chart.js CDN -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    </x-slot:head>
         
         <!-- TOP SCENIC HEADER BANNER (Matching Mockup with Bright Scenic Landscape) -->
         <div class="relative bg-[#E8EFEA] border-b border-slate-200/80 shadow-xs z-30">
@@ -148,13 +110,7 @@
         <main class="p-6 sm:p-8 space-y-7 flex-1">
             
             @if(session('success'))
-            <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-2xl text-sm font-semibold shadow-xs flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <svg class="w-5 h-5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                    <span>{{ session('success') }}</span>
-                </div>
-                <button type="button" onclick="this.parentElement.remove()" class="text-emerald-700 hover:text-emerald-950 font-bold text-sm cursor-pointer">&times;</button>
-            </div>
+            <x-alert type="success" :message="session('success')" />
             @endif
 
             <!-- ROW 1: 4 METRIC CARDS (Persis Gambar Referensi Atas - Data Dinamis Riil) -->
@@ -1288,7 +1244,4 @@
             </script>
 
         </main>
-    </div>
-
-</body>
-</html>
+</x-admin-layout>

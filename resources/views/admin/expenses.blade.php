@@ -1,168 +1,81 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manajemen Pengeluaran Operasional | Admin Jeep Wukirsari</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        wukirsari: {
-                            primary: '#143B1E',
-                            dark: '#0D2714',
-                            accent: '#1E5E30',
-                            light: '#EAF3EC',
-                            border: '#D7E5D9',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800;900&display=swap');
-        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-        .font-display, h1, h2, h3, h4, h5, h6 { font-family: 'Poppins', 'Inter', sans-serif; }
-    </style>
-</head>
-<body class="bg-[#F4F6F8] text-slate-800 min-h-screen flex flex-col md:flex-row antialiased">
+<x-admin-layout title="Manajemen Pengeluaran Operasional">
+    <!-- Header Banner -->
+    <x-admin.header
+        title="Manajemen Pengeluaran"
+        subtitle="Catat dan pantau seluruh beban biaya operasional, BBM, armada jeep, dan utilitas basecamp secara akurat."
+        badge="Operasional"
+    >
+        <x-slot:actions>
+            <a href="{{ route('admin.reports', ['tab' => 'laba_rugi']) }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold shadow-2xs transition-all cursor-pointer">
+                <x-icon name="chart-bar" class="w-4 h-4 text-emerald-700" />
+                <span>Laporan Laba Rugi</span>
+            </a>
+            <button type="button" onclick="openCreateExpenseModal()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-700 via-[#183c21] to-[#102b17] hover:from-emerald-600 hover:to-[#183c21] text-white text-xs font-bold shadow-xs hover:shadow transition-all cursor-pointer active:scale-95">
+                <x-icon name="plus" class="w-4 h-4" />
+                <span>Tambah Pengeluaran</span>
+            </button>
+        </x-slot:actions>
+    </x-admin.header>
 
-    @include('admin.partials.sidebar')
+    <main class="p-4 sm:p-8 space-y-6 flex-1 overflow-y-auto">
 
-    <!-- Main Content Area -->
-    <div class="flex-1 flex flex-col min-w-0 min-h-screen overflow-x-hidden">
-        
-        <!-- Header Banner -->
-        <header class="bg-white border-b border-slate-200 px-4 sm:px-8 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-0 z-20 shadow-2xs">
-            <div>
-                <div class="flex items-center gap-2">
-                    <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight font-display">
-                        Manajemen Pengeluaran
-                    </h1>
-                    <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold uppercase tracking-wide">
-                        Operasional
-                    </span>
-                </div>
-                <p class="text-xs text-slate-500 mt-0.5">
-                    Catat dan pantau seluruh beban biaya operasional, BBM, armada jeep, dan utilitas basecamp secara akurat.
-                </p>
-            </div>
-            <div class="flex items-center gap-2.5 flex-wrap">
-                <a href="{{ route('admin.reports', ['tab' => 'laba_rugi']) }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold shadow-2xs transition-all cursor-pointer">
-                    <svg class="w-4 h-4 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-                    <span>Laporan Laba Rugi</span>
-                </a>
-                <button type="button" onclick="openCreateExpenseModal()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-700 via-[#183c21] to-[#102b17] hover:from-emerald-600 hover:to-[#183c21] text-white text-xs font-bold shadow-xs hover:shadow transition-all cursor-pointer active:scale-95">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                    <span>Tambah Pengeluaran</span>
-                </button>
-            </div>
-        </header>
+        <!-- Flash Alert Notifikasi -->
+        @if(session('success'))
+            <x-alert type="success" dismissible>{{ session('success') }}</x-alert>
+        @endif
 
-        <main class="p-4 sm:p-8 space-y-6 flex-1 overflow-y-auto">
+        @if(session('error'))
+            <x-alert type="danger" dismissible>{{ session('error') }}</x-alert>
+        @endif
 
-            <!-- Flash Alert Notifikasi -->
-            @if(session('success'))
-            <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs sm:text-sm font-semibold flex items-center justify-between shadow-xs">
-                <div class="flex items-center gap-2.5">
-                    <svg class="w-5 h-5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                    <span>{{ session('success') }}</span>
-                </div>
-                <button type="button" onclick="this.parentElement.remove()" class="text-emerald-700 hover:text-emerald-900 cursor-pointer font-bold px-2 py-0.5 rounded-lg hover:bg-emerald-100">✕</button>
-            </div>
-            @endif
-
-            @if(session('error'))
-            <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 text-xs sm:text-sm font-semibold flex items-center justify-between shadow-xs">
-                <div class="flex items-center gap-2.5">
-                    <svg class="w-5 h-5 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                    <span>{{ session('error') }}</span>
-                </div>
-                <button type="button" onclick="this.parentElement.remove()" class="text-rose-700 hover:text-rose-900 cursor-pointer font-bold px-2 py-0.5 rounded-lg hover:bg-rose-100">✕</button>
-            </div>
-            @endif
-
-            @if(!empty($errors) && $errors->any())
-            <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 text-xs sm:text-sm font-semibold space-y-1 shadow-xs">
-                <div class="flex items-center gap-2 font-bold text-rose-950 mb-1">
-                    <svg class="w-5 h-5 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    <span>Perhatian: Terjadi kesalahan validasi</span>
-                </div>
-                <ul class="list-disc list-inside space-y-0.5 pl-5">
+        @if(!empty($errors) && $errors->any())
+            <x-alert type="danger" title="Perhatian: Terjadi kesalahan validasi">
+                <ul class="list-disc list-inside space-y-0.5 pl-2">
                     @foreach($errors->all() as $err)
                     <li>{{ $err }}</li>
                     @endforeach
                 </ul>
-            </div>
-            @endif
+            </x-alert>
+        @endif
 
-            <!-- A. RINGKASAN PENGELUARAN (4 KARTU STATISTIK) -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                
-                <!-- 1. Total Pengeluaran Bulan Ini -->
-                <div class="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs relative overflow-hidden flex flex-col justify-between">
-                    <div>
-                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Bulan Ini ({{ Carbon\Carbon::now()->translatedFormat('F Y') }})</span>
-                    </div>
-                    <div class="mt-3">
-                        <span class="text-xl sm:text-2xl font-black text-slate-900 font-display block">
-                            Rp {{ number_format($totalThisMonth, 0, ',', '.') }}
-                        </span>
-                        <span class="text-[11px] text-emerald-700 font-semibold mt-1 flex items-center gap-1">
-                            <span>Biaya operasional bulan berjalan</span>
-                        </span>
-                    </div>
-                </div>
+        <!-- A. RINGKASAN PENGELUARAN (4 KARTU STATISTIK) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- 1. Total Pengeluaran Bulan Ini -->
+            <x-stat-card 
+                label="Bulan Ini ({{ Carbon\Carbon::now()->translatedFormat('F Y') }})" 
+                value="Rp {{ number_format($totalThisMonth, 0, ',', '.') }}" 
+                subtext="Biaya operasional bulan berjalan" 
+                variant="emerald" 
+                icon="cash"
+            />
 
-                <!-- 2. Total Pengeluaran Hari Ini -->
-                <div class="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs relative overflow-hidden flex flex-col justify-between">
-                    <div>
-                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Hari Ini ({{ Carbon\Carbon::now()->translatedFormat('d M') }})</span>
-                    </div>
-                    <div class="mt-3">
-                        <span class="text-xl sm:text-2xl font-black text-slate-900 font-display block">
-                            Rp {{ number_format($totalToday, 0, ',', '.') }}
-                        </span>
-                        <span class="text-[11px] text-sky-700 font-semibold mt-1 flex items-center gap-1">
-                            <span>Pengeluaran hari ini</span>
-                        </span>
-                    </div>
-                </div>
+            <!-- 2. Total Pengeluaran Hari Ini -->
+            <x-stat-card 
+                label="Hari Ini ({{ Carbon\Carbon::now()->translatedFormat('d M') }})" 
+                value="Rp {{ number_format($totalToday, 0, ',', '.') }}" 
+                subtext="Pengeluaran hari ini" 
+                variant="sky" 
+                icon="clock"
+            />
 
-                <!-- 3. Jumlah Transaksi Pengeluaran -->
-                <div class="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs relative overflow-hidden flex flex-col justify-between">
-                    <div>
-                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Transaksi</span>
-                    </div>
-                    <div class="mt-3">
-                        <span class="text-xl sm:text-2xl font-black text-slate-900 font-display block">
-                            {{ number_format($totalTransactions) }} <span class="text-sm font-semibold text-slate-500">Nota</span>
-                        </span>
-                        <span class="text-[11px] text-indigo-700 font-semibold mt-1 flex items-center gap-1">
-                            <span>Audit & bukti tersimpan</span>
-                        </span>
-                    </div>
-                </div>
+            <!-- 3. Jumlah Transaksi Pengeluaran -->
+            <x-stat-card 
+                label="Total Transaksi" 
+                value="{{ number_format($totalTransactions) }} Nota" 
+                subtext="Audit & bukti tersimpan" 
+                variant="indigo" 
+                icon="chart-bar"
+            />
 
-                <!-- 4. Pengeluaran Terbesar -->
-                <div class="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs relative overflow-hidden flex flex-col justify-between">
-                    <div>
-                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Pengeluaran Terbesar</span>
-                    </div>
-                    <div class="mt-3">
-                        <span class="text-xl sm:text-2xl font-black text-slate-900 font-display block truncate">
-                            {{ $largestExpense ? $largestExpense->formatted_amount : 'Rp 0' }}
-                        </span>
-                        <span class="text-[11px] text-amber-800 font-semibold mt-1 truncate block" title="{{ $largestExpense ? $largestExpense->name : '-' }}">
-                            {{ $largestExpense ? Str::limit($largestExpense->name, 24) : 'Belum ada data' }}
-                        </span>
-                    </div>
-                </div>
-
-            </div>
+            <!-- 4. Pengeluaran Terbesar -->
+            <x-stat-card 
+                label="Pengeluaran Terbesar" 
+                value="{{ $largestExpense ? $largestExpense->formatted_amount : 'Rp 0' }}" 
+                subtext="{{ $largestExpense ? Str::limit($largestExpense->name, 24) : 'Belum ada data' }}" 
+                variant="amber" 
+                icon="cash"
+            />
+        </div>
 
             <!-- B. FILTER & PENCARIAN -->
             <div class="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-2xs space-y-4">
@@ -355,7 +268,7 @@
                                             data-caption="{{ $expense->name }}"
                                             onclick="openLightbox(this.dataset.url, this.dataset.caption)" 
                                             class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[11px] font-semibold border border-emerald-200 transition cursor-pointer">
-                                            <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                            <x-icon name="photo" class="w-3.5 h-3.5 text-emerald-600" />
                                             <span>Foto</span>
                                         </button>
                                         @elseif($expense->is_receipt_pdf)
@@ -377,13 +290,11 @@
                                 <td class="py-3.5 px-4 text-center whitespace-nowrap">
                                     <div class="flex items-center justify-center gap-1.5">
                                         <!-- Detail -->
-                                        <button type="button" 
+                                        <x-action-button 
+                                            type="view" 
                                             data-id="{{ $expense->id }}"
                                             onclick="openDetailExpenseModal(this.dataset.id)" 
-                                            class="p-1.5 rounded-xl border border-slate-200 bg-white hover:bg-emerald-50 hover:border-emerald-300 text-slate-500 hover:text-emerald-700 text-xs shadow-2xs transition-all cursor-pointer" 
-                                            title="Lihat Rincian Pengeluaran">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                                        </button>
+                                            title="Lihat Rincian Pengeluaran" />
 
                                         <!-- Edit -->
                                         @php
@@ -399,13 +310,11 @@
                                                 'receipt_original_name' => $expense->receipt_original_name,
                                             ];
                                         @endphp
-                                        <button type="button" 
-                                            class="p-1.5 rounded-xl border border-slate-200 bg-white hover:bg-blue-50 hover:border-blue-300 text-slate-500 hover:text-blue-700 text-xs shadow-2xs transition-all cursor-pointer" 
+                                        <x-action-button 
+                                            type="edit"
                                             title="Edit Data Pengeluaran"
-                                            data-expense='@json($editData)'
-                                            onclick="openEditExpenseModal(this)">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                        </button>
+                                            :data-expense="json_encode($editData)"
+                                            onclick="openEditExpenseModal(this)" />
 
                                         <!-- Hapus -->
                                         <form action="{{ route('admin.expenses.destroy', $expense->id) }}" method="POST" class="inline"
@@ -416,9 +325,7 @@
                                               data-confirm-cancel="Batal">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="p-1.5 rounded-xl border border-slate-200 bg-white hover:bg-rose-50 hover:border-rose-300 text-slate-400 hover:text-rose-600 text-xs shadow-2xs transition-all cursor-pointer" title="Hapus Pengeluaran">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                            </button>
+                                            <x-action-button type="delete" as="submit" title="Hapus Pengeluaran" />
                                         </form>
                                     </div>
                                 </td>
@@ -478,8 +385,8 @@
                         <p class="text-xs text-emerald-200/90 mt-0.5">Input biaya operasional, BBM, armada jeep, pos, atau utilitas.</p>
                     </div>
                 </div>
-                <button type="button" onclick="closeCreateExpenseModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer shrink-0">
-                    ✕
+                <button type="button" onclick="closeCreateExpenseModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer shrink-0" aria-label="Tutup modal">
+                    <x-icon name="x-mark" class="w-4 h-4" />
                 </button>
             </div>
 
@@ -582,8 +489,8 @@
                         <p class="text-xs text-emerald-200/90 mt-0.5">Perbarui rincian atau bukti kuitansi pengeluaran.</p>
                     </div>
                 </div>
-                <button type="button" onclick="closeEditExpenseModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer shrink-0">
-                    ✕
+                <button type="button" onclick="closeEditExpenseModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer shrink-0" aria-label="Tutup modal">
+                    <x-icon name="x-mark" class="w-4 h-4" />
                 </button>
             </div>
 
@@ -706,8 +613,8 @@
                         <p class="text-xs text-emerald-200/90 mt-0.5">Rincian audit dan lampiran nota pembayaran.</p>
                     </div>
                 </div>
-                <button type="button" onclick="closeDetailExpenseModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer shrink-0">
-                    ✕
+                <button type="button" onclick="closeDetailExpenseModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer shrink-0" aria-label="Tutup modal">
+                    <x-icon name="x-mark" class="w-4 h-4" />
                 </button>
             </div>
 
@@ -772,8 +679,9 @@
     <!-- ======================================================== -->
     <div id="modalReceiptLightbox" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4">
         <div class="relative max-w-4xl max-h-[90vh] flex flex-col items-center">
-            <button type="button" onclick="closeLightbox()" class="absolute -top-12 right-0 text-white/80 hover:text-white p-2 rounded-full bg-white/10 hover:bg-white/20 transition cursor-pointer">
-                ✕ Tutup
+            <button type="button" onclick="closeLightbox()" class="absolute -top-12 right-0 inline-flex items-center gap-1.5 text-white/90 hover:text-white px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold transition cursor-pointer backdrop-blur-xs">
+                <x-icon name="x-mark" class="w-4 h-4" />
+                <span>Tutup</span>
             </button>
             <img id="lightboxImage" src="" alt="Bukti Pengeluaran" class="max-w-full max-h-[82vh] rounded-2xl object-contain border border-white/20 shadow-2xl">
             <span id="lightboxCaption" class="mt-3 text-xs text-slate-300 font-semibold tracking-wide"></span>
@@ -1057,6 +965,5 @@
             }
         });
     </script>
-</body>
-</html>
+</x-admin-layout>
 

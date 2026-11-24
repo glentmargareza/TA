@@ -1,61 +1,14 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pengaturan Sistem & Operasional | Admin Jeep Wukirsari</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        wukirsari: {
-                            primary: '#143B1E',
-                            dark: '#0D2714',
-                            accent: '#1E5E30',
-                            light: '#EAF3EC',
-                            border: '#D7E5D9',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap');
-        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-        .font-display { font-family: 'Poppins', 'Inter', sans-serif; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        /* Prevent auto zoom in iOS Safari on inputs */
-        @media screen and (max-width: 640px) {
-            input, select, textarea { font-size: 14px !important; }
-        }
-    </style>
-</head>
-<body class="bg-[#F8FAFC] text-slate-800 min-h-screen flex flex-col md:flex-row antialiased">
+<x-admin-layout title="Pengaturan Sistem & Operasional | Admin Jeep Wukirsari">
 
-    @include('admin.partials.sidebar')
-
-    <!-- Main Content Area -->
-    <div class="flex-1 flex flex-col min-w-0 min-h-screen overflow-x-hidden">
-        
-        <!-- Header Banner (Mobile Friendly) -->
-        <header class="bg-white border-b border-slate-200 px-3.5 sm:px-8 py-3.5 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 md:sticky md:top-0 z-20">
-            <div>
-                <h1 class="text-lg sm:text-2xl font-bold text-slate-900 tracking-tight font-display">
-                    Pengaturan Sistem & Operasional
-                </h1>
-                <p class="text-[11px] sm:text-xs text-slate-500 mt-0.5">Kelola informasi akun, identitas usaha, tampilan website beranda, dan aturan operasional trip.</p>
-            </div>
-            <div class="flex items-center gap-2 self-start sm:self-auto">
-                <a href="{{ route('home') }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-slate-200 hover:bg-slate-50 active:scale-95 text-slate-700 text-xs font-bold transition-all shadow-2xs">
-                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-700 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                    <span>Lihat Beranda</span>
-                </a>
-            </div>
-        </header>
+    <!-- Header Banner -->
+    <x-admin.header title="Pengaturan Sistem & Operasional" subtitle="Kelola informasi akun, identitas usaha, tampilan website beranda, dan aturan operasional trip.">
+        <x-slot:actions>
+            <a href="{{ route('home') }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-slate-200 hover:bg-slate-50 active:scale-95 text-slate-700 text-xs font-bold transition-all shadow-2xs">
+                <x-icon name="home" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-700 shrink-0" />
+                <span>Lihat Beranda</span>
+            </a>
+        </x-slot:actions>
+    </x-admin.header>
 
         <main class="p-3.5 sm:p-6 md:p-8 space-y-4 sm:space-y-6 flex-1 max-w-6xl w-full mx-auto overflow-y-auto">
 
@@ -944,6 +897,4 @@
             }
         }
     </script>
-
-</body>
-</html>
+</x-admin-layout>
