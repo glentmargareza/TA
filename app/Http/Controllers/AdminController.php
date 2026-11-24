@@ -2139,39 +2139,9 @@ class AdminController extends Controller
 
         $result = \App\Services\SlotAvailabilityService::getSlotAvailability($date, 1, $excludeBookingId);
 
-        $data = $slots->map(function ($s) use ($date, $excludeBookingId) {
-            $query = $s->bookings()
-                ->whereDate('trip_date', $date)
-                ->whereIn('booking_status', ['PENDING', 'DP_PAID', 'FULL_PAID']);
-
-            if ($excludeBookingId > 0) {
-                $query->where('id', '!=', $excludeBookingId);
-            }
-
-            $booked = (int) $query->sum('jeep_quantity');
-            $remaining = max(0, $s->max_jeeps - $booked);
-
-            $startTime = substr((string) $s->start_time, 0, 5);
-            $endTime = substr((string) $s->end_time, 0, 5);
-            $cleanSlotLabel = trim(preg_replace('/\s*\(\d{2}:\d{2}\s*WIB\)/i', '', (string)$s->slot_label)) ?: ('Sesi ' . $s->id);
-            $timeRange = $startTime . ' - ' . $endTime . ' WIB';
-
-            return [
-                'id' => $s->id,
-                'slot_label' => $cleanSlotLabel,
-                'start_time' => $startTime,
-                'end_time' => $endTime,
-                'time_range' => $timeRange,
-                'max_jeeps' => $s->max_jeeps,
-                'booked_jeeps' => $booked,
-                'remaining_jeeps' => $remaining,
-                'is_full' => $remaining <= 0,
-            ];
-        });
-
         return response()->json([
-            'date' => $date,
-            'slots' => $data,
+            'date'  => $date,
+            'slots' => $result['slots'],
         ]);
     }
 

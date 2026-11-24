@@ -64,9 +64,13 @@ class BookingController extends Controller
         $packages = Package::where('is_active', true)->get();
         $selectedPackage = Package::where('slug', $selectedSlug)->first() ?? $packages->first();
 
+        if (old('package_id')) {
+            $selectedPackage = Package::find(old('package_id')) ?? $selectedPackage;
+        }
+
         $slots = ScheduleSlot::where('is_active', true)->orderBy('start_time')->get();
 
-        $now = now();
+        $now = now('Asia/Jakarta');
         $isSunriseSelected = str_contains(strtolower($selectedPackage?->slug . ' ' . $selectedPackage?->name), 'sunrise');
 
         // Otomatis tentukan tanggal kunjungan awal yang cerdas & tersedia
@@ -119,8 +123,12 @@ class BookingController extends Controller
         $bookingData = [
             'selectedId'   => $selectedPackage?->id,
             'defaultDate'  => $defaultDate,
-            'packages'    => \App\Services\SlotAvailabilityService::getActivePackages(),
-            'slots'       => \App\Services\SlotAvailabilityService::getActiveSlots(),
+            'oldSlotId'    => old('slot_id'),
+            'oldPax'       => old('passenger_count'),
+            'oldQty'       => old('jeep_quantity'),
+            'oldPay'       => old('payment_mode', 'FULL'),
+            'packages'     => \App\Services\SlotAvailabilityService::getActivePackages(),
+            'slots'        => \App\Services\SlotAvailabilityService::getActiveSlots(),
         ];
 
         return view('booking.create', compact('packages', 'selectedPackage', 'slots', 'bookingData', 'defaultDate'));
@@ -211,10 +219,11 @@ class BookingController extends Controller
         }
 
         // Validasi jam sesi tidak boleh di waktu yang sudah lewat jika memesan untuk hari ini
-        $today = now()->format('Y-m-d');
+        $nowWib = now('Asia/Jakarta');
+        $today = $nowWib->format('Y-m-d');
         if ($validated['trip_date'] === $today) {
             $slotTime = substr((string) $slot->start_time, 0, 5);
-            $nowTime = now()->format('H:i');
+            $nowTime = $nowWib->format('H:i');
             if ($slotTime <= $nowTime) {
                 return back()->withInput()->withErrors([
                     'slot_id' => "Sesi {$slot->slot_label} untuk hari ini sudah lewat. Silakan pilih sesi jadwal lain atau tanggal besok."
@@ -273,9 +282,7 @@ class BookingController extends Controller
             $pickupZoneId = 1; // Datang Sendiri ke Basecamp Wukirsari
         }
 
-        if (!empty($validated['notes'])) {
-            $address = trim(($address ?? '') . ' [Catatan: ' . $validated['notes'] . ']');
-        }
+        $customerNotes = !empty($validated['notes']) ? trim($validated['notes']) : null;
 
         $totalAmount = $packageSubtotal + $pickupFee;
 
@@ -292,7 +299,7 @@ class BookingController extends Controller
         // Anti Overbooking: Lock baris ScheduleSlot dan simpan booking di dalam DB::transaction
         try {
             $booking = DB::transaction(function () use (
-                $validated, $package, $arrivalType, $address, $pickupFee, $pickupKm,
+                $validated, $package, $arrivalType, $address, $customerNotes, $pickupFee, $pickupKm,
                 $pickupLat, $pickupLng, $pickupZoneId, $jeepQuantity, $packageSubtotal,
                 $totalAmount, $payableAmount, $remainingAmount, $bookingCode
             ) {
@@ -308,6 +315,7 @@ class BookingController extends Controller
                     'customer_name' => $validated['customer_name'],
                     'customer_phone' => $validated['customer_phone'],
                     'customer_email' => $validated['customer_email'] ?? null,
+                    'customer_notes' => $customerNotes,
                     'package_id' => $package->id,
                     'slot_id' => $lockedSlot->id,
                     'trip_date' => $validated['trip_date'],
@@ -326,7 +334,7 @@ class BookingController extends Controller
                     'remaining_amount' => $remainingAmount,
                     'payment_mode' => $validated['payment_mode'],
                     'booking_status' => 'PENDING',
-                    'lock_expires_at' => now()->addMinutes(30),
+                    'lock_expires_at' => now('Asia/Jakarta')->addMinutes(30),
                     'snap_token' => null,
                 ]);
             });
@@ -369,33 +377,6 @@ class BookingController extends Controller
         } catch (\Exception $e) {
             Log::warning('Midtrans Snap Token skipped: ' . $e->getMessage());
         }
-
-        $booking = Booking::create([
-            'booking_code' => $bookingCode,
-            'customer_name' => $validated['customer_name'],
-            'customer_phone' => $validated['customer_phone'],
-            'customer_email' => $validated['customer_email'] ?? null,
-            'package_id' => $package->id,
-            'slot_id' => $validated['slot_id'],
-            'trip_date' => $validated['trip_date'],
-            'jeep_quantity' => $jeepQuantity,
-            'passenger_count' => $validated['passenger_count'],
-            'arrival_type' => $arrivalType,
-            'pickup_zone_id' => $pickupZoneId,
-            'pickup_address' => $address,
-            'pickup_lat' => $pickupLat,
-            'pickup_lng' => $pickupLng,
-            'pickup_distance_km' => $pickupKm,
-            'package_subtotal' => $packageSubtotal,
-            'pickup_fee' => $pickupFee,
-            'total_amount' => $totalAmount,
-            'paid_amount' => $payableAmount,
-            'remaining_amount' => $remainingAmount,
-            'payment_mode' => $validated['payment_mode'],
-            'booking_status' => 'PENDING',
-            'lock_expires_at' => now()->addMinutes(30),
-            'snap_token' => $snapToken,
-        ]);
 
         session(['pending_booking_code' => $booking->booking_code]);
 

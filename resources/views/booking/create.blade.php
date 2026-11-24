@@ -26,6 +26,26 @@
                 Pilih paket wisata lereng Merapi, tentukan jadwal keberangkatan, dan nikmati opsi pembayaran instan (Lunas 100% atau Uang Muka DP 30%).
             </p>
         </div>
+
+        @if(session('error'))
+        <div class="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs sm:text-sm font-semibold shadow-xs flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="text-rose-600 text-base shrink-0">⚠</span>
+                <span>{{ session('error') }}</span>
+            </div>
+            <button type="button" onclick="this.parentElement.remove()" class="text-rose-700 hover:text-rose-950 font-bold text-sm cursor-pointer">&times;</button>
+        </div>
+        @endif
+
+        @if($errors->any())
+        <div class="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs sm:text-sm font-semibold shadow-xs flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="text-rose-600 text-base shrink-0">⚠</span>
+                <span>{{ $errors->first() }}</span>
+            </div>
+            <button type="button" onclick="this.parentElement.remove()" class="text-rose-700 hover:text-rose-950 font-bold text-sm cursor-pointer">&times;</button>
+        </div>
+        @endif
  
         <!-- Form Pengiriman Data ke BookingController@store -->
         <form id="bookForm" action="{{ route('booking.store') }}" method="POST" class="hidden">
@@ -182,7 +202,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="space-y-1.5">
                             <label for="name" class="block text-xs font-bold text-merapiText-primary">Nama Lengkap Pemesan *</label>
-                            <input id="name" class="w-full px-4 py-3 rounded-2xl border border-wukirsari-border bg-white text-merapiText-primary text-sm focus:outline-none focus:border-wukirsari-primary focus:ring-2 focus:ring-wukirsari-primary/15 transition-all" placeholder="Contoh: Budi Santoso" autocomplete="name">
+                            <input id="name" value="{{ old('customer_name') }}" class="w-full px-4 py-3 rounded-2xl border border-wukirsari-border bg-white text-merapiText-primary text-sm focus:outline-none focus:border-wukirsari-primary focus:ring-2 focus:ring-wukirsari-primary/15 transition-all" placeholder="Contoh: Budi Santoso" autocomplete="name">
                         </div>
                         <div class="space-y-1.5" id="waGroup">
                             <div class="flex items-center justify-between">
@@ -190,7 +210,7 @@
                                 <span id="waStatusBadge" class="hidden text-[10px] sm:text-[11px] font-bold px-2.5 py-0.5 rounded-full transition-all"></span>
                             </div>
                             <div class="relative">
-                                <input id="wa" class="w-full pl-4 pr-11 py-3 rounded-2xl border border-wukirsari-border bg-white text-merapiText-primary text-sm focus:outline-none focus:border-wukirsari-primary focus:ring-2 focus:ring-wukirsari-primary/15 transition-all" inputmode="tel" placeholder="Contoh: 081234567890" autocomplete="tel">
+                                <input id="wa" value="{{ old('customer_phone') }}" class="w-full pl-4 pr-11 py-3 rounded-2xl border border-wukirsari-border bg-white text-merapiText-primary text-sm focus:outline-none focus:border-wukirsari-primary focus:ring-2 focus:ring-wukirsari-primary/15 transition-all" inputmode="tel" placeholder="Contoh: 081234567890" autocomplete="tel">
                                 <div id="waStatusIcon" class="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center justify-center transition-all pointer-events-none"></div>
                             </div>
                             <span id="waFeedback" class="hidden text-[11px] text-rose-600 font-medium transition-colors"></span>
@@ -203,7 +223,7 @@
                             <label for="notes" class="block text-xs font-bold text-merapiText-primary">Pesan / Catatan Khusus (Opsional)</label>
                             <span class="text-[11px] text-merapiText-muted"><span id="notesCount">0</span>/500 karakter</span>
                         </div>
-                        <textarea id="notes" rows="3" maxlength="500" class="w-full px-4 py-3 rounded-2xl border border-wukirsari-border bg-white text-merapiText-primary text-sm focus:outline-none focus:border-wukirsari-primary focus:ring-2 focus:ring-wukirsari-primary/15 transition-all" placeholder="Contoh: Request driver ramah untuk lansia atau anak-anak, minta helm bersih."></textarea>
+                        <textarea id="notes" rows="3" maxlength="500" class="w-full px-4 py-3 rounded-2xl border border-wukirsari-border bg-white text-merapiText-primary text-sm focus:outline-none focus:border-wukirsari-primary focus:ring-2 focus:ring-wukirsari-primary/15 transition-all" placeholder="Contoh: Request driver ramah untuk lansia atau anak-anak, minta helm bersih.">{{ old('notes') }}</textarea>
                     </div>
                 </section>
             </div>
@@ -378,9 +398,12 @@ let SESSIONS         = D.slots || [];
 const $ = s => document.querySelector(s);
 const rp = n => 'Rp ' + Number(n).toLocaleString('id-ID');
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const oldPax = Number(D.oldPax) || 4;
+const oldQty = Number(D.oldQty) || Math.ceil(oldPax / PER_JEEP);
+const oldPay = (D.oldPay || 'full').toLowerCase();
 const state = {
   pkg: D.selectedId ?? (PACKAGES[0] ? PACKAGES[0].id : null),
-  qty: 1, pax: 4, session: null, pay: 'full'
+  qty: oldQty, pax: oldPax, session: D.oldSlotId ? Number(D.oldSlotId) : null, pay: oldPay
 };
 const curPkg = () => PACKAGES.find(x => String(x.id) === String(state.pkg)) || PACKAGES[0];
 const isSunrisePkgObj = p => !!(p && (p.is_sunrise || /sunrise/i.test(p.slug || '') || /sunrise/i.test(p.name || '')));
@@ -661,13 +684,9 @@ if ($('#calTodayBtn')) {
   };
 }
 
-// Cek sesi sudah lewat: status dari server ATAU jam di perangkat (untuk tanggal hari ini)
+// Cek sesi sudah lewat: status dari server adalah patokan utama (berdasarkan waktu operasional WIB / Asia/Jakarta)
 function isSlotPassed(s){
-  if (s.passed) return true;
-  if (dateEl.value !== iso(new Date()) || !s.time) return false;
-  const [h, m] = String(s.time).split(':').map(Number);
-  const now = new Date();
-  return (h * 60 + m) <= (now.getHours() * 60 + now.getMinutes());
+  return !!s.passed;
 }
 
 function renderDateDetectionPanel(data) {
@@ -680,27 +699,17 @@ function renderDateDetectionPanel(data) {
   if (data && data.date && data.date !== dateEl.value) return;
 
   titleEl.textContent = `Jadwal Tanggal: ${formatIndoDate(dateEl.value)}`;
-  if (subEl) subEl.textContent = 'Pilih sesi keberangkatan yang tersedia di bawah.';
 
   const hasBookings = data?.has_bookings ?? false;
   const totalBooked = data?.total_booked_jeeps ?? 0;
 
   if (hasBookings) {
-    if (dotEl) dotEl.className = 'w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0';
     if (subEl) subEl.textContent = `Terdeteksi ${totalBooked} armada Jeep telah dipesan pada tanggal ini.`;
-    if (badgeEl) {
-      badgeEl.className = 'self-start sm:self-auto text-[11px] font-bold px-3 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-300';
-      badgeEl.textContent = `Ada Bookingan (${totalBooked} Jeep Terisi)`;
-    }
   } else {
-    if (dotEl) dotEl.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0';
     if (subEl) subEl.textContent = 'Belum ada bookingan pada tanggal ini. Seluruh sesi keberangkatan tersedia penuh.';
-    if (badgeEl) {
-      badgeEl.className = 'self-start sm:self-auto text-[11px] font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300';
-      badgeEl.textContent = 'Bebas Bookingan (100% Tersedia)';
-    }
   }
 
+  const isSunrisePkg = isSunrisePkgObj(curPkg());
   const slots = data?.slots || SESSIONS || [];
   if (!slots.length) {
     cardsEl.innerHTML = '<div class="col-span-full text-xs text-slate-400">Tidak ada jadwal sesi tersedia.</div>';
@@ -1202,6 +1211,16 @@ $('#submit').onclick = () => {
 $('#notes').addEventListener('input', e => {
   $('#notesCount').textContent = e.target.value.length;
 });
+
+if ($('#wa') && $('#wa').value) {
+  updateWhatsAppUI();
+}
+if ($('#notes')) {
+  $('#notesCount').textContent = $('#notes').value.length;
+}
+if (state.pay) {
+  document.querySelectorAll('.po').forEach(x => x.classList.toggle('sel', x.dataset.p === state.pay));
+}
  
 renderInteractiveCalendar();
 renderSessions();

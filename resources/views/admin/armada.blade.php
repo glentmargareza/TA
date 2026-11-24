@@ -27,40 +27,44 @@
             <x-stat-card label="Driver Nonaktif" :value="$inactiveDriversCount" unit="Driver" subtext="Nonaktif / Libur" icon="users" iconWrapper="bg-amber-100 text-amber-800" />
         </div>
 
-        <!-- PANEL: MONITORING DRIVER PAGUYUBAN (AKTIF & TIDAK AKTIF) -->
+        <!-- PANEL: PEMAKAIAN ARMADA PER SESI (SINKRON DENGAN BOOKING) -->
         <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
             <div class="p-5 sm:p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-slate-50 to-white">
                 <div>
-                    <h3 class="text-base font-bold text-slate-800 font-display">Status & Kesiapan Driver</h3>
+                    <h3 class="text-base font-bold text-slate-800 font-display">Pemakaian Armada per Sesi</h3>
+                    <p class="text-xs text-slate-500 mt-0.5" id="quotaSub">Data langsung dari sistem booking. Berkurang otomatis saat ada pesanan.</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="quotaPrev" class="w-8 h-8 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 flex items-center justify-center cursor-pointer">‹</button>
+                    <input type="date" id="quotaDate" class="px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer">
+                    <button type="button" id="quotaNext" class="w-8 h-8 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 flex items-center justify-center cursor-pointer">›</button>
+                    <button type="button" id="quotaToday" class="px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-[11px] font-bold text-slate-700 cursor-pointer">Hari Ini</button>
+                </div>
+            </div>
+            <div class="p-5 sm:p-6 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4" id="quotaGrid">
+                <div class="col-span-full text-xs text-slate-400">Memuat data kuota...</div>
+            </div>
+        </div>
+
+        <!-- PANEL: MONITORING DRIVER PAGUYUBAN (1 BAGIAN DENGAN 2 KOLOM) -->
+        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+            <div class="p-5 sm:p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-slate-50 to-white">
+                <div>
+                    <h3 class="text-base font-bold text-slate-800 font-display">Status & Kesiapan Driver ({{ $totalDriversCount }} Driver)</h3>
                     <p class="text-xs text-slate-500 mt-0.5">Daftar driver yang siap ditugaskan melayani wisatawan dan driver yang sedang libur/tidak aktif.</p>
                 </div>
             </div>
 
-            <!-- PANEL: PEMAKAIAN ARMADA PER SESI (SINKRON DENGAN BOOKING) -->
-<div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-    <div class="p-5 sm:p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-slate-50 to-white">
-        <div>
-            <h3 class="text-base font-bold text-slate-800">Pemakaian Armada per Sesi</h3>
-            <p class="text-xs text-slate-500 mt-0.5" id="quotaSub">Data langsung dari sistem booking. Berkurang otomatis saat ada pesanan.</p>
-        </div>
-        <div class="flex items-center gap-2">
-            <button type="button" id="quotaPrev" class="w-8 h-8 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 flex items-center justify-center cursor-pointer">‹</button>
-            <input type="date" id="quotaDate" class="px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">
-            <button type="button" id="quotaNext" class="w-8 h-8 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 flex items-center justify-center cursor-pointer">›</button>
-            <button type="button" id="quotaToday" class="px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-[11px] font-bold text-slate-700 cursor-pointer">Hari Ini</button>
-        </div>
-    </div>
-    <div class="p-5 sm:p-6 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4" id="quotaGrid">
-        <div class="col-span-full text-xs text-slate-400">Memuat data kuota...</div>
-    </div>
-</div>
-
-            <!-- PANEL: MONITORING DRIVER PAGUYUBAN (AKTIF & TIDAK AKTIF) -->
-            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-                <div class="p-5 sm:p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-slate-50 to-white">
+            <div class="p-5 sm:p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- KOLOM 1: DAFTAR DRIVER YANG AKTIF (SEBELAH KIRI) -->
+                <div class="bg-[#F8FAF9] rounded-2xl border border-emerald-200/80 p-5 flex flex-col justify-between">
                     <div>
                         <div class="flex items-center justify-between pb-3 mb-4 border-b border-emerald-200/70">
-                            <h4 class="text-sm font-extrabold text-slate-800 tracking-tight font-display">Daftar Driver yang Aktif</h4>
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                                <h4 class="text-sm font-extrabold text-slate-800 tracking-tight font-display">Daftar Driver yang Aktif</h4>
+                                <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold font-mono">{{ $activeDriversCount }}</span>
+                            </div>
                         </div>
 
                         <div class="space-y-2">
@@ -75,11 +79,15 @@
                                             {{ $d->full_name }}
                                         </span>
                                         <span class="text-[11px] text-slate-400 block font-mono">
-                                            ID: #DRV-{{ str_pad($d->id, 2, '0', STR_PAD_LEFT) }}
+                                            ID: #DRV-{{ str_pad($d->id, 2, '0', STR_PAD_LEFT) }} @if($d->license_number) &bull; {{ $d->license_number }} @endif
                                         </span>
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-1.5 shrink-0">
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#DCFCE7] text-[#16A34A] border border-emerald-200/60 inline-flex items-center gap-1">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                        Siap Jalan
+                                    </span>
                                     <form action="{{ route('admin.drivers.status', $d->id) }}" method="POST" class="inline"
                                           data-confirm-title="Nonaktifkan Driver"
                                           data-confirm-message="Ubah status driver <strong class='text-slate-800 font-bold'>{{ $d->full_name }}</strong> menjadi <strong class='text-amber-700 font-bold'>TIDAK AKTIF</strong>? Driver sementara tidak akan dialokasikan ke booking."
@@ -110,11 +118,15 @@
                     </div>
                 </div>
 
-                <!-- KOLOM 2: DAFTAR DRIVER YANG TIDAK AKTIF -->
+                <!-- KOLOM 2: DAFTAR DRIVER YANG TIDAK AKTIF (SEBELAH KANAN) -->
                 <div class="bg-slate-50 rounded-2xl border border-slate-200 p-5 flex flex-col justify-between">
                     <div>
                         <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-200">
-                            <h4 class="text-sm font-extrabold text-slate-800 tracking-tight font-display">Daftar Driver yang Tidak Aktif</h4>
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                                <h4 class="text-sm font-extrabold text-slate-800 tracking-tight font-display">Daftar Driver yang Tidak Aktif</h4>
+                                <span class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 text-[10px] font-bold font-mono">{{ $inactiveDriversCount }}</span>
+                            </div>
                         </div>
 
                         <div class="space-y-2">
@@ -129,11 +141,15 @@
                                             {{ $d->full_name }}
                                         </span>
                                         <span class="text-[11px] text-slate-400 block font-mono">
-                                            ID: #DRV-{{ str_pad($d->id, 2, '0', STR_PAD_LEFT) }}
+                                            ID: #DRV-{{ str_pad($d->id, 2, '0', STR_PAD_LEFT) }} @if($d->license_number) &bull; {{ $d->license_number }} @endif
                                         </span>
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-1.5 shrink-0">
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200/60 inline-flex items-center gap-1">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                        Libur / Izin
+                                    </span>
                                     <form action="{{ route('admin.drivers.status', $d->id) }}" method="POST" class="inline"
                                           data-confirm-title="Aktifkan Kembali Driver"
                                           data-confirm-message="Aktifkan kembali driver <strong class='text-slate-800 font-bold'>{{ $d->full_name }}</strong> untuk jadwal rotasi penugasan armada?"

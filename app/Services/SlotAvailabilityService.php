@@ -17,14 +17,14 @@ class SlotAvailabilityService
 
     /**
      * Booking yang sah dan mengunci kuota:
-     * - DP_PAID, FULL_PAID, WAITING_CONFIRMATION: selalu mengunci.
+     * - DP_PAID, FULL_PAID, WAITING_CONFIRMATION, COMPLETED: selalu mengunci.
      * - PENDING: mengunci selama lock_expires_at belum lewat (atau null).
      * - CANCELLED / EXPIRED: tidak mengunci.
      */
     public static function applyActiveBookingCondition(Builder $query): Builder
     {
         return $query->where(function ($q) {
-            $q->whereIn('booking_status', ['DP_PAID', 'FULL_PAID', 'WAITING_CONFIRMATION'])
+            $q->whereIn('booking_status', ['DP_PAID', 'FULL_PAID', 'WAITING_CONFIRMATION', 'COMPLETED'])
               ->orWhere(function ($pendingQ) {
                   $pendingQ->where('booking_status', 'PENDING')
                            ->where(function ($lockQ) {
@@ -36,7 +36,8 @@ class SlotAvailabilityService
     }
 
     /**
-     * Jumlah jeep yang siap jalan.
+     * Jumlah jeep yang siap jalan dan aktif operasional.
+     * Mengikutsertakan unit READY dan ON_TRIP (hanya MAINTENANCE yang dikecualikan).
      * Return null jika tabel/kolom jeep tidak bisa dibaca, supaya sistem
      * kembali memakai max_jeeps sesi dan tidak memblokir booking.
      */
@@ -49,7 +50,7 @@ class SlotAvailabilityService
         $query = Jeep::query();
 
         if (Schema::hasColumn('jeeps', 'status')) {
-            $query->where('status', 'READY');
+            $query->where('status', '!=', 'MAINTENANCE');
         } elseif (Schema::hasColumn('jeeps', 'is_active')) {
             $query->where('is_active', true);
         } else {
