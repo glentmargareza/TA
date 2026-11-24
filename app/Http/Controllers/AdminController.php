@@ -244,9 +244,6 @@ class AdminController extends Controller
         $slots = ScheduleSlot::where('is_active', true)->orderBy('start_time')->get();
         $unreadNotificationsCount = ActivityLog::unread()->count();
 
-        $targetDate = !empty($tripDate) ? $tripDate : now('Asia/Jakarta')->toDateString();
-        $quotaSummary = $this->buildQuotaSummary($targetDate);
-
         return view('admin.bookings', compact(
             'bookings',
             'packages',
@@ -257,9 +254,7 @@ class AdminController extends Controller
             'tripDate',
             'packageId',
             'status',
-            'unreadNotificationsCount',
-            'quotaSummary',
-            'targetDate'
+            'unreadNotificationsCount'
         ));
     }
 
@@ -282,45 +277,6 @@ class AdminController extends Controller
         $maxSlotJeeps = (int) ScheduleSlot::where('is_active', true)->max('max_jeeps');
 
         return $maxSlotJeeps > 0 ? $maxSlotJeeps : 20;
-    }
-
-    /**
-     * Membangun ringkasan kuota armada Jeep harian untuk tampilan Manajemen Booking Admin.
-     * 1. total_capacity = jumlah armada (max_jeeps tertinggi sesi aktif atau armada aktif).
-     * 2. total_booked = jumlah jeep terbanyak yang terpakai pada SATU sesi di tanggal itu (sesi terpadat).
-     * 3. total_remaining = max(0, total_capacity - total_booked).
-     * 4. peak_label = slot_label sesi terpadat, atau null jika belum ada booking.
-     * 5. Hanya sesi aktif (is_active = true) yang dihitung.
-     * 6. Status booking pengunci: PENDING aktif, WAITING_CONFIRMATION, DP_PAID, FULL_PAID via ScheduleSlot::bookedJeepsCount.
-     */
-    private function buildQuotaSummary(string $date): array
-    {
-        $totalCapacity = $this->getTotalCapacity();
-
-        // Hanya sesi aktif yang dihitung
-        $activeSlots = ScheduleSlot::where('is_active', true)->orderBy('start_time')->get();
-
-        $maxBooked = 0;
-        $peakLabel = null;
-
-        foreach ($activeSlots as $slot) {
-            $booked = $slot->bookedJeepsCount($date);
-            if ($booked > $maxBooked) {
-                $maxBooked = $booked;
-                $peakLabel = $slot->slot_label;
-            }
-        }
-
-        $totalBooked = min($maxBooked, $totalCapacity);
-        $totalRemaining = max(0, $totalCapacity - $totalBooked);
-
-        return [
-            'date'            => $date,
-            'total_capacity'  => $totalCapacity,
-            'total_booked'    => $totalBooked,
-            'total_remaining' => $totalRemaining,
-            'peak_label'      => $maxBooked > 0 ? $peakLabel : null,
-        ];
     }
 
     /**
