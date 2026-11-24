@@ -15,9 +15,11 @@ class TicketController extends Controller
 
         if ($code) {
             $hasSearched = true;
+            $cleanCode = trim($code);
             $booking = Booking::with(['package', 'slot'])
-                ->where('booking_code', strtoupper(trim($code)))
-                ->orWhere('customer_phone', trim($code))
+                ->where('qr_token', $cleanCode)
+                ->orWhere('booking_code', strtoupper($cleanCode))
+                ->orWhere('customer_phone', $cleanCode)
                 ->first();
         }
 

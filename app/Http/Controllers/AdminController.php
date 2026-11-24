@@ -12,11 +12,12 @@ use App\Models\Package;
 use App\Models\ScheduleSlot;
 use App\Models\Review;
 use App\Models\ActivityLog;
+use App\Models\Expense;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -259,27 +260,6 @@ class AdminController extends Controller
     }
 
     /**
-     * Dapatkan total kapasitas armada Jeep fisik paguyuban.
-     * Prioritas sumber:
-     * (a) Jumlah jeep aktif dari tabel armada jika ada dan punya kolom status aktif yang jelas (misal is_active);
-     * (b) Jika tidak ada, nilai kuota sesi terbesar dari sesi aktif (max_jeeps tertinggi).
-     */
-    private function getTotalCapacity(): int
-    {
-        if (Schema::hasTable('jeeps') && Schema::hasColumn('jeeps', 'is_active')) {
-            $count = (int) Jeep::where('is_active', true)->count();
-            if ($count > 0) {
-                return $count;
-            }
-        }
-
-        // Sumber (b): nilai kuota sesi terbesar dari sesi aktif (max_jeeps tertinggi)
-        $maxSlotJeeps = (int) ScheduleSlot::where('is_active', true)->max('max_jeeps');
-
-        return $maxSlotJeeps > 0 ? $maxSlotJeeps : 20;
-    }
-
-    /**
      * Halaman Dedicated: Monitoring Armada Jeep
      */
     public function armada(Request $request)
@@ -360,7 +340,7 @@ class AdminController extends Controller
     }
 
     /**
-     * LAPORAN PENJUALAN
+     * LAPORAN PENJUALAN & LABA RUGI
      */
     public function reports(Request $request)
     {
@@ -370,11 +350,68 @@ class AdminController extends Controller
             return redirect()->route('login')->with('info', 'Silakan masuk dengan akun Admin.');
         }
 
+        $activeTab = $request->query('tab', 'penjualan');
+        $period = $request->query('period', 'monthly');
+        if (!in_array($period, ['daily', 'monthly', 'yearly', 'custom'])) {
+            if ($request->filled('start_date') || $request->filled('end_date')) {
+                $period = 'custom';
+            } else {
+                $period = 'monthly';
+            }
+        }
+
+        $selectedDate = $request->query('date', Carbon::now()->toDateString());
+        $selectedMonth = $request->query('month', (int) Carbon::now()->format('m'));
+        $selectedYear = (int) $request->query('year', (int) Carbon::now()->format('Y'));
         $startDate = $request->query('start_date');
         $endDate = $request->query('end_date');
         $status = $request->query('status', 'ALL');
         $packageId = $request->query('package_id');
 
+        // Normalize month if passed as "YYYY-MM"
+        if (is_string($selectedMonth) && strpos($selectedMonth, '-') !== false) {
+            $parts = explode('-', $selectedMonth);
+            $selectedYear = (int) $parts[0];
+            $selectedMonth = (int) $parts[1];
+        } else {
+            $selectedMonth = (int) $selectedMonth;
+        }
+
+        // Hitung batas periode filter untuk Laporan Laba Rugi
+        $monthNames = [
+            1 => 'Januari',
+            2 => 'Februari',
+            3 => 'Maret',
+            4 => 'April',
+            5 => 'Mei',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'Agustus',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember'
+        ];
+
+        if ($period === 'daily') {
+            $filterStart = Carbon::parse($selectedDate)->startOfDay();
+            $filterEnd = Carbon::parse($selectedDate)->endOfDay();
+            $periodLabel = 'Harian (' . Carbon::parse($selectedDate)->format('d/m/Y') . ')';
+        } elseif ($period === 'monthly') {
+            $filterStart = Carbon::createFromDate($selectedYear, $selectedMonth, 1)->startOfMonth();
+            $filterEnd = Carbon::createFromDate($selectedYear, $selectedMonth, 1)->endOfMonth();
+            $periodLabel = 'Bulan ' . ($monthNames[$selectedMonth] ?? $selectedMonth) . ' ' . $selectedYear;
+        } elseif ($period === 'yearly') {
+            $filterStart = Carbon::createFromDate($selectedYear, 1, 1)->startOfYear();
+            $filterEnd = Carbon::createFromDate($selectedYear, 12, 31)->endOfYear();
+            $periodLabel = 'Tahun ' . $selectedYear;
+        } else { // custom
+            $filterStart = !empty($startDate) ? Carbon::parse($startDate)->startOfDay() : null;
+            $filterEnd = !empty($endDate) ? Carbon::parse($endDate)->endOfDay() : null;
+            $periodLabel = ($startDate ? Carbon::parse($startDate)->format('d/m/Y') : 'Awal') . ' s/d ' . ($endDate ? Carbon::parse($endDate)->format('d/m/Y') : 'Sekarang');
+        }
+
+        // Query Rekapitulasi Kasir / Penjualan (Tab 1)
         $query = Booking::with(['package', 'slot']);
 
         if (!empty($startDate)) {
@@ -390,8 +427,8 @@ class AdminController extends Controller
             $query->where('package_id', $packageId);
         }
 
-        // Hitung KPIs
-        $totalRevenue = (clone $query)->whereIn('booking_status', ['FULL_PAID', 'DP_PAID'])->sum('paid_amount');
+        // Hitung KPIs Rekapitulasi Kasir
+        $totalRevenue = (clone $query)->whereIn('booking_status', ['FULL_PAID', 'DP_PAID', 'COMPLETED'])->sum('paid_amount');
         $totalBilled = (clone $query)->sum('total_amount');
         $totalUnpaid = (clone $query)->where('booking_status', 'DP_PAID')->sum('remaining_amount');
         $totalOrders = (clone $query)->count();
@@ -401,9 +438,243 @@ class AdminController extends Controller
         $bookings = $query->orderBy('trip_date', 'desc')->paginate(15)->withQueryString();
         $packages = Package::all();
 
+        // Query Laporan Laba Rugi (P&L) berdasarkan pesanan berbayar/selesai & periode terpilih
+        $pnlQuery = Booking::with(['package', 'slot'])
+            ->whereIn('booking_status', ['FULL_PAID', 'DP_PAID', 'COMPLETED']);
+
+        if ($filterStart) {
+            $pnlQuery->whereDate('trip_date', '>=', $filterStart->toDateString());
+        }
+        if ($filterEnd) {
+            $pnlQuery->whereDate('trip_date', '<=', $filterEnd->toDateString());
+        }
+        if (!empty($packageId)) {
+            $pnlQuery->where('package_id', $packageId);
+        }
+
+        $pnlBookings = $pnlQuery->orderBy('trip_date', 'asc')->get();
+
+        $incomePackage = (float) $pnlBookings->sum('package_subtotal');
+        $incomePickup = (float) $pnlBookings->sum('pickup_fee');
+        $grossIncome = $incomePackage + $incomePickup;
+        $pnlJeepsCount = (int) $pnlBookings->sum('jeep_quantity');
+        $pnlOrdersCount = (int) $pnlBookings->count();
+
+        // 1. Biaya Payment Gateway Aktual berdasarkan transaksi yang berhasil
+        $pnlBookingIds = $pnlBookings->pluck('id');
+        $settledPayments = Payment::whereIn('booking_id', $pnlBookingIds)
+            ->where('payment_status', 'SETTLED')
+            ->get();
+
+        $paymentGatewayFee = 0;
+        foreach ($settledPayments as $pay) {
+            $method = strtolower($pay->payment_method ?? '');
+            $type = strtolower($pay->payment_type ?? '');
+            $amt = (float) $pay->gross_amount;
+
+            // Manual transfer BPD DIY dan Cash/Loket Basecamp tidak dikenakan fee gateway
+            if (str_contains($method, 'manual') || str_contains($method, 'cash') || str_contains($type, 'cash')) {
+                continue;
+            }
+            if (str_contains($method, 'qris') || str_contains($type, 'qris')) {
+                $paymentGatewayFee += round($amt * 0.007); // 0.7% QRIS standar
+            } elseif (str_contains($method, 'gopay') || str_contains($method, 'shopeepay') || str_contains($type, 'wallet')) {
+                $paymentGatewayFee += round($amt * 0.02); // 2.0% E-Wallet
+            } elseif (str_contains($method, 'va') || str_contains($method, 'virtual') || str_contains($type, 'bank_transfer') || str_contains($type, 'echannel')) {
+                $paymentGatewayFee += 4000; // Rp 4.000 flat Virtual Account
+            } else {
+                $paymentGatewayFee += round($amt * 0.015);
+            }
+        }
+
+        // 2. Data Pengeluaran Operasional Aktual dari Menu Pengeluaran
+        $expenseQuery = Expense::query();
+        if ($filterStart) {
+            $expenseQuery->whereDate('date', '>=', $filterStart->toDateString());
+        }
+        if ($filterEnd) {
+            $expenseQuery->whereDate('date', '<=', $filterEnd->toDateString());
+        }
+        $periodExpenses = $expenseQuery->orderBy('date', 'asc')->get();
+        $totalOperationalExpenses = (float) $periodExpenses->sum('amount');
+
+        $expensesByCategory = [];
+        foreach (Expense::CATEGORIES as $catKey => $catLabel) {
+            $expensesByCategory[$catKey] = (float) $periodExpenses->where('category', $catKey)->sum('amount');
+        }
+
+        // Rumus Dasar Laba Rugi sesuai arahan:
+        // Laba Bersih = Pendapatan Paket Wisata + Penggantian Biaya Admin - Biaya Payment Gateway - Total Pengeluaran Operasional
+        $totalExpenses = $paymentGatewayFee + $totalOperationalExpenses;
+        $netProfit = $grossIncome - $paymentGatewayFee - $totalOperationalExpenses;
+        $netMargin = $grossIncome > 0 ? round(($netProfit / $grossIncome) * 100, 1) : 0;
+        $avgProfitPerJeep = $pnlJeepsCount > 0 ? round($netProfit / $pnlJeepsCount) : 0;
+
+        // Pemetaan untuk kompatibilitas tampilan rincian
+        $driverCost = $expensesByCategory['Perawatan dan Servis Jeep'] ?? 0;
+        $fuelMaintenanceCost = $expensesByCategory['BBM'] ?? 0;
+        $retributionCost = $expensesByCategory['Perlengkapan Wisata'] ?? 0;
+        $pickupCost = $expensesByCategory['Operasional Pos'] ?? 0;
+        $totalCogs = $totalOperationalExpenses;
+        $grossProfit = $grossIncome - $totalOperationalExpenses;
+        $grossMargin = $grossIncome > 0 ? round(($grossProfit / $grossIncome) * 100, 1) : 0;
+        $basecampCost = $totalOperationalExpenses;
+        $adminSystemCost = $paymentGatewayFee;
+        $totalOpex = $paymentGatewayFee;
+
+        // Generate Time-Series Data untuk Grafik Pendapatan vs Pengeluaran
+        $chartLabels = [];
+        $chartRevenueData = [];
+        $chartExpenseData = [];
+        $chartNetProfitData = [];
+
+        if ($period === 'daily') {
+            $allSlots = ScheduleSlot::orderBy('start_time')->get();
+            foreach ($allSlots as $slot) {
+                $chartLabels[] = $slot->slot_label;
+                $slotBookings = $pnlBookings->where('slot_id', $slot->id);
+                $rev = (float) $slotBookings->sum(function ($b) {
+                    return $b->package_subtotal + $b->pickup_fee;
+                });
+                $exp = count($allSlots) > 0 ? round($totalExpenses / count($allSlots)) : 0;
+                $chartRevenueData[] = $rev;
+                $chartExpenseData[] = $exp;
+                $chartNetProfitData[] = $rev - $exp;
+            }
+        } elseif ($period === 'monthly') {
+            $daysInMonth = $filterStart->daysInMonth;
+            for ($d = 1; $d <= $daysInMonth; $d++) {
+                $dayCarbon = Carbon::createFromDate($selectedYear, $selectedMonth, $d);
+                $dayString = $dayCarbon->toDateString();
+                $chartLabels[] = $dayCarbon->format('d M');
+
+                $dayBookings = $pnlBookings->filter(function ($b) use ($dayString) {
+                    return Carbon::parse($b->trip_date)->toDateString() === $dayString;
+                });
+                $rev = (float) $dayBookings->sum(function ($b) {
+                    return $b->package_subtotal + $b->pickup_fee;
+                });
+                $dayExp = (float) $periodExpenses->filter(function ($e) use ($dayString) {
+                    return Carbon::parse($e->date)->toDateString() === $dayString;
+                })->sum('amount');
+
+                $chartRevenueData[] = $rev;
+                $chartExpenseData[] = $dayExp;
+                $chartNetProfitData[] = $rev - $dayExp;
+            }
+        } elseif ($period === 'yearly') {
+            $monthShortNames = [1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'Mei', 6 => 'Jun', 7 => 'Jul', 8 => 'Agu', 9 => 'Sep', 10 => 'Okt', 11 => 'Nov', 12 => 'Des'];
+            for ($m = 1; $m <= 12; $m++) {
+                $chartLabels[] = $monthShortNames[$m];
+                $mBookings = $pnlBookings->filter(function ($b) use ($selectedYear, $m) {
+                    $dt = Carbon::parse($b->trip_date);
+                    return (int)$dt->year === (int)$selectedYear && (int)$dt->month === $m;
+                });
+                $rev = (float) $mBookings->sum(function ($b) {
+                    return $b->package_subtotal + $b->pickup_fee;
+                });
+                $mExp = (float) $periodExpenses->filter(function ($e) use ($selectedYear, $m) {
+                    $dt = Carbon::parse($e->date);
+                    return (int)$dt->year === (int)$selectedYear && (int)$dt->month === $m;
+                })->sum('amount');
+
+                $chartRevenueData[] = $rev;
+                $chartExpenseData[] = $mExp;
+                $chartNetProfitData[] = $rev - $mExp;
+            }
+        } else { // custom
+            $cStart = $filterStart ? $filterStart->copy() : ($pnlBookings->min('trip_date') ? Carbon::parse($pnlBookings->min('trip_date')) : Carbon::now()->subDays(14));
+            $cEnd = $filterEnd ? $filterEnd->copy() : Carbon::now();
+            if ($cStart->diffInDays($cEnd) > 45) {
+                // Kelompokkan per bulan jika rentang panjang
+                $curr = $cStart->copy()->startOfMonth();
+                while ($curr->lte($cEnd)) {
+                    $y = $curr->year;
+                    $m = $curr->month;
+                    $chartLabels[] = $curr->format('M Y');
+                    $mBookings = $pnlBookings->filter(function ($b) use ($y, $m) {
+                        $dt = Carbon::parse($b->trip_date);
+                        return (int)$dt->year === $y && (int)$dt->month === $m;
+                    });
+                    $rev = (float) $mBookings->sum(function ($b) {
+                        return $b->package_subtotal + $b->pickup_fee;
+                    });
+                    $mExp = (float) $periodExpenses->filter(function ($e) use ($y, $m) {
+                        $dt = Carbon::parse($e->date);
+                        return (int)$dt->year === $y && (int)$dt->month === $m;
+                    })->sum('amount');
+
+                    $chartRevenueData[] = $rev;
+                    $chartExpenseData[] = $mExp;
+                    $chartNetProfitData[] = $rev - $mExp;
+                    $curr->addMonth();
+                }
+            } else {
+                // Kelompokkan per hari
+                $curr = $cStart->copy();
+                while ($curr->lte($cEnd)) {
+                    $dayString = $curr->toDateString();
+                    $chartLabels[] = $curr->format('d M');
+                    $dayBookings = $pnlBookings->filter(function ($b) use ($dayString) {
+                        return Carbon::parse($b->trip_date)->toDateString() === $dayString;
+                    });
+                    $rev = (float) $dayBookings->sum(function ($b) {
+                        return $b->package_subtotal + $b->pickup_fee;
+                    });
+                    $dayExp = (float) $periodExpenses->filter(function ($e) use ($dayString) {
+                        return Carbon::parse($e->date)->toDateString() === $dayString;
+                    })->sum('amount');
+
+                    $chartRevenueData[] = $rev;
+                    $chartExpenseData[] = $dayExp;
+                    $chartNetProfitData[] = $rev - $dayExp;
+                    $curr->addDay();
+                }
+            }
+        }
+
+        // Rincian Berdasarkan Paket Wisata
+        $packageBreakdown = [];
+        foreach ($packages as $pkg) {
+            $pkgBookings = $pnlBookings->where('package_id', $pkg->id);
+            $pkgOrders = $pkgBookings->count();
+            $pkgJeeps = (int) $pkgBookings->sum('jeep_quantity');
+            $pkgRevenue = (float) $pkgBookings->sum('package_subtotal');
+            $pkgDriver = round($pkgRevenue * 0.45);
+            $pkgFuel = round($pkgRevenue * 0.20);
+            $pkgRetribution = round($pkgRevenue * 0.10);
+            $pkgOpex = round($pkgRevenue * 0.07);
+            $pkgTotalCost = $pkgDriver + $pkgFuel + $pkgRetribution + $pkgOpex;
+            $pkgNet = $pkgRevenue - $pkgTotalCost;
+            $pkgMargin = $pkgRevenue > 0 ? round(($pkgNet / $pkgRevenue) * 100, 1) : 0;
+
+            $packageBreakdown[] = [
+                'id' => $pkg->id,
+                'name' => $pkg->name,
+                'orders' => $pkgOrders,
+                'jeeps' => $pkgJeeps,
+                'revenue' => $pkgRevenue,
+                'driver_cost' => $pkgDriver,
+                'fuel_cost' => $pkgFuel,
+                'retribution_cost' => $pkgRetribution,
+                'opex_cost' => $pkgOpex,
+                'total_cost' => $pkgTotalCost,
+                'net_profit' => $pkgNet,
+                'margin' => $pkgMargin,
+            ];
+        }
+
         return view('admin.reports', compact(
+            'activeTab',
+            'period',
+            'selectedDate',
+            'selectedMonth',
+            'selectedYear',
+            'periodLabel',
             'bookings',
             'packages',
+            'packageBreakdown',
+            'pnlBookings',
             'totalRevenue',
             'totalBilled',
             'totalUnpaid',
@@ -413,12 +684,39 @@ class AdminController extends Controller
             'startDate',
             'endDate',
             'status',
-            'packageId'
+            'packageId',
+            'incomePackage',
+            'incomePickup',
+            'grossIncome',
+            'paymentGatewayFee',
+            'totalOperationalExpenses',
+            'expensesByCategory',
+            'periodExpenses',
+            'pnlJeepsCount',
+            'pnlOrdersCount',
+            'driverCost',
+            'fuelMaintenanceCost',
+            'retributionCost',
+            'pickupCost',
+            'totalCogs',
+            'grossProfit',
+            'grossMargin',
+            'basecampCost',
+            'adminSystemCost',
+            'totalOpex',
+            'totalExpenses',
+            'netProfit',
+            'netMargin',
+            'avgProfitPerJeep',
+            'chartLabels',
+            'chartRevenueData',
+            'chartExpenseData',
+            'chartNetProfitData'
         ));
     }
 
     /**
-     * EKSPOR LAPORAN PENJUALAN KE CSV
+     * EKSPOR LAPORAN KE CSV (PENJUALAN ATAU LABA RUGI)
      */
     public function exportReportsCsv(Request $request)
     {
@@ -428,10 +726,156 @@ class AdminController extends Controller
             abort(403);
         }
 
+        $activeTab = $request->query('tab', 'penjualan');
+        $period = $request->query('period', 'monthly');
+        $selectedDate = $request->query('date', Carbon::now()->toDateString());
+        $selectedMonth = $request->query('month', (int) Carbon::now()->format('m'));
+        $selectedYear = (int) $request->query('year', (int) Carbon::now()->format('Y'));
         $startDate = $request->query('start_date');
         $endDate = $request->query('end_date');
         $status = $request->query('status', 'ALL');
         $packageId = $request->query('package_id');
+
+        if (is_string($selectedMonth) && strpos($selectedMonth, '-') !== false) {
+            $parts = explode('-', $selectedMonth);
+            $selectedYear = (int) $parts[0];
+            $selectedMonth = (int) $parts[1];
+        } else {
+            $selectedMonth = (int) $selectedMonth;
+        }
+
+        if ($activeTab === 'laba_rugi') {
+            $monthNames = [
+                1 => 'Januari',
+                2 => 'Februari',
+                3 => 'Maret',
+                4 => 'April',
+                5 => 'Mei',
+                6 => 'Juni',
+                7 => 'Juli',
+                8 => 'Agustus',
+                9 => 'September',
+                10 => 'Oktober',
+                11 => 'November',
+                12 => 'Desember'
+            ];
+
+            if ($period === 'daily') {
+                $filterStart = Carbon::parse($selectedDate)->startOfDay();
+                $filterEnd = Carbon::parse($selectedDate)->endOfDay();
+                $periodLabel = 'Harian (' . Carbon::parse($selectedDate)->format('d/m/Y') . ')';
+            } elseif ($period === 'monthly') {
+                $filterStart = Carbon::createFromDate($selectedYear, $selectedMonth, 1)->startOfMonth();
+                $filterEnd = Carbon::createFromDate($selectedYear, $selectedMonth, 1)->endOfMonth();
+                $periodLabel = 'Bulan ' . ($monthNames[$selectedMonth] ?? $selectedMonth) . ' ' . $selectedYear;
+            } elseif ($period === 'yearly') {
+                $filterStart = Carbon::createFromDate($selectedYear, 1, 1)->startOfYear();
+                $filterEnd = Carbon::createFromDate($selectedYear, 12, 31)->endOfYear();
+                $periodLabel = 'Tahun ' . $selectedYear;
+            } else { // custom
+                $filterStart = !empty($startDate) ? Carbon::parse($startDate)->startOfDay() : null;
+                $filterEnd = !empty($endDate) ? Carbon::parse($endDate)->endOfDay() : null;
+                $periodLabel = ($startDate ? Carbon::parse($startDate)->format('d/m/Y') : 'Awal') . ' s/d ' . ($endDate ? Carbon::parse($endDate)->format('d/m/Y') : 'Sekarang');
+            }
+
+            $pnlQuery = Booking::whereIn('booking_status', ['FULL_PAID', 'DP_PAID', 'COMPLETED']);
+            if ($filterStart) $pnlQuery->whereDate('trip_date', '>=', $filterStart->toDateString());
+            if ($filterEnd) $pnlQuery->whereDate('trip_date', '<=', $filterEnd->toDateString());
+            if (!empty($packageId)) $pnlQuery->where('package_id', $packageId);
+
+            $pnlBookings = $pnlQuery->get();
+            $incomePackage = (float) $pnlBookings->sum('package_subtotal');
+            $incomePickup = (float) $pnlBookings->sum('pickup_fee');
+            $grossIncome = $incomePackage + $incomePickup;
+            $pnlJeepsCount = (int) $pnlBookings->sum('jeep_quantity');
+            $pnlOrdersCount = (int) $pnlBookings->count();
+
+            // Biaya Payment Gateway Aktual
+            $pnlBookingIds = $pnlBookings->pluck('id');
+            $settledPayments = Payment::whereIn('booking_id', $pnlBookingIds)
+                ->where('payment_status', 'SETTLED')
+                ->get();
+
+            $paymentGatewayFee = 0;
+            foreach ($settledPayments as $pay) {
+                $method = strtolower($pay->payment_method ?? '');
+                $type = strtolower($pay->payment_type ?? '');
+                $amt = (float) $pay->gross_amount;
+
+                if (str_contains($method, 'manual') || str_contains($method, 'cash') || str_contains($type, 'cash')) {
+                    continue;
+                }
+                if (str_contains($method, 'qris') || str_contains($type, 'qris')) {
+                    $paymentGatewayFee += round($amt * 0.007);
+                } elseif (str_contains($method, 'gopay') || str_contains($method, 'shopeepay') || str_contains($type, 'wallet')) {
+                    $paymentGatewayFee += round($amt * 0.02);
+                } elseif (str_contains($method, 'va') || str_contains($method, 'virtual') || str_contains($type, 'bank_transfer') || str_contains($type, 'echannel')) {
+                    $paymentGatewayFee += 4000;
+                } else {
+                    $paymentGatewayFee += round($amt * 0.015);
+                }
+            }
+
+            // Data Pengeluaran Operasional Aktual
+            $expQuery = Expense::query();
+            if ($filterStart) $expQuery->whereDate('date', '>=', $filterStart->toDateString());
+            if ($filterEnd) $expQuery->whereDate('date', '<=', $filterEnd->toDateString());
+            $periodExpenses = $expQuery->get();
+            $totalOperationalExpenses = (float) $periodExpenses->sum('amount');
+
+            $expensesByCategory = [];
+            foreach (Expense::CATEGORIES as $catKey => $catLabel) {
+                $expensesByCategory[$catKey] = (float) $periodExpenses->where('category', $catKey)->sum('amount');
+            }
+
+            $totalExpenses = $paymentGatewayFee + $totalOperationalExpenses;
+            $netProfit = $grossIncome - $paymentGatewayFee - $totalOperationalExpenses;
+            $netMargin = $grossIncome > 0 ? round(($netProfit / $grossIncome) * 100, 1) : 0;
+
+            $filename = 'Laporan_Laba_Rugi_Jeep_Wukirsari_' . date('Ymd_His') . '.csv';
+
+            $headers = [
+                'Content-Type' => 'text/csv; charset=UTF-8',
+                'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+                'Pragma' => 'no-cache',
+                'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+                'Expires' => '0',
+            ];
+
+            $callback = function () use ($periodLabel, $grossIncome, $incomePackage, $incomePickup, $paymentGatewayFee, $totalOperationalExpenses, $expensesByCategory, $totalExpenses, $netProfit, $netMargin, $pnlJeepsCount, $pnlOrdersCount) {
+                $handle = fopen('php://output', 'w');
+                fputs($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+                fputcsv($handle, ['PAGUYUBAN JEEP WUKIRSARI ADVENTURE TOUR']);
+                fputcsv($handle, ['LAPORAN LABA RUGI KOMPREHENSIF']);
+                fputcsv($handle, ['Periode Filter', $periodLabel]);
+                fputcsv($handle, ['Total Booking Berhasil', $pnlOrdersCount . ' Order (' . $pnlJeepsCount . ' Unit Jeep)']);
+                fputcsv($handle, []);
+                fputcsv($handle, ['KOMPONEN AKUN KEUANGAN', 'NOMINAL (RP)', 'PERSENTASE (%)']);
+                fputcsv($handle, ['I. PENDAPATAN USAHA (OMZET)', '', '']);
+                fputcsv($handle, ['- Pendapatan Sewa Paket Jeep Wisata', $incomePackage, '']);
+                fputcsv($handle, ['- Penggantian Biaya Admin & Antar-Jemput', $incomePickup, '']);
+                fputcsv($handle, ['TOTAL PENDAPATAN', $grossIncome, '100%']);
+                fputcsv($handle, []);
+                fputcsv($handle, ['II. BIAYA TRANSAKSI & PAYMENT GATEWAY', '', '']);
+                fputcsv($handle, ['- Biaya Payment Gateway (Midtrans QRIS/VA/E-Wallet)', -$paymentGatewayFee, $grossIncome > 0 ? round(($paymentGatewayFee / $grossIncome) * 100, 1) . '%' : '0%']);
+                fputcsv($handle, []);
+                fputcsv($handle, ['III. BEBAN PENGELUARAN OPERASIONAL AKTUAL', '', '']);
+                foreach ($expensesByCategory as $catName => $catAmount) {
+                    if ($catAmount > 0) {
+                        fputcsv($handle, ['- ' . $catName, -$catAmount, $grossIncome > 0 ? round(($catAmount / $grossIncome) * 100, 1) . '%' : '0%']);
+                    }
+                }
+                fputcsv($handle, ['TOTAL PENGELUARAN OPERASIONAL', -$totalOperationalExpenses, $grossIncome > 0 ? round(($totalOperationalExpenses / $grossIncome) * 100, 1) . '%' : '0%']);
+                fputcsv($handle, []);
+                fputcsv($handle, ['TOTAL BIAYA & BEBAN (GATEWAY + OPERASIONAL)', -$totalExpenses, $grossIncome > 0 ? round(($totalExpenses / $grossIncome) * 100, 1) . '%' : '0%']);
+                fputcsv($handle, []);
+                fputcsv($handle, ['IV. LABA BERSIH PAGUYUBAN (NET PROFIT)', $netProfit, $netMargin . '%']);
+                fclose($handle);
+            };
+
+            return response()->stream($callback, 200, $headers);
+        }
 
         $query = Booking::with(['package', 'slot']);
 
@@ -629,6 +1073,109 @@ class AdminController extends Controller
         return redirect()->back()->with('success', "Paket wisata {$package->name} berhasil diperbarui!");
     }
 
+    public function updatePackagePhotos(Request $request, int $id)
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!$user || $user->role !== 'admin') {
+            return redirect()->route('login')->with('info', 'Silakan masuk dengan akun Admin Paguyuban.');
+        }
+
+        $package = Package::findOrFail($id);
+
+        $request->validate([
+            'cover_image_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,avif|max:5120',
+            'cover_image_url' => 'nullable|string|max:500',
+            'gallery_files' => 'nullable|array',
+            'gallery_files.*' => 'nullable|image|mimes:jpeg,png,jpg,webp,avif|max:5120',
+            'gallery_urls' => 'nullable|array',
+            'gallery_urls.*' => 'nullable|string|max:500',
+            'reset_cover' => 'nullable',
+            'reset_gallery' => 'nullable|array',
+        ]);
+
+        $destinationPath = public_path('uploads/packages');
+        if (!file_exists($destinationPath)) {
+            mkdir($destinationPath, 0755, true);
+        }
+
+        // 1. Process Foto Utama (Cover)
+        if ($request->input('reset_cover') == '1') {
+            $oldRaw = $package->getRawOriginal('cover_image');
+            if ($oldRaw && str_starts_with($oldRaw, 'uploads/packages/')) {
+                $oldFile = public_path($oldRaw);
+                if (file_exists($oldFile)) {
+                    @unlink($oldFile);
+                }
+            }
+            $package->cover_image = Package::getDefaultCoverForSlug($package->slug);
+        } elseif ($request->hasFile('cover_image_file')) {
+            $file = $request->file('cover_image_file');
+            $fileName = 'cover_' . $package->id . '_' . time() . '_' . Str::random(6) . '.' . $file->getClientOriginalExtension();
+            $file->move($destinationPath, $fileName);
+
+            $oldRaw = $package->getRawOriginal('cover_image');
+            if ($oldRaw && str_starts_with($oldRaw, 'uploads/packages/')) {
+                $oldFile = public_path($oldRaw);
+                if (file_exists($oldFile)) {
+                    @unlink($oldFile);
+                }
+            }
+            $package->cover_image = 'uploads/packages/' . $fileName;
+        } elseif ($request->filled('cover_image_url')) {
+            $package->cover_image = trim($request->input('cover_image_url'));
+        }
+
+        // 2. Process Foto Galeri (4 Slot)
+        $defaultGallery = Package::getDefaultGalleryForSlug($package->slug);
+        $currentGallery = is_array($package->gallery_images) ? $package->gallery_images : [];
+        for ($i = 0; $i < 4; $i++) {
+            if (!isset($currentGallery[$i]) || empty($currentGallery[$i])) {
+                $currentGallery[$i] = $defaultGallery[$i] ?? 'img/7.jpeg';
+            }
+        }
+
+        $resetGallery = $request->input('reset_gallery', []);
+        $galleryUrls = $request->input('gallery_urls', []);
+
+        for ($i = 0; $i < 4; $i++) {
+            $isReset = isset($resetGallery[$i]) && ($resetGallery[$i] == '1' || $resetGallery[$i] == 1 || $resetGallery[$i] === true);
+            if ($isReset) {
+                // Hapus file fisik lama jika ada di uploads/packages/
+                $oldVal = $currentGallery[$i] ?? null;
+                if ($oldVal && str_starts_with($oldVal, 'uploads/packages/')) {
+                    $oldFile = public_path($oldVal);
+                    if (file_exists($oldFile)) {
+                        @unlink($oldFile);
+                    }
+                }
+                $currentGallery[$i] = $defaultGallery[$i] ?? 'img/7.jpeg';
+            } elseif ($request->hasFile("gallery_files.{$i}")) {
+                $file = $request->file("gallery_files.{$i}");
+                if ($file && $file->isValid()) {
+                    $fileName = 'gallery_' . $package->id . '_' . $i . '_' . time() . '_' . Str::random(6) . '.' . $file->getClientOriginalExtension();
+                    $file->move($destinationPath, $fileName);
+
+                    $oldVal = $currentGallery[$i] ?? null;
+                    if ($oldVal && str_starts_with($oldVal, 'uploads/packages/')) {
+                        $oldFile = public_path($oldVal);
+                        if (file_exists($oldFile)) {
+                            @unlink($oldFile);
+                        }
+                    }
+                    $currentGallery[$i] = 'uploads/packages/' . $fileName;
+                }
+            } elseif (isset($galleryUrls[$i]) && trim($galleryUrls[$i]) !== '') {
+                $currentGallery[$i] = trim($galleryUrls[$i]);
+            }
+        }
+
+        $package->gallery_images = array_values($currentGallery);
+        $package->save();
+
+        return redirect()->back()->with('success', 'Foto paket wisata "' . $package->name . '" berhasil diperbarui!');
+    }
+
     public function togglePackage(int $id)
     {
         $package = Package::findOrFail($id);
@@ -641,17 +1188,38 @@ class AdminController extends Controller
 
     public function destroyPackage(int $id)
     {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!$user || $user->role !== 'admin') {
+            return redirect()->route('login')->with('info', 'Silakan masuk dengan akun Admin.');
+        }
+
         $package = Package::findOrFail($id);
         $name = $package->name;
-        $package->delete();
 
-        return redirect()->back()->with('success', "Paket wisata {$name} berhasil dihapus!");
+        try {
+            // Ubah slug agar slug lama bisa dipakai kembali jika admin membuat paket baru dengan nama yang sama
+            $package->slug = $package->slug . '-deleted-' . time();
+            $package->is_active = false;
+            $package->save();
+
+            $package->delete();
+
+            return redirect()->back()->with('success', "Paket wisata {$name} berhasil dihapus!");
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Gagal menghapus paket wisata: ' . $e->getMessage());
+            return redirect()->back()->withErrors([
+                "Gagal menghapus paket wisata {$name}: " . $e->getMessage()
+            ]);
+        }
     }
 
     /**
-     * KELOLA JADWAL & SESI
+     * ==========================================
+     * MANAJEMEN PENGELUARAN OPERASIONAL BASECAMP
+     * ==========================================
      */
-    public function schedules(Request $request)
+    public function expenses(Request $request)
     {
         /** @var User|null $user */
         $user = Auth::user();
@@ -659,36 +1227,296 @@ class AdminController extends Controller
             return redirect()->route('login')->with('info', 'Silakan masuk dengan akun Admin.');
         }
 
-        $targetDate = $request->query('date', now('Asia/Jakarta')->toDateString());
-        $slots = ScheduleSlot::withCount('bookings')->orderBy('start_time', 'asc')->get();
+        $search = $request->query('search');
+        $category = $request->query('category');
+        $startDate = $request->query('start_date');
+        $endDate = $request->query('end_date');
+        $period = $request->query('period', 'all');
+        $sortBy = $request->query('sort_by', 'date');
+        $sortOrder = $request->query('sort_order', 'desc');
 
-        foreach ($slots as $slot) {
-            $slot->day_booked = \App\Services\SlotAvailabilityService::getBookedJeeps($slot->id, $targetDate);
-            $slot->day_remaining = max(0, $slot->max_jeeps - $slot->day_booked);
+        if (!in_array($sortBy, ['date', 'amount', 'created_at', 'name'])) {
+            $sortBy = 'date';
+        }
+        if (!in_array(strtolower($sortOrder), ['asc', 'desc'])) {
+            $sortOrder = 'desc';
         }
 
-        return view('admin.schedules', compact('slots', 'targetDate'));
+        // Quick Period presets
+        if ($period === 'today') {
+            $startDate = Carbon::today()->toDateString();
+            $endDate = Carbon::today()->toDateString();
+        } elseif ($period === 'this_month') {
+            $startDate = Carbon::now()->startOfMonth()->toDateString();
+            $endDate = Carbon::now()->endOfMonth()->toDateString();
+        } elseif ($period === 'this_year') {
+            $startDate = Carbon::now()->startOfYear()->toDateString();
+            $endDate = Carbon::now()->endOfYear()->toDateString();
+        }
+
+        $query = Expense::with('user');
+
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('expense_number', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        if (!empty($category) && $category !== 'ALL') {
+            $query->where('category', $category);
+        }
+
+        if (!empty($startDate)) {
+            $query->whereDate('date', '>=', $startDate);
+        }
+        if (!empty($endDate)) {
+            $query->whereDate('date', '<=', $endDate);
+        }
+
+        // Ringkasan Pengeluaran (Cards)
+        $totalThisMonth = Expense::whereMonth('date', Carbon::now()->month)
+            ->whereYear('date', Carbon::now()->year)
+            ->sum('amount');
+        $totalToday = Expense::whereDate('date', Carbon::today()->toDateString())->sum('amount');
+        $totalTransactions = Expense::count();
+        $largestExpense = Expense::orderBy('amount', 'desc')->first();
+
+        // Total filtered
+        $filteredTotal = (clone $query)->sum('amount');
+
+        $expenses = $query->orderBy($sortBy, $sortOrder)
+            ->orderBy('id', 'desc')
+            ->paginate(10)
+            ->withQueryString();
+
+        $categories = Expense::CATEGORIES;
+
+        return view('admin.expenses', compact(
+            'expenses',
+            'categories',
+            'totalThisMonth',
+            'totalToday',
+            'totalTransactions',
+            'largestExpense',
+            'filteredTotal',
+            'user',
+            'search',
+            'category',
+            'startDate',
+            'endDate',
+            'period',
+            'sortBy',
+            'sortOrder'
+        ));
+    }
+
+    public function storeExpense(Request $request)
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!$user || $user->role !== 'admin') {
+            return redirect()->route('login')->with('info', 'Silakan masuk dengan akun Admin.');
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'category' => 'required|string|in:' . implode(',', array_keys(Expense::CATEGORIES)),
+            'date' => 'required|date',
+            'amount' => 'required|numeric|min:1',
+            'description' => 'nullable|string|max:1000',
+            'receipt_file' => 'nullable|file|mimes:jpeg,png,jpg,webp,pdf|max:5120',
+        ], [
+            'name.required' => 'Nama pengeluaran wajib diisi.',
+            'category.required' => 'Kategori pengeluaran wajib dipilih.',
+            'date.required' => 'Tanggal pengeluaran wajib diisi.',
+            'amount.required' => 'Nominal pengeluaran wajib diisi.',
+            'amount.min' => 'Nominal pengeluaran harus lebih besar dari Rp 0.',
+            'receipt_file.mimes' => 'File bukti harus berupa format JPG, PNG, WEBP, atau PDF.',
+            'receipt_file.max' => 'Ukuran file bukti pengeluaran maksimal 5 MB.',
+        ]);
+
+        $receiptPath = null;
+        $receiptOriginalName = null;
+
+        if ($request->hasFile('receipt_file') && $request->file('receipt_file')->isValid()) {
+            $file = $request->file('receipt_file');
+            $receiptOriginalName = $file->getClientOriginalName();
+            $fileName = 'expense_' . time() . '_' . Str::random(8) . '.' . $file->getClientOriginalExtension();
+            $destinationPath = public_path('uploads/expenses');
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+            $file->move($destinationPath, $fileName);
+            $receiptPath = 'uploads/expenses/' . $fileName;
+        }
+
+        $expense = Expense::create([
+            'user_id' => $user->id,
+            'name' => trim($validated['name']),
+            'category' => $validated['category'],
+            'date' => $validated['date'],
+            'amount' => $validated['amount'],
+            'description' => $validated['description'] ?? null,
+            'receipt_path' => $receiptPath,
+            'receipt_original_name' => $receiptOriginalName,
+        ]);
+
+        if (class_exists(ActivityLog::class)) {
+            ActivityLog::create([
+                'title' => 'Pengeluaran Dicatat: ' . $expense->name,
+                'description' => "Admin {$user->name} mencatat pengeluaran [{$expense->category}] sebesar {$expense->formatted_amount}.",
+                'type' => 'EXPENSE',
+                'is_read' => false,
+            ]);
+        }
+
+        return redirect()->route('admin.expenses')->with('success', "Pengeluaran \"{$expense->name}\" sebesar {$expense->formatted_amount} berhasil dicatat!");
+    }
+
+    public function showExpense(int $id)
+    {
+        $expense = Expense::with('user')->findOrFail($id);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'id' => $expense->id,
+                'expense_number' => $expense->expense_number,
+                'name' => $expense->name,
+                'category' => $expense->category,
+                'amount' => $expense->amount,
+                'formatted_amount' => $expense->formatted_amount,
+                'date' => $expense->date ? $expense->date->format('Y-m-d') : null,
+                'formatted_date' => $expense->formatted_date,
+                'description' => $expense->description,
+                'receipt_url' => $expense->receipt_url,
+                'receipt_original_name' => $expense->receipt_original_name,
+                'is_receipt_pdf' => $expense->is_receipt_pdf,
+                'is_receipt_image' => $expense->is_receipt_image,
+                'recorded_by' => $expense->user ? $expense->user->name : 'Administrator',
+                'created_at' => $expense->created_at ? $expense->created_at->translatedFormat('d M Y H:i') : null,
+            ]
+        ]);
+    }
+
+    public function updateExpense(Request $request, int $id)
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!$user || $user->role !== 'admin') {
+            return redirect()->route('login')->with('info', 'Silakan masuk dengan akun Admin.');
+        }
+
+        $expense = Expense::findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'category' => 'required|string|in:' . implode(',', array_keys(Expense::CATEGORIES)),
+            'date' => 'required|date',
+            'amount' => 'required|numeric|min:1',
+            'description' => 'nullable|string|max:1000',
+            'receipt_file' => 'nullable|file|mimes:jpeg,png,jpg,webp,pdf|max:5120',
+            'remove_receipt' => 'nullable|boolean',
+        ], [
+            'name.required' => 'Nama pengeluaran wajib diisi.',
+            'category.required' => 'Kategori pengeluaran wajib dipilih.',
+            'date.required' => 'Tanggal pengeluaran wajib diisi.',
+            'amount.required' => 'Nominal pengeluaran wajib diisi.',
+            'amount.min' => 'Nominal pengeluaran harus lebih besar dari Rp 0.',
+            'receipt_file.mimes' => 'File bukti harus berupa format JPG, PNG, WEBP, atau PDF.',
+            'receipt_file.max' => 'Ukuran file bukti pengeluaran maksimal 5 MB.',
+        ]);
+
+        $receiptPath = $expense->receipt_path;
+        $receiptOriginalName = $expense->receipt_original_name;
+
+        if ($request->boolean('remove_receipt')) {
+            if ($receiptPath && str_starts_with($receiptPath, 'uploads/expenses/')) {
+                $oldFile = public_path($receiptPath);
+                if (file_exists($oldFile)) {
+                    @unlink($oldFile);
+                }
+            }
+            $receiptPath = null;
+            $receiptOriginalName = null;
+        } elseif ($request->hasFile('receipt_file') && $request->file('receipt_file')->isValid()) {
+            if ($receiptPath && str_starts_with($receiptPath, 'uploads/expenses/')) {
+                $oldFile = public_path($receiptPath);
+                if (file_exists($oldFile)) {
+                    @unlink($oldFile);
+                }
+            }
+            $file = $request->file('receipt_file');
+            $receiptOriginalName = $file->getClientOriginalName();
+            $fileName = 'expense_' . time() . '_' . Str::random(8) . '.' . $file->getClientOriginalExtension();
+            $destinationPath = public_path('uploads/expenses');
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+            $file->move($destinationPath, $fileName);
+            $receiptPath = 'uploads/expenses/' . $fileName;
+        }
+
+        $expense->update([
+            'name' => trim($validated['name']),
+            'category' => $validated['category'],
+            'date' => $validated['date'],
+            'amount' => $validated['amount'],
+            'description' => $validated['description'] ?? null,
+            'receipt_path' => $receiptPath,
+            'receipt_original_name' => $receiptOriginalName,
+        ]);
+
+        return redirect()->back()->with('success', "Data pengeluaran \"{$expense->name}\" berhasil diperbarui!");
+    }
+
+    public function destroyExpense(int $id)
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!$user || $user->role !== 'admin') {
+            return redirect()->route('login')->with('info', 'Silakan masuk dengan akun Admin.');
+        }
+
+        $expense = Expense::findOrFail($id);
+        $name = $expense->name;
+        $expense->delete();
+
+        return redirect()->back()->with('success', "Data pengeluaran \"{$name}\" berhasil dihapus.");
+    }
+
+    /**
+     * KELOLA JADWAL & SESI
+     */
+    public function schedules()
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!$user || $user->role !== 'admin') {
+            return redirect()->route('login')->with('info', 'Silakan masuk dengan akun Admin.');
+        }
+
+        $slots = ScheduleSlot::withCount('bookings')->orderBy('start_time', 'asc')->get();
+        return view('admin.schedules', compact('slots'));
     }
 
     public function storeSchedule(Request $request)
     {
-        $totalCapacity = $this->getTotalCapacity();
-
         $validated = $request->validate([
             'slot_label' => 'required|string|max:100',
             'start_time' => 'required',
-            'end_time'   => 'required',
-            'max_jeeps'  => "nullable|integer|min:1|max:{$totalCapacity}",
-        ], [
-            'max_jeeps.max' => "Jumlah kuota jeep per sesi tidak boleh melebihi total armada ({$totalCapacity} Jeep).",
+            'end_time' => 'required',
+            'max_jeeps' => 'nullable|integer|min:1|max:50',
         ]);
 
         ScheduleSlot::create([
             'slot_label' => $validated['slot_label'],
             'start_time' => $validated['start_time'],
-            'end_time'   => $validated['end_time'],
-            'max_jeeps'  => $validated['max_jeeps'] ?? 20,
-            'is_active'  => true,
+            'end_time' => $validated['end_time'],
+            'max_jeeps' => $validated['max_jeeps'] ?? 20,
+            'is_active' => true,
         ]);
 
         return redirect()->back()->with('success', "Sesi jadwal {$validated['slot_label']} berhasil ditambahkan!");
@@ -697,22 +1525,19 @@ class AdminController extends Controller
     public function updateSchedule(Request $request, int $id)
     {
         $slot = ScheduleSlot::findOrFail($id);
-        $totalCapacity = $this->getTotalCapacity();
 
         $validated = $request->validate([
             'slot_label' => 'required|string|max:100',
             'start_time' => 'required',
-            'end_time'   => 'required',
-            'max_jeeps'  => "nullable|integer|min:1|max:{$totalCapacity}",
-        ], [
-            'max_jeeps.max' => "Jumlah kuota jeep per sesi tidak boleh melebihi total armada ({$totalCapacity} Jeep).",
+            'end_time' => 'required',
+            'max_jeeps' => 'nullable|integer|min:1|max:50',
         ]);
 
         $slot->update([
             'slot_label' => $validated['slot_label'],
             'start_time' => $validated['start_time'],
-            'end_time'   => $validated['end_time'],
-            'max_jeeps'  => $validated['max_jeeps'] ?? $slot->max_jeeps ?? 20,
+            'end_time' => $validated['end_time'],
+            'max_jeeps' => $validated['max_jeeps'] ?? $slot->max_jeeps ?? 20,
         ]);
 
         return redirect()->back()->with('success', "Jadwal sesi {$slot->slot_label} berhasil diperbarui!");
@@ -815,7 +1640,6 @@ class AdminController extends Controller
                 'booking_status' => 'FULL_PAID',
                 'paid_amount' => $booking->total_amount,
                 'remaining_amount' => 0.00,
-                'lock_expires_at' => null,
             ]);
 
             // Otomatis alokasikan Driver dan Armada Jeep saat pelunasan di loket
@@ -925,8 +1749,8 @@ class AdminController extends Controller
         $isActive = ($status === 'READY');
 
         // 2. Tambahkan driver baru ke tabel drivers (selalu sinkron 1:1)
-        $phone = !empty($validated['driver_phone']) 
-            ? trim($validated['driver_phone']) 
+        $phone = !empty($validated['driver_phone'])
+            ? trim($validated['driver_phone'])
             : '0812' . str_pad((string) (Driver::count() + 1), 8, '0', STR_PAD_LEFT);
 
         $driver = Driver::create([
@@ -937,8 +1761,8 @@ class AdminController extends Controller
         ]);
 
         // 3. Susun model_name armada: Jeep #<No> (<Nama Driver>)
-        $modelName = !empty($validated['model_name']) 
-            ? trim($validated['model_name']) 
+        $modelName = !empty($validated['model_name'])
+            ? trim($validated['model_name'])
             : "Jeep #{$plateNumber} ({$driverName})";
 
         $jeep = Jeep::create([
@@ -1187,6 +2011,7 @@ class AdminController extends Controller
             'force'      => 'nullable|boolean',
         ]);
 
+        $newSlot = ScheduleSlot::findOrFail($validated['slot_id']);
         $newTripDate = $validated['trip_date'];
         $oldTripDate = $booking->trip_date ? $booking->trip_date->format('Y-m-d') : '-';
         $oldSlotLabel = $booking->slot ? ($booking->slot->slot_label . ' (' . $booking->slot->start_time . ' - ' . $booking->slot->end_time . ' WIB)') : '-';
@@ -1196,74 +2021,70 @@ class AdminController extends Controller
             return redirect()->back()->with('info', "Jadwal booking {$booking->booking_code} tidak berubah (tanggal dan sesi waktu sama).");
         }
 
+        // Cek bentrok kuota slot target (kecuali jika admin memaksa/force override paguyuban)
+        $isSameSlotAndDate = ($oldTripDate === $newTripDate && (int)$booking->slot_id === (int)$validated['slot_id']);
+        if (!$isSameSlotAndDate) {
+            $bookedJeeps = $newSlot->bookedJeepsCount($newTripDate);
+            $remaining = max(0, $newSlot->max_jeeps - $bookedJeeps);
+
+            if ($booking->jeep_quantity > $remaining && !$request->boolean('force')) {
+                return redirect()->back()->with('error', "Bentrok Jadwal / Kuota Penuh: Sesi {$newSlot->slot_label} pada tanggal " . date('d/m/Y', strtotime($newTripDate)) . " hanya tersisa {$remaining} Jeep (booking ini butuh {$booking->jeep_quantity} Jeep). Silakan pilih sesi lain atau centang 'Tetap Jadwalkan (Override Kuota Paguyuban)'.");
+            }
+        }
+
         $reason = $validated['reason'] ?? 'Penyelesaian Bentrok / Reschedule';
         $note = $validated['admin_note'] ?? null;
 
-        try {
-            DB::transaction(function () use ($booking, $newTripDate, $validated, $oldTripDate, $oldSlotLabel, $reason, $note, $user, $request) {
-                // Lock baris ScheduleSlot tujuan
-                $newSlot = ScheduleSlot::whereKey($validated['slot_id'])->lockForUpdate()->firstOrFail();
+        DB::transaction(function () use ($booking, $newTripDate, $newSlot, $oldTripDate, $oldSlotLabel, $reason, $note, $user) {
+            $booking->trip_date = $newTripDate;
+            $booking->slot_id = $newSlot->id;
 
-                // Hitung sisa sesi tujuan dengan MENGECUALIKAN booking yang sedang diubah
-                $remaining = \App\Services\SlotAvailabilityService::getRemainingJeeps($newSlot->id, $newTripDate, $booking->id);
+            // Catat log reschedule ke customer_notes untuk jejak audit
+            $rescheduleNote = "[Reschedule: " . date('d/m/Y H:i') . " oleh " . ($user->name ?? 'Admin') . " - {$reason}";
+            if ($note) {
+                $rescheduleNote .= " ({$note})";
+            }
+            $rescheduleNote .= "]";
 
-                if ($booking->jeep_quantity > $remaining && !$request->boolean('force')) {
-                    throw new \DomainException("Bentrok Jadwal / Kuota Penuh: Sesi {$newSlot->slot_label} pada tanggal " . date('d/m/Y', strtotime($newTripDate)) . " hanya tersisa {$remaining} Jeep (booking ini butuh {$booking->jeep_quantity} Jeep). Silakan pilih sesi lain atau centang 'Tetap Jadwalkan (Override Kuota Paguyuban)'.");
-                }
+            if (!empty($booking->customer_notes)) {
+                $booking->customer_notes .= "\n" . $rescheduleNote;
+            } else {
+                $booking->customer_notes = $rescheduleNote;
+            }
 
-                $booking->trip_date = $newTripDate;
-                $booking->slot_id = $newSlot->id;
+            $booking->save();
 
-                // Catat log reschedule ke customer_notes untuk jejak audit
-                $rescheduleNote = "[Reschedule: " . date('d/m/Y H:i') . " oleh " . ($user->name ?? 'Admin') . " - {$reason}";
-                if ($note) {
-                    $rescheduleNote .= " ({$note})";
-                }
-                $rescheduleNote .= "]";
-
-                if (!empty($booking->customer_notes)) {
-                    $booking->customer_notes .= "\n" . $rescheduleNote;
+            // Perbarui status armada Jeep jika tanggal dipindahkan ke atau dari hari ini
+            $assignment = $booking->assignments->first();
+            if ($assignment && $assignment->jeep) {
+                if ($booking->trip_date->isToday()) {
+                    $assignment->jeep->update(['status' => 'ON_TRIP']);
                 } else {
-                    $booking->customer_notes = $rescheduleNote;
-                }
+                    if ($assignment->jeep->status === 'ON_TRIP') {
+                        $hasOtherTripToday = BookingAssignment::where('jeep_id', $assignment->jeep_id)
+                            ->where('booking_id', '!=', $booking->id)
+                            ->whereHas('booking', function ($q) {
+                                $q->whereDate('trip_date', now()->toDateString())
+                                    ->whereIn('booking_status', ['DP_PAID', 'FULL_PAID']);
+                            })->exists();
 
-                $booking->save();
-
-                // Perbarui status armada Jeep jika tanggal dipindahkan ke atau dari hari ini
-                $assignment = $booking->assignments->first();
-                if ($assignment && $assignment->jeep) {
-                    if ($booking->trip_date->isToday()) {
-                        $assignment->jeep->update(['status' => 'ON_TRIP']);
-                    } else {
-                        if ($assignment->jeep->status === 'ON_TRIP') {
-                            $hasOtherTripToday = BookingAssignment::where('jeep_id', $assignment->jeep_id)
-                                ->where('booking_id', '!=', $booking->id)
-                                ->whereHas('booking', function ($q) {
-                                    $q->whereDate('trip_date', now()->toDateString())
-                                      ->whereIn('booking_status', ['DP_PAID', 'FULL_PAID']);
-                                })->exists();
-
-                            if (!$hasOtherTripToday) {
-                                $assignment->jeep->update(['status' => 'READY']);
-                            }
+                        if (!$hasOtherTripToday) {
+                            $assignment->jeep->update(['status' => 'READY']);
                         }
                     }
                 }
+            }
 
-                // Catat riwayat aktivitas admin & notifikasi sistem
-                ActivityLog::logAdmin(
-                    'Perubahan Jadwal Booking (Reschedule)',
-                    "Mengubah jadwal booking #{$booking->booking_code} ({$booking->customer_name}) dari {$oldTripDate} ({$oldSlotLabel}) menjadi {$newTripDate} sesi {$newSlot->slot_label} ({$newSlot->start_time} - {$newSlot->end_time} WIB). Alasan: {$reason}.",
-                    'schedule',
-                    route('admin.bookings', ['search' => $booking->booking_code])
-                );
-            });
-        } catch (\DomainException $de) {
-            return redirect()->back()->with('error', $de->getMessage());
-        }
+            // Catat riwayat aktivitas admin & notifikasi sistem
+            ActivityLog::logAdmin(
+                'Perubahan Jadwal Booking (Reschedule)',
+                "Mengubah jadwal booking #{$booking->booking_code} ({$booking->customer_name}) dari {$oldTripDate} ({$oldSlotLabel}) menjadi {$newTripDate} sesi {$newSlot->slot_label} ({$newSlot->start_time} - {$newSlot->end_time} WIB). Alasan: {$reason}.",
+                'schedule',
+                route('admin.bookings', ['search' => $booking->booking_code])
+            );
+        });
 
-        $newSlot = ScheduleSlot::find($validated['slot_id']);
-        return redirect()->back()->with('success', "Jadwal booking {$booking->booking_code} berhasil diubah ke tanggal " . date('d F Y', strtotime($newTripDate)) . " ({$newSlot?->slot_label})!");
+        return redirect()->back()->with('success', "Jadwal booking {$booking->booking_code} berhasil diubah ke tanggal " . date('d F Y', strtotime($newTripDate)) . " ({$newSlot->slot_label})!");
     }
 
     /**
@@ -1274,10 +2095,42 @@ class AdminController extends Controller
         $date = $request->query('date', date('Y-m-d'));
         $excludeBookingId = (int) $request->query('exclude_booking_id', 0);
 
-        $result = \App\Services\SlotAvailabilityService::getSlotAvailability($date, 1, $excludeBookingId);
+        $slots = ScheduleSlot::where('is_active', true)->orderBy('start_time')->get();
 
-        return response()->json($result)
-            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+        $data = $slots->map(function ($s) use ($date, $excludeBookingId) {
+            $query = $s->bookings()
+                ->whereDate('trip_date', $date)
+                ->whereIn('booking_status', ['PENDING', 'DP_PAID', 'FULL_PAID']);
+
+            if ($excludeBookingId > 0) {
+                $query->where('id', '!=', $excludeBookingId);
+            }
+
+            $booked = (int) $query->sum('jeep_quantity');
+            $remaining = max(0, $s->max_jeeps - $booked);
+
+            $startTime = substr((string) $s->start_time, 0, 5);
+            $endTime = substr((string) $s->end_time, 0, 5);
+            $cleanSlotLabel = trim(preg_replace('/\s*\(\d{2}:\d{2}\s*WIB\)/i', '', (string)$s->slot_label)) ?: ('Sesi ' . $s->id);
+            $timeRange = $startTime . ' - ' . $endTime . ' WIB';
+
+            return [
+                'id' => $s->id,
+                'slot_label' => $cleanSlotLabel,
+                'start_time' => $startTime,
+                'end_time' => $endTime,
+                'time_range' => $timeRange,
+                'max_jeeps' => $s->max_jeeps,
+                'booked_jeeps' => $booked,
+                'remaining_jeeps' => $remaining,
+                'is_full' => $remaining <= 0,
+            ];
+        });
+
+        return response()->json([
+            'date' => $date,
+            'slots' => $data,
+        ]);
     }
 
     /**
@@ -1811,8 +2664,8 @@ class AdminController extends Controller
 
             // Hitung toleransi waktu perbaikan (maksimal 2 jam atau sampai sesi dimulai)
             $slotStartTime = $booking->slot ? $booking->slot->start_time : '08:00:00';
-            $tripDateStr = $booking->trip_date instanceof \DateTimeInterface 
-                ? $booking->trip_date->format('Y-m-d') 
+            $tripDateStr = $booking->trip_date instanceof \DateTimeInterface
+                ? $booking->trip_date->format('Y-m-d')
                 : \Illuminate\Support\Carbon::parse($booking->trip_date)->format('Y-m-d');
             $sessionDateTime = \Illuminate\Support\Carbon::parse($tripDateStr . ' ' . $slotStartTime);
             $reuploadExpiry = now()->addHours(2);
@@ -1849,5 +2702,277 @@ class AdminController extends Controller
         }
 
         return response()->file($filePath);
+    }
+
+    /**
+     * QR Scanner E-Tiket untuk Pelunasan & Check-in Loket
+     */
+    public function qrScanner(Request $request)
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!$user || $user->role !== 'admin') {
+            return redirect()->route('login')->with('info', 'Silakan masuk dengan akun Admin untuk membuka QR Scanner.');
+        }
+
+        $recentSettlements = Payment::with(['booking.package', 'booking.slot'])
+            ->where('payment_stage', 'SETTLEMENT')
+            ->orderBy('created_at', 'desc')
+            ->take(15)
+            ->get();
+
+        $unreadCount = ActivityLog::unread()->count();
+
+        return view('admin.scanner', compact('recentSettlements', 'unreadCount'));
+    }
+
+    /**
+     * Lookup booking data dari scan QR Code atau manual input
+     */
+    public function scanQrLookup(Request $request)
+    {
+        $rawQuery = trim($request->input('token') ?? $request->input('code') ?? '');
+
+        if (empty($rawQuery)) {
+            return response()->json([
+                'status' => 'error',
+                'code' => 'EMPTY_INPUT',
+                'message' => 'Silakan pindai QR code atau masukkan kode tiket/booking terlebih dahulu.'
+            ], 400);
+        }
+
+        // Ekstraksi jika admin memindai full URL e-tiket
+        $token = $rawQuery;
+        if (filter_var($rawQuery, FILTER_VALIDATE_URL)) {
+            $parsedUrl = parse_url($rawQuery);
+            if (!empty($parsedUrl['query'])) {
+                parse_str($parsedUrl['query'], $queryParams);
+                if (!empty($queryParams['code'])) {
+                    $token = trim($queryParams['code']);
+                } elseif (!empty($queryParams['booking_code'])) {
+                    $token = trim($queryParams['booking_code']);
+                }
+            } else {
+                $segments = explode('/', trim($parsedUrl['path'] ?? '', '/'));
+                $token = end($segments);
+            }
+        }
+
+        // Cari booking berdasarkan qr_token atau booking_code
+        $booking = Booking::with(['package', 'slot', 'payments' => function ($q) {
+            $q->where('payment_status', 'SETTLED')->orderBy('created_at', 'asc');
+        }])
+        ->where('qr_token', $token)
+        ->orWhere('booking_code', strtoupper($token))
+        ->first();
+
+        if (!$booking) {
+            return response()->json([
+                'status' => 'error',
+                'code' => 'NOT_FOUND',
+                'message' => 'E-Tiket tidak ditemukan dalam sistem. Pastikan QR Code valid atau input kode booking dengan benar.'
+            ], 404);
+        }
+
+        $packageName = $booking->package?->name ?? 'Paket Trip Jeep Wukirsari';
+        $tripDateFormatted = $booking->trip_date ? Carbon::parse($booking->trip_date)->translatedFormat('d F Y') : '-';
+        $timeSlot = $booking->slot?->slot_label ?? '-';
+
+        $totalAmount = (float) $booking->total_amount;
+        $paidAmount = (float) $booking->paid_amount;
+        $remainingAmount = (float) $booking->remaining_amount;
+
+        $bookingData = [
+            'id' => $booking->id,
+            'booking_code' => $booking->booking_code,
+            'qr_token' => $booking->qr_token,
+            'customer_name' => $booking->customer_name,
+            'customer_phone' => $booking->customer_phone,
+            'customer_email' => $booking->customer_email,
+            'package_name' => $packageName,
+            'trip_date' => $tripDateFormatted,
+            'time_slot' => $timeSlot,
+            'jeep_quantity' => $booking->jeep_quantity ?? 1,
+            'passenger_count' => $booking->passenger_count ?? 4,
+            'arrival_type' => $booking->arrival_type,
+            'pickup_address' => $booking->pickup_address ?? '-',
+            'total_amount' => $totalAmount,
+            'paid_amount' => $paidAmount,
+            'remaining_amount' => $remainingAmount,
+            'formatted_total' => 'Rp ' . number_format($totalAmount, 0, ',', '.'),
+            'formatted_paid' => 'Rp ' . number_format($paidAmount, 0, ',', '.'),
+            'formatted_remaining' => 'Rp ' . number_format($remainingAmount, 0, ',', '.'),
+            'booking_status' => $booking->booking_status,
+            'payment_mode' => $booking->payment_mode,
+            'ticket_url' => route('ticket.check', ['code' => $booking->qr_token ?? $booking->booking_code]),
+        ];
+
+        // Validasi Status Booking
+        if ($booking->booking_status === 'CANCELLED') {
+            return response()->json([
+                'status' => 'error',
+                'code' => 'CANCELLED',
+                'message' => "Pemesanan #{$booking->booking_code} telah DIBATALKAN. Tidak dapat diproses pelunasan.",
+                'booking' => $bookingData
+            ], 200);
+        }
+
+        if ($booking->booking_status === 'PENDING') {
+            return response()->json([
+                'status' => 'warning',
+                'code' => 'PENDING',
+                'message' => "Booking #{$booking->booking_code} belum membayar DP/Uang Muka (Status: PENDING). Pelanggan harus menyelesaikan pembayaran DP terlebih dahulu.",
+                'booking' => $bookingData
+            ], 200);
+        }
+
+        if ($booking->booking_status === 'WAITING_CONFIRMATION') {
+            return response()->json([
+                'status' => 'warning',
+                'code' => 'WAITING_CONFIRMATION',
+                'message' => "Booking #{$booking->booking_code} sedang menunggu konfirmasi pembayaran DP oleh admin.",
+                'booking' => $bookingData
+            ], 200);
+        }
+
+        if ($booking->booking_status === 'FULL_PAID' || $remainingAmount <= 0) {
+            $settlePayment = $booking->payments->where('payment_stage', 'SETTLEMENT')->first();
+            $settleInfo = null;
+            if ($settlePayment) {
+                $settleInfo = [
+                    'amount' => 'Rp ' . number_format((float) $settlePayment->gross_amount, 0, ',', '.'),
+                    'method' => $settlePayment->payment_method ?? $settlePayment->payment_type,
+                    'paid_at' => $settlePayment->paid_at ? Carbon::parse($settlePayment->paid_at)->format('d/m/Y H:i') : ($settlePayment->created_at ? Carbon::parse($settlePayment->created_at)->format('d/m/Y H:i') : '-'),
+                ];
+            }
+
+            return response()->json([
+                'status' => 'info',
+                'code' => 'FULL_PAID',
+                'message' => "E-Tiket Valid & Booking sudah LUNAS! Tidak ada sisa tagihan yang perlu dilunasi.",
+                'booking' => $bookingData,
+                'settlement_info' => $settleInfo
+            ], 200);
+        }
+
+        // Kondisi DP_PAID (Siap Dilunasi di Loket)
+        return response()->json([
+            'status' => 'success',
+            'code' => 'DP_PAID',
+            'message' => "E-Tiket Valid! Booking berstatus DP. Sisa tagihan Rp " . number_format($remainingAmount, 0, ',', '.') . " siap dilunasi di loket.",
+            'booking' => $bookingData
+        ], 200);
+    }
+
+    /**
+     * Konfirmasi pelunasan booking dari scan QR code
+     */
+    public function scanQrSettle(Request $request)
+    {
+        $request->validate([
+            'booking_id' => 'required|integer',
+            'payment_method' => 'required|in:CASH,TRANSFER',
+            'notes' => 'nullable|string|max:255',
+        ]);
+
+        try {
+            return DB::transaction(function () use ($request) {
+                // Lock row to prevent race condition / double settlement
+                $booking = Booking::with('package')->where('id', $request->booking_id)->lockForUpdate()->first();
+
+                if (!$booking) {
+                    return response()->json([
+                        'status' => 'error',
+                        'code' => 'NOT_FOUND',
+                        'message' => 'Data booking tidak ditemukan di sistem.'
+                    ], 404);
+                }
+
+                if ($booking->booking_status === 'FULL_PAID') {
+                    return response()->json([
+                        'status' => 'error',
+                        'code' => 'ALREADY_SETTLED',
+                        'message' => "Booking #{$booking->booking_code} sudah berstatus LUNAS sebelumnya. Pembayaran pelunasan ganda berhasil dicegah."
+                    ], 422);
+                }
+
+                if ($booking->booking_status === 'CANCELLED') {
+                    return response()->json([
+                        'status' => 'error',
+                        'code' => 'CANCELLED',
+                        'message' => "Booking #{$booking->booking_code} telah dibatalkan dan tidak dapat dilunasi."
+                    ], 422);
+                }
+
+                // Ambil nilai sisa tagihan asli dari database - JANGAN percaya dari client
+                $remaining = (float) $booking->remaining_amount;
+                if ($remaining <= 0) {
+                    return response()->json([
+                        'status' => 'error',
+                        'code' => 'NO_REMAINING',
+                        'message' => 'Sisa tagihan untuk booking ini sudah Rp 0.'
+                    ], 422);
+                }
+
+                $adminUser = Auth::user();
+                $adminName = $adminUser ? $adminUser->name : 'Admin Loket';
+                $methodCode = $request->input('payment_method') === 'TRANSFER' ? 'TRANSFER_BASECAMP' : 'CASH_BASECAMP';
+                $methodLabel = $request->input('payment_method') === 'TRANSFER' ? 'Transfer Bank Langsung' : 'Tunai di Loket';
+
+                // 1. Catat entri Payment baru khusus tahap SETTLEMENT
+                $payment = Payment::create([
+                    'booking_id' => $booking->id,
+                    'order_id' => 'SETTLE-' . $booking->booking_code . '-' . time(),
+                    'transaction_ref' => 'LOKET-' . strtoupper(Str::random(6)),
+                    'payment_stage' => 'SETTLEMENT',
+                    'gross_amount' => $remaining,
+                    'payment_type' => $methodCode,
+                    'payment_method' => $methodLabel,
+                    'payment_status' => 'SETTLED',
+                    'paid_at' => now(),
+                ]);
+
+                // 2. Update status booking menjadi FULL_PAID dan sisa Rp 0
+                $booking->update([
+                    'booking_status' => 'FULL_PAID',
+                    'paid_amount' => $booking->total_amount,
+                    'remaining_amount' => 0.00,
+                ]);
+
+                // 3. Otomatis alokasikan Driver dan Armada Jeep jika belum ada
+                \App\Services\BookingAssignmentService::autoAssign($booking);
+
+                // 4. Catat notifikasi aktivitas
+                ActivityLog::logPaymentSuccess($booking, $remaining, "Pelunasan ({$methodLabel})");
+                ActivityLog::logAdmin(
+                    'Pelunasan QR E-Tiket Berhasil',
+                    "Admin {$adminName} menerima pelunasan sisa tagihan Rp " . number_format($remaining, 0, ',', '.') . " ({$methodLabel}) untuk booking #{$booking->booking_code} ({$booking->customer_name}).",
+                    'payment',
+                    route('admin.scanner')
+                );
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Pelunasan sebesar Rp ' . number_format($remaining, 0, ',', '.') . ' berhasil dikonfirmasi dan dicatat!',
+                    'data' => [
+                        'booking_id' => $booking->id,
+                        'booking_code' => $booking->booking_code,
+                        'customer_name' => $booking->customer_name,
+                        'package_name' => $booking->package?->name ?? 'Paket Trip Jeep Wukirsari',
+                        'remaining_paid' => $remaining,
+                        'formatted_remaining_paid' => 'Rp ' . number_format($remaining, 0, ',', '.'),
+                        'payment_method' => $methodLabel,
+                        'admin_name' => $adminName,
+                        'paid_at' => now()->translatedFormat('d F Y, H:i:s'),
+                        'ticket_url' => route('ticket.check', ['code' => $booking->qr_token ?? $booking->booking_code]),
+                    ]
+                ]);
+            });
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan sistem saat memproses pelunasan: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
