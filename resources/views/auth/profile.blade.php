@@ -3,6 +3,25 @@
 @section('title', 'Profil Akun Wisatawan | Jeep Wukirsari')
 
 @section('content')
+<style>
+    .booking-scroll-container {
+        scrollbar-width: thin;
+        scrollbar-color: #CBD5E1 transparent;
+    }
+    .booking-scroll-container::-webkit-scrollbar {
+        width: 6px;
+    }
+    .booking-scroll-container::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .booking-scroll-container::-webkit-scrollbar-thumb {
+        background-color: #CBD5E1;
+        border-radius: 9999px;
+    }
+    .booking-scroll-container::-webkit-scrollbar-thumb:hover {
+        background-color: #94A3B8;
+    }
+</style>
 <div class="py-8 sm:py-12 bg-wukirsari-cream">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
 
@@ -81,113 +100,134 @@
         </div>
 
         <!-- Section Riwayat Pemesanan (My Bookings) -->
-        <div class="space-y-4">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div class="flex items-center gap-2.5">
-                    <h2 class="text-lg font-bold text-merapiText-primary font-display">
+        <div class="space-y-3 max-w-2xl mx-auto w-full">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                <div class="flex items-center gap-2 shrink-0">
+                    <h2 class="text-base sm:text-lg font-bold text-merapiText-primary font-display whitespace-nowrap">
                         Riwayat Tiket & Pesanan Saya
                     </h2>
-                    <span class="text-xs font-bold px-2.5 py-0.5 bg-wukirsari-sage text-wukirsari-primary rounded-full border border-wukirsari-border/60">
+                    <span class="text-xs font-bold px-2 py-0.5 bg-wukirsari-sage text-wukirsari-primary rounded-full border border-wukirsari-border/60">
                         {{ $myBookings->count() }}
                     </span>
                 </div>
-                <div class="flex flex-wrap items-center gap-2 text-xs">
-                    <a href="{{ route('ticket.check') }}" class="px-3.5 py-1.5 rounded-full border border-wukirsari-border bg-white text-merapiText-secondary hover:text-wukirsari-primary hover:border-wukirsari-primary text-xs font-medium transition-colors shadow-2xs">
+                <div class="flex flex-wrap sm:flex-nowrap items-center gap-1.5 sm:gap-2 text-xs shrink-0">
+                    <a href="{{ route('ticket.check') }}" class="px-3 py-1.5 rounded-full border border-wukirsari-border bg-white text-merapiText-secondary hover:text-wukirsari-primary hover:border-wukirsari-primary text-xs font-medium transition-colors shadow-2xs whitespace-nowrap">
                         Lacak Tiket dengan Kode
                     </a>
-                    <button type="button" onclick="openClaimModal()" class="px-3.5 py-1.5 rounded-full border border-wukirsari-primary/20 bg-wukirsari-sage/60 hover:bg-wukirsari-primary hover:text-white text-wukirsari-primary text-xs font-semibold transition-all shadow-2xs cursor-pointer">
+                    <button type="button" onclick="openClaimModal()" class="px-3 py-1.5 rounded-full border border-wukirsari-primary/20 bg-wukirsari-sage/60 hover:bg-wukirsari-primary hover:text-white text-wukirsari-primary text-xs font-semibold transition-all shadow-2xs cursor-pointer whitespace-nowrap">
                         Klaim Booking dengan Kode
                     </button>
                 </div>
             </div>
 
             @if($myBookings->isEmpty())
-            <div class="bg-white rounded-3xl border border-wukirsari-border p-6 sm:p-8 text-center space-y-4 shadow-2xs">
-                <div class="space-y-1.5">
-                    <h3 class="text-base font-bold text-merapiText-primary font-display">Belum Ada Riwayat Pemesanan</h3>
+            <div class="bg-white rounded-2xl sm:rounded-3xl border border-wukirsari-border p-5 sm:p-7 text-center space-y-3 shadow-2xs">
+                <div class="space-y-1">
+                    <h3 class="text-sm sm:text-base font-bold text-merapiText-primary font-display">Belum Ada Riwayat Pemesanan</h3>
                     <p class="text-xs text-merapiText-muted max-w-md mx-auto leading-relaxed">
                         Anda belum memiliki tiket tour jeep. Pilih paket petualangan seru lereng Merapi sekarang dan nikmati liburan tak terlupakan!
                     </p>
                 </div>
-                <div class="flex flex-col sm:flex-row gap-2.5 justify-center pt-1">
-                    <a href="{{ route('booking.create') }}" class="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-wukirsari-primary text-white text-xs font-bold shadow-xs hover:bg-wukirsari-hover transition-all active:scale-95">
+                <div class="flex flex-col sm:flex-row gap-2 justify-center pt-0.5">
+                    <a href="{{ route('booking.create') }}" class="inline-flex items-center justify-center px-5 py-2 rounded-full bg-wukirsari-primary text-white text-xs font-bold shadow-xs hover:bg-wukirsari-hover transition-all active:scale-95">
                         Pilih Paket & Booking Sekarang
                     </a>
-                    <button type="button" onclick="openClaimModal()" class="inline-flex items-center justify-center px-6 py-2.5 rounded-full border border-wukirsari-border bg-white text-wukirsari-primary text-xs font-bold hover:bg-wukirsari-sage/50 transition-all cursor-pointer active:scale-95 shadow-2xs">
+                    <button type="button" onclick="openClaimModal()" class="inline-flex items-center justify-center px-5 py-2 rounded-full border border-wukirsari-border bg-white text-wukirsari-primary text-xs font-bold hover:bg-wukirsari-sage/50 transition-all cursor-pointer active:scale-95 shadow-2xs">
                         Klaim Booking dengan Kode
                     </button>
                 </div>
             </div>
             @else
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                @foreach($myBookings as $booking)
-                <div class="bg-white rounded-3xl border border-wukirsari-border p-5 shadow-xs space-y-4 hover:border-wukirsari-primary/40 transition-all">
-                    <div class="flex items-start justify-between border-b border-wukirsari-border/70 pb-3 gap-3">
-                        <div class="min-w-0">
-                            <span class="text-[10px] uppercase font-bold tracking-wider text-merapiText-muted block">Kode Booking</span>
-                            <h3 class="text-base font-bold font-mono text-wukirsari-primary truncate">
-                                {{ $booking->booking_code }}
-                            </h3>
-                        </div>
-                        <div class="shrink-0">
-                            @if($booking->booking_status === 'FULL_PAID')
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200/90 shadow-2xs tracking-wide">
-                                Lunas (100%)
-                            </span>
-                            @elseif($booking->booking_status === 'DP_PAID')
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-900 border border-amber-200/90 shadow-2xs tracking-wide">
-                                DP (Sisa Rp {{ number_format($booking->remaining_amount, 0, ',', '.') }})
-                            </span>
-                            @elseif($booking->booking_status === 'PENDING')
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200/90 shadow-2xs tracking-wide">
-                                Menunggu Pembayaran
-                            </span>
-                            @elseif($booking->booking_status === 'CANCELLED')
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200/90 shadow-2xs tracking-wide">
-                                Dibatalkan
-                            </span>
-                            @else
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200/90 shadow-2xs tracking-wide">
-                                {{ $booking->booking_status }}
-                            </span>
-                            @endif
-                        </div>
-                    </div>
-
-                    <div class="space-y-2 text-xs py-0.5">
-                        <div class="flex items-start justify-between gap-3">
-                            <span class="text-merapiText-muted shrink-0">Paket Wisata</span>
-                            <span class="font-bold text-merapiText-primary text-right">{{ $booking->package->name ?? '-' }}</span>
-                        </div>
-                        <div class="flex items-start justify-between gap-3">
-                            <span class="text-merapiText-muted shrink-0">Jadwal Tour</span>
-                            <span class="font-semibold text-merapiText-primary text-right">
-                                {{ \Carbon\Carbon::parse($booking->trip_date)->translatedFormat('d M Y') }}
-                                @if($booking->slot)
-                                <span class="text-merapiText-muted font-normal">• {{ $booking->slot->slot_label }}</span>
+            <div class="bg-white rounded-2xl sm:rounded-3xl border border-wukirsari-border p-2 sm:p-3 shadow-xs">
+                <div class="max-h-[380px] sm:max-h-[420px] overflow-y-auto space-y-2 pr-1 sm:pr-1.5 booking-scroll-container">
+                    @foreach($myBookings as $booking)
+                    <div class="rounded-xl border border-wukirsari-border bg-[#F7F7F2]/50 hover:bg-[#F7F7F2] py-2 px-2.5 sm:py-2.5 sm:px-3.5 transition-all space-y-1 sm:space-y-2 hover:border-wukirsari-primary/30">
+                        {{-- Header Kartu --}}
+                        <div class="flex items-center justify-between border-b border-wukirsari-border/70 pb-1 sm:pb-1.5 gap-2">
+                            <div class="flex items-center gap-1.5 min-w-0">
+                                <span class="text-[9px] uppercase font-bold tracking-wider text-merapiText-muted shrink-0">Kode:</span>
+                                <h3 class="text-xs sm:text-sm font-bold font-mono text-wukirsari-primary truncate leading-tight">
+                                    {{ $booking->booking_code }}
+                                </h3>
+                            </div>
+                            <div class="shrink-0">
+                                @if($booking->booking_status === 'FULL_PAID')
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200/90 shadow-2xs tracking-wide">
+                                    Lunas (100%)
+                                </span>
+                                @elseif($booking->booking_status === 'DP_PAID')
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-amber-50 text-amber-900 border border-amber-200/90 shadow-2xs tracking-wide">
+                                    DP (Sisa Rp {{ number_format($booking->remaining_amount, 0, ',', '.') }})
+                                </span>
+                                @elseif($booking->booking_status === 'PENDING')
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200/90 shadow-2xs tracking-wide">
+                                    Menunggu Pembayaran
+                                </span>
+                                @elseif($booking->booking_status === 'CANCELLED')
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200/90 shadow-2xs tracking-wide">
+                                    Dibatalkan
+                                </span>
+                                @else
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200/90 shadow-2xs tracking-wide">
+                                    {{ $booking->booking_status }}
+                                </span>
                                 @endif
-                            </span>
+                            </div>
                         </div>
-                        <div class="flex items-start justify-between gap-3">
-                            <span class="text-merapiText-muted shrink-0">Jumlah Armada</span>
-                            <span class="font-semibold text-merapiText-primary text-right">{{ $booking->jeep_quantity }} Jeep <span class="text-merapiText-muted font-normal">({{ $booking->passenger_count }} Orang)</span></span>
-                        </div>
-                        <div class="flex items-center justify-between pt-2.5 border-t border-dashed border-wukirsari-border">
-                            <span class="text-merapiText-muted font-medium">Total Tagihan</span>
-                            <span class="font-bold text-sm text-merapiText-primary">Rp {{ number_format($booking->total_amount, 0, ',', '.') }}</span>
-                        </div>
-                    </div>
 
-                    <div class="pt-2.5 flex items-center justify-between border-t border-wukirsari-border/60">
-                        <span class="text-[11px] text-merapiText-muted">
-                            {{ $booking->created_at->diffForHumans() }}
-                        </span>
-                        <a href="{{ route('booking.success', $booking->booking_code) }}" class="inline-flex items-center justify-center px-4 py-1.5 rounded-full border border-wukirsari-primary/20 bg-wukirsari-sage/70 hover:bg-wukirsari-primary hover:text-white text-wukirsari-primary text-xs font-bold transition-all shadow-2xs active:scale-95">
-                            Buka E-Tiket
-                        </a>
+                        {{-- Detail Informasi --}}
+                        <div class="space-y-1 sm:space-y-2 text-xs py-0.5">
+                            {{-- Paket Wisata --}}
+                            <div class="flex items-center justify-between gap-3">
+                                <span class="text-merapiText-muted text-[11px] sm:text-xs shrink-0">Paket Wisata</span>
+                                <span class="font-bold text-merapiText-primary text-[11px] sm:text-xs text-right truncate">{{ $booking->package->name ?? '-' }}</span>
+                            </div>
+
+                            {{-- Jadwal Tour (Tanggal & Jam / Sesi) --}}
+                            <div class="flex items-center justify-between gap-3">
+                                <span class="text-merapiText-muted text-[11px] sm:text-xs shrink-0">Jadwal Tour</span>
+                                <div class="text-right min-w-0">
+                                    <span class="font-semibold text-merapiText-primary text-[11px] sm:text-xs leading-tight">
+                                        {{ \Carbon\Carbon::parse($booking->trip_date)->translatedFormat('d M Y') }}
+                                    </span>
+                                    @if($booking->slot)
+                                    <span class="text-[10px] sm:text-[11px] text-merapiText-muted block sm:inline sm:ml-1 font-normal leading-tight">
+                                        • {{ $booking->slot->slot_label }}
+                                    </span>
+                                    @endif
+                                </div>
+                            </div>
+
+                            {{-- Jumlah Armada --}}
+                            <div class="flex items-center justify-between gap-3">
+                                <span class="text-merapiText-muted text-[11px] sm:text-xs shrink-0">Jumlah Armada</span>
+                                <span class="font-semibold text-merapiText-primary text-[11px] sm:text-xs text-right">
+                                    {{ $booking->jeep_quantity }} Jeep <span class="text-merapiText-muted font-normal">({{ $booking->passenger_count }} Orang)</span>
+                                </span>
+                            </div>
+
+                            {{-- Total Tagihan --}}
+                            <div class="flex items-center justify-between gap-3 pt-1 sm:pt-1.5 border-t border-dashed border-wukirsari-border">
+                                <span class="text-merapiText-muted font-medium text-[11px] sm:text-xs shrink-0">Total Tagihan</span>
+                                <span class="font-bold text-xs sm:text-sm text-merapiText-primary text-right">
+                                    Rp {{ number_format($booking->total_amount, 0, ',', '.') }}
+                                </span>
+                            </div>
+                        </div>
+
+                        {{-- Footer Kartu --}}
+                        <div class="pt-1 sm:pt-1.5 flex items-center justify-between border-t border-wukirsari-border/60">
+                            <span class="text-[10px] sm:text-[11px] text-merapiText-muted">
+                                {{ $booking->created_at->diffForHumans() }}
+                            </span>
+                            <a href="{{ route('booking.success', $booking->booking_code) }}"
+                               class="inline-flex items-center justify-center px-3 py-1 rounded-full border border-wukirsari-primary/20 bg-wukirsari-sage/70 hover:bg-wukirsari-primary hover:text-white text-wukirsari-primary text-[11px] sm:text-xs font-bold transition-all shadow-2xs active:scale-95">
+                                Buka E-Tiket
+                            </a>
+                        </div>
                     </div>
+                    @endforeach
                 </div>
-                @endforeach
             </div>
             @endif
         </div>

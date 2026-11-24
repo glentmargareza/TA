@@ -473,41 +473,39 @@
             </div>
 
             {{-- ----- QR CODE SECTION (Menyatu di dalam kartu) ----- --}}
-            <div class="px-5 sm:px-7 py-5">
-                <div class="flex items-center gap-4 sm:gap-5">
-                    {{-- QR Code --}}
-                    <div class="flex-shrink-0">
-                        <div class="w-24 h-24 sm:w-28 sm:h-28 bg-white border border-[#E2EAE3] rounded-2xl flex items-center justify-center p-2 shadow-xs">
-                            @php
-                                $qrData = route('ticket.show', $booking->booking_code);
-                                $qrUrl  = 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=' . urlencode($qrData) . '&color=1E3F20&bgcolor=FFFFFF&margin=4&format=png';
-                            @endphp
-                            <img src="{{ $qrUrl }}"
-                                 crossorigin="anonymous"
-                                 alt="QR Code Tiket {{ $booking->booking_code }}"
-                                 class="w-full h-full object-contain rounded-xl"
-                                 onerror="this.style.display='none'; document.getElementById('qrFallback').style.display='flex'">
-                            <div id="qrFallback" class="hidden w-full h-full items-center justify-center">
-                                <svg class="w-10 h-10 text-[#1E3F20]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
-                                </svg>
-                            </div>
+            <div class="px-5 sm:px-7 py-5 sm:py-6 text-center">
+                {{-- QR Code (Horizontal Center: Mobile ~160x160px, Desktop ~144x144px) --}}
+                <div class="inline-flex justify-center mb-3">
+                    <div class="w-[160px] h-[160px] sm:w-[144px] sm:h-[144px] bg-white border border-[#E2EAE3] rounded-2xl flex items-center justify-center p-2.5 shadow-xs">
+                        @php
+                            $qrData = route('ticket.show', $booking->booking_code);
+                            $qrUrl  = 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=' . urlencode($qrData) . '&color=1E3F20&bgcolor=FFFFFF&margin=4&format=png';
+                        @endphp
+                        <img src="{{ $qrUrl }}"
+                             crossorigin="anonymous"
+                             alt="QR Code Tiket {{ $booking->booking_code }}"
+                             class="w-full h-full object-contain rounded-xl"
+                             onerror="this.style.display='none'; document.getElementById('qrFallback').style.display='flex'">
+                        <div id="qrFallback" class="hidden w-full h-full items-center justify-center">
+                            <svg class="w-10 h-10 text-[#1E3F20]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+                            </svg>
                         </div>
                     </div>
+                </div>
 
-                    {{-- QR Info --}}
-                    <div class="flex-1 min-w-0">
-                        <span class="font-bold text-[#19231A] text-sm sm:text-base leading-snug block mb-1">
-                            Verifikasi Tiket
-                        </span>
-                        <p class="text-xs sm:text-sm text-[#526054] leading-relaxed">
-                            @if($booking->booking_status === 'DP_PAID')
-                                Tunjukkan QR ini saat tiba di basecamp. Petugas akan memproses pelunasan sisa tagihan.
-                            @else
-                                Tunjukkan QR E-Ticket ini saat tiba di basecamp untuk verifikasi booking.
-                            @endif
-                        </p>
-                    </div>
+                {{-- Tulisan Verifikasi Tiket & Keterangan (Rata Tengah) --}}
+                <div class="max-w-sm mx-auto space-y-1">
+                    <span class="font-bold text-[#19231A] text-sm sm:text-base leading-snug block">
+                        Verifikasi Tiket
+                    </span>
+                    <p class="text-xs sm:text-sm text-[#526054] leading-relaxed">
+                        @if($booking->booking_status === 'DP_PAID')
+                            Tunjukkan QR ini saat tiba di basecamp. Petugas akan memproses pelunasan sisa tagihan.
+                        @else
+                            Tunjukkan QR E-Ticket ini saat tiba di basecamp untuk verifikasi booking.
+                        @endif
+                    </p>
                 </div>
             </div>
 
