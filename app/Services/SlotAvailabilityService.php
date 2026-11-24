@@ -3,10 +3,12 @@
 namespace App\Services;
 
 use App\Models\Booking;
+use App\Models\Jeep;
 use App\Models\Package;
 use App\Models\ScheduleSlot;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
 
 class SlotAvailabilityService
 {
@@ -14,10 +16,10 @@ class SlotAvailabilityService
     const CACHE_KEY_SLOTS    = 'slot_avail_active_slots';
 
     /**
-     * Terapkan filter booking yang sah dan mengunci kuota:
-     * - DP_PAID, FULL_PAID, WAITING_CONFIRMATION: selalu mengunci kuota.
-     * - PENDING: hanya mengunci kuota jika lock_expires_at belum lewat (atau masih null).
-     * - CANCELLED / EXPIRED: TIDAK mengunci kuota.
+     * Booking yang sah dan mengunci kuota:
+     * - DP_PAID, FULL_PAID, WAITING_CONFIRMATION: selalu mengunci.
+     * - PENDING: mengunci selama lock_expires_at belum lewat (atau null).
+     * - CANCELLED / EXPIRED: tidak mengunci.
      */
     public static function applyActiveBookingCondition(Builder $query): Builder
     {
@@ -34,7 +36,42 @@ class SlotAvailabilityService
     }
 
     /**
-     * Hitung total armada jeep yang telah dipesan pada slot dan tanggal tertentu.
+     * Jumlah jeep yang siap jalan.
+     * Return null jika tabel/kolom jeep tidak bisa dibaca, supaya sistem
+     * kembali memakai max_jeeps sesi dan tidak memblokir booking.
+     */
+    public static function readyJeepCapacity(): ?int
+    {
+        if (!Schema::hasTable('jeeps')) {
+            return null;
+        }
+
+        $query = Jeep::query();
+
+        if (Schema::hasColumn('jeeps', 'status')) {
+            $query->where('status', 'READY');
+        } elseif (Schema::hasColumn('jeeps', 'is_active')) {
+            $query->where('is_active', true);
+        } else {
+            return null;
+        }
+
+        return (int) $query->count();
+    }
+
+    /**
+     * Kuota efektif satu sesi = min(max_jeeps sesi, jumlah jeep siap jalan).
+     */
+    public static function slotCapacity(ScheduleSlot $slot, ?int $ready = null): int
+    {
+        $max = (int) $slot->max_jeeps;
+        $ready ??= self::readyJeepCapacity();
+
+        return $ready === null ? $max : min($max, $ready);
+    }
+
+    /**
+     * Total armada jeep yang telah dipesan pada slot dan tanggal tertentu.
      */
     public static function getBookedJeeps(int $slotId, string $date, ?int $excludeBookingId = null): int
     {
@@ -49,7 +86,7 @@ class SlotAvailabilityService
     }
 
     /**
-     * Hitung sisa kapasitas armada jeep yang masih dapat dipesan pada slot dan tanggal tertentu.
+     * Sisa kapasitas armada jeep pada slot dan tanggal tertentu.
      */
     public static function getRemainingJeeps(int $slotId, string $date, ?int $excludeBookingId = null): int
     {
@@ -59,43 +96,42 @@ class SlotAvailabilityService
         }
 
         $booked = self::getBookedJeeps($slotId, $date, $excludeBookingId);
-        return max(0, $slot->max_jeeps - $booked);
+        return max(0, self::slotCapacity($slot) - $booked);
     }
 
-    /**
-     * Periksa ketersediaan kuota armada jeep.
-     */
     public static function isSlotAvailable(int $slotId, string $date, int $requiredJeeps = 1, ?int $excludeBookingId = null): bool
     {
-        $remaining = self::getRemainingJeeps($slotId, $date, $excludeBookingId);
-        return $remaining >= $requiredJeeps;
+        return self::getRemainingJeeps($slotId, $date, $excludeBookingId) >= $requiredJeeps;
     }
 
     /**
-     * Ambil data ketersediaan seluruh slot aktif untuk tanggal tertentu.
-     * Digunakan bersama oleh AJAX wisatawan dan modal reschedule admin.
+     * Ketersediaan seluruh slot aktif untuk tanggal tertentu.
+     * Dipakai halaman booking, panel monitoring, dan modal reschedule admin.
      */
     public static function getSlotAvailability(string $date, int $jeeps = 1, ?int $excludeBookingId = null): array
     {
-        $now = now('Asia/Jakarta');
-        $today = $now->format('Y-m-d');
+        $now     = now('Asia/Jakarta');
+        $today   = $now->format('Y-m-d');
         $isToday = $date === $today;
-        $isPast = $date < $today;
+        $isPast  = $date < $today;
         $nowTime = $now->format('H:i');
+
+        $ready = self::readyJeepCapacity();
 
         $slots = ScheduleSlot::where('is_active', true)
             ->orderBy('start_time')
             ->get();
 
-        $slotData = $slots->map(function ($s) use ($date, $isToday, $isPast, $nowTime, $jeeps, $excludeBookingId) {
-            $time = substr((string) $s->start_time, 0, 5);
-            $label = trim((string) $s->slot_label) ?: ('Sesi ' . $s->id);
+        $slotData = $slots->map(function ($s) use ($date, $isToday, $isPast, $nowTime, $jeeps, $excludeBookingId, $ready) {
+            $time       = substr((string) $s->start_time, 0, 5);
+            $label      = trim((string) $s->slot_label) ?: ('Sesi ' . $s->id);
             $cleanLabel = preg_match('/\(\d{2}:\d{2}\s*WIB\)/i', $label) ? $label : ($label . ' (' . $time . ' WIB)');
-            $isSunrise = str_contains(strtolower($s->slot_label), 'sunrise') || $time === '04:30';
+            $isSunrise  = str_contains(strtolower($s->slot_label), 'sunrise') || $time === '04:30';
 
-            $booked = self::getBookedJeeps($s->id, $date, $excludeBookingId);
-            $remaining = max(0, $s->max_jeeps - $booked);
-            $passed = $isPast || ($isToday && $time <= $nowTime);
+            $capacity  = self::slotCapacity($s, $ready);
+            $booked    = self::getBookedJeeps($s->id, $date, $excludeBookingId);
+            $remaining = max(0, $capacity - $booked);
+            $passed    = $isPast || ($isToday && $time <= $nowTime);
             $available = !$passed && ($remaining >= $jeeps);
 
             return [
@@ -110,7 +146,7 @@ class SlotAvailabilityService
                 'booked_jeeps'    => $booked,
                 'remaining'       => $remaining,
                 'remaining_jeeps' => $remaining,
-                'max_jeeps'       => (int) $s->max_jeeps,
+                'max_jeeps'       => $capacity,
                 'passed'          => $passed,
                 'available'       => $available,
                 'is_full'         => $remaining <= 0,
@@ -118,12 +154,11 @@ class SlotAvailabilityService
         });
 
         $totalBookedJeeps = (int) $slotData->sum('booked_jeeps');
-        $hasBookings = $totalBookedJeeps > 0;
 
         return [
             'date'               => $date,
             'is_today'           => $isToday,
-            'has_bookings'       => $hasBookings,
+            'has_bookings'       => $totalBookedJeeps > 0,
             'total_booked_jeeps' => $totalBookedJeeps,
             'slots'              => $slotData->values()->all(),
             'month_bookings'     => self::getMonthBookings(substr($date, 0, 7)),
@@ -154,18 +189,14 @@ class SlotAvailabilityService
     }
 
     /**
-     * Ringkasan kuota per hari (Total Armada, Dipesan, Sisa) untuk dashboard & manajemen admin.
-     * Menggunakan kapasitas armada fisik (bukan penjumlahan max_jeeps seluruh sesi)
-     * dan jumlah terpesan dihitung dari sesi terpadat pada tanggal tersebut.
+     * Ringkasan kuota per hari untuk dashboard & manajemen admin.
+     * Kapasitas = jumlah jeep siap jalan; terpesan dihitung dari sesi terpadat.
      */
     public static function getDayQuotaSummary(string $date): array
     {
-        $totalCapacity = 0;
-        if (\Illuminate\Support\Facades\Schema::hasTable('jeeps') && \Illuminate\Support\Facades\Schema::hasColumn('jeeps', 'is_active')) {
-            $totalCapacity = (int) \App\Models\Jeep::where('is_active', true)->count();
-        }
-        if ($totalCapacity <= 0) {
-            $totalCapacity = (int) (\App\Models\ScheduleSlot::where('is_active', true)->max('max_jeeps') ?? 20);
+        $totalCapacity = self::readyJeepCapacity();
+        if ($totalCapacity === null || $totalCapacity <= 0) {
+            $totalCapacity = (int) (ScheduleSlot::where('is_active', true)->max('max_jeeps') ?? 20);
         }
 
         $activeSlots = ScheduleSlot::where('is_active', true)->orderBy('start_time')->get();
@@ -180,7 +211,7 @@ class SlotAvailabilityService
             }
         }
 
-        $totalBooked = min($maxBooked, $totalCapacity);
+        $totalBooked    = min($maxBooked, $totalCapacity);
         $totalRemaining = max(0, $totalCapacity - $totalBooked);
 
         return [
@@ -193,7 +224,7 @@ class SlotAvailabilityService
     }
 
     /**
-     * Ambil daftar paket aktif (dicache ringan & di-invalidasi saat admin mengedit paket).
+     * Daftar paket aktif (cache 1 jam, di-invalidasi saat admin mengedit paket).
      */
     public static function getActivePackages(): array
     {
@@ -215,7 +246,7 @@ class SlotAvailabilityService
     }
 
     /**
-     * Ambil daftar sesi aktif (dicache ringan & di-invalidasi saat admin mengedit sesi).
+     * Daftar sesi aktif (cache 1 jam, di-invalidasi saat admin mengedit sesi).
      */
     public static function getActiveSlots(): array
     {
@@ -224,10 +255,10 @@ class SlotAvailabilityService
                 ->orderBy('start_time')
                 ->get()
                 ->map(function ($s) {
-                    $time = substr((string) $s->start_time, 0, 5);
-                    $label = trim((string) $s->slot_label) ?: ('Sesi ' . $s->id);
+                    $time       = substr((string) $s->start_time, 0, 5);
+                    $label      = trim((string) $s->slot_label) ?: ('Sesi ' . $s->id);
                     $cleanLabel = preg_match('/\(\d{2}:\d{2}\s*WIB\)/i', $label) ? $label : ($label . ' (' . $time . ' WIB)');
-                    $isSunrise = str_contains(strtolower($s->slot_label), 'sunrise') || $time === '04:30';
+                    $isSunrise  = str_contains(strtolower($s->slot_label), 'sunrise') || $time === '04:30';
                     return [
                         'id'         => $s->id,
                         'label'      => $cleanLabel,
@@ -241,9 +272,6 @@ class SlotAvailabilityService
         });
     }
 
-    /**
-     * Hapus cache daftar paket dan sesi saat admin melakukan update/create/delete.
-     */
     public static function clearCache(): void
     {
         Cache::forget(self::CACHE_KEY_PACKAGES);
