@@ -202,7 +202,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="space-y-1.5">
                             <label for="name" class="block text-xs font-bold text-merapiText-primary">Nama Lengkap Pemesan *</label>
-                            <input id="name" value="{{ old('customer_name') }}" class="w-full px-4 py-3 rounded-2xl border border-wukirsari-border bg-white text-merapiText-primary text-sm focus:outline-none focus:border-wukirsari-primary focus:ring-2 focus:ring-wukirsari-primary/15 transition-all" placeholder="Contoh: Budi Santoso" autocomplete="name">
+                            <input id="name" value="{{ old('customer_name', auth()->user()->name ?? '') }}" class="w-full px-4 py-3 rounded-2xl border border-wukirsari-border bg-white text-merapiText-primary text-sm focus:outline-none focus:border-wukirsari-primary focus:ring-2 focus:ring-wukirsari-primary/15 transition-all" placeholder="Contoh: Budi Santoso" autocomplete="name">
                         </div>
                         <div class="space-y-1.5" id="waGroup">
                             <div class="flex items-center justify-between">
@@ -210,7 +210,7 @@
                                 <span id="waStatusBadge" class="hidden text-[10px] sm:text-[11px] font-bold px-2.5 py-0.5 rounded-full transition-all"></span>
                             </div>
                             <div class="relative">
-                                <input id="wa" value="{{ old('customer_phone') }}" class="w-full pl-4 pr-11 py-3 rounded-2xl border border-wukirsari-border bg-white text-merapiText-primary text-sm focus:outline-none focus:border-wukirsari-primary focus:ring-2 focus:ring-wukirsari-primary/15 transition-all" inputmode="tel" placeholder="Contoh: 081234567890" autocomplete="tel">
+                                <input id="wa" value="{{ old('customer_phone', auth()->user()->phone ?? '') }}" class="w-full pl-4 pr-11 py-3 rounded-2xl border border-wukirsari-border bg-white text-merapiText-primary text-sm focus:outline-none focus:border-wukirsari-primary focus:ring-2 focus:ring-wukirsari-primary/15 transition-all" inputmode="tel" placeholder="Contoh: 081234567890" autocomplete="tel">
                                 <div id="waStatusIcon" class="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center justify-center transition-all pointer-events-none"></div>
                             </div>
                             <span id="waFeedback" class="hidden text-[11px] text-rose-600 font-medium transition-colors"></span>
@@ -737,7 +737,7 @@ function renderDateDetectionPanel(data) {
     } else if (isSelected) {
       cardBorder = 'border-emerald-600 bg-emerald-50/90 shadow-xs ring-2 ring-emerald-600/20 cursor-pointer';
     } else if (booked > 0) {
-      cardBorder = 'border-amber-300 bg-amber-50/40 hover:bg-amber-50 text-slate-800 cursor-pointer';
+      cardBorder = 'border-emerald-300 bg-emerald-50/40 hover:bg-emerald-50 text-slate-800 cursor-pointer';
     } else {
       cardBorder = 'border-slate-200 bg-white hover:border-emerald-500 hover:bg-emerald-50/30 text-slate-800 cursor-pointer';
     }
@@ -760,11 +760,11 @@ function renderDateDetectionPanel(data) {
           <span class="text-rose-500">${booked} Jeep dipesan</span>
         </div>`;
     } else {
-      const warna = booked > 0 ? 'text-amber-700' : 'text-emerald-700';
+      const warna = 'text-emerald-700';
       quotaDetail = `
         <div class="flex items-center justify-between gap-2 text-[11px]">
           <span class="text-slate-600 font-medium">Sisa: <strong class="${warna}">${sisa} dari ${maxJ} Jeep</strong></span>
-          ${booked > 0 ? `<span class="text-amber-600">${booked} dipesan</span>` : ''}
+          ${booked > 0 ? `<span class="text-emerald-600">${booked} dipesan</span>` : ''}
         </div>
         ${isFull ? `<div class="text-[10px] text-rose-600 font-semibold">Kurang untuk ${state.qty} jeep yang dipilih</div>` : ''}`;
     }

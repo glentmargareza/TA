@@ -1,3 +1,4 @@
+
 <?php
 
 use Illuminate\Database\Migrations\Migration;
@@ -8,15 +9,19 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('packages', function (Blueprint $table) {
-            $table->softDeletes()->after('updated_at');
-        });
+        if (!Schema::hasColumn('packages', 'deleted_at')) {
+            Schema::table('packages', function (Blueprint $table) {
+                $table->softDeletes();
+            });
+        }
     }
 
     public function down(): void
     {
-        Schema::table('packages', function (Blueprint $table) {
-            $table->dropSoftDeletes();
-        });
+        if (Schema::hasColumn('packages', 'deleted_at')) {
+            Schema::table('packages', function (Blueprint $table) {
+                $table->dropSoftDeletes();
+            });
+        }
     }
 };
