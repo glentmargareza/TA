@@ -1236,14 +1236,10 @@
                 });
             </script>
         </main>
-<<<<<<< HEAD
     </div>
 
     @include('admin.partials.modal-manual-proof')
 
 </body>
 </html>
-=======
-</x-admin-layout>
->>>>>>> origin/optimasi
 

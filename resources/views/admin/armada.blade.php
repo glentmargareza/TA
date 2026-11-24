@@ -36,7 +36,6 @@
                 </div>
             </div>
 
-<<<<<<< HEAD
             <!-- PANEL: PEMAKAIAN ARMADA PER SESI (SINKRON DENGAN BOOKING) -->
 <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
     <div class="p-5 sm:p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-slate-50 to-white">
@@ -59,11 +58,6 @@
             <!-- PANEL: MONITORING DRIVER PAGUYUBAN (AKTIF & TIDAK AKTIF) -->
             <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
                 <div class="p-5 sm:p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-slate-50 to-white">
-=======
-            <div class="p-5 sm:p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- KOLOM 1: DAFTAR SEMENTARA DRIVER YANG AKTIF -->
-                <div class="bg-[#F8FAF9] rounded-2xl border border-emerald-200/80 p-5 flex flex-col justify-between">
->>>>>>> origin/optimasi
                     <div>
                         <div class="flex items-center justify-between pb-3 mb-4 border-b border-emerald-200/70">
                             <h4 class="text-sm font-extrabold text-slate-800 tracking-tight font-display">Daftar Driver yang Aktif</h4>

@@ -261,7 +261,6 @@
         </div>
     </div>
 
-<<<<<<< HEAD
     <script>
         function openCreateScheduleModal() {
             const modal = document.getElementById('modalCreateSchedule');
@@ -355,18 +354,6 @@
                         if (id === 'modalCreateSchedule') closeCreateScheduleModal();
                         if (id === 'modalEditSchedule') closeEditScheduleModal();
                     }
-=======
-    <x-slot:scripts>
-        <script>
-            function openCreateScheduleModal() {
-                const modal = document.getElementById('modalCreateSchedule');
-                const card = document.getElementById('modalCreateScheduleCard');
-                if (!modal) return;
-                modal.classList.remove('hidden');
-                requestAnimationFrame(() => {
-                    card.classList.remove('scale-95', 'opacity-0');
-                    card.classList.add('scale-100', 'opacity-100');
->>>>>>> origin/optimasi
                 });
             }
 
