@@ -1,0 +1,77 @@
+/* ========================================================
+   GLOBAL CUSTOM SCROLLBAR & BASE UTILITIES
+   Jeep Wukirsari Adventure
+   ======================================================== */
+
+/* 1. Standard CSS untuk Firefox & Browser Modern */
+html, body, * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(20, 59, 30, 0.28) transparent;
+}
+*:hover {
+    scrollbar-color: rgba(20, 59, 30, 0.48) transparent;
+}
+
+/* 2. WebKit & Chromium (Chrome, Edge, Opera, Safari, Brave) */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(20, 59, 30, 0.25);
+    border-radius: 9999px;
+    transition: background-color 0.2s ease;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(20, 59, 30, 0.52);
+}
+::-webkit-scrollbar-thumb:active {
+    background: rgba(20, 59, 30, 0.75);
+}
+::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+/* 3. Dark Scrollbar untuk Sidebar Admin & Elemen Latar Gelap */
+aside, 
+#adminSidebar,
+.dark-scroll,
+[class*="bg-[#0"],
+[class*="bg-[#1"] {
+    scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+}
+aside::-webkit-scrollbar-thumb,
+#adminSidebar::-webkit-scrollbar-thumb,
+.dark-scroll::-webkit-scrollbar-thumb,
+[class*="bg-[#0"]::-webkit-scrollbar-thumb,
+[class*="bg-[#1"]::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.22);
+}
+aside::-webkit-scrollbar-thumb:hover,
+#adminSidebar::-webkit-scrollbar-thumb:hover,
+.dark-scroll::-webkit-scrollbar-thumb:hover,
+[class*="bg-[#0"]::-webkit-scrollbar-thumb:hover,
+[class*="bg-[#1"]::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.42);
+}
+
+/* 4. Utility Classes */
+.no-scrollbar::-webkit-scrollbar,
+.scrollbar-none::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+.no-scrollbar,
+.scrollbar-none {
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}

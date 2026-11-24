@@ -3,7 +3,7 @@
     <!-- Header Banner -->
     <x-admin.header title="Manajemen Ulasan & Testimoni Wisatawan" subtitle="Moderasi ulasan, verifikasi rating bintang, dan tanggapan pengalaman wisatawan Jeep Wukirsari." />
 
-    <main class="p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6 flex-1 overflow-y-auto">
+    <main class="p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6 flex-1">
 
         <!-- 3 KARTU STATISTIK ULASAN -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5">

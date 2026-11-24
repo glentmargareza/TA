@@ -17,7 +17,7 @@
         </x-slot:actions>
     </x-admin.header>
 
-    <main class="p-4 sm:p-8 space-y-6 flex-1 overflow-y-auto">
+    <main class="p-4 sm:p-8 space-y-6 flex-1">
 
         <!-- A. RINGKASAN PENGELUARAN (4 KARTU STATISTIK) -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

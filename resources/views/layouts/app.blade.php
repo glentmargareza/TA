@@ -52,6 +52,9 @@
             }
         }
     </script>
+    <!-- Global Custom CSS (Scrollbar, Utilities) -->
+    <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
+
     <style>
         html {
             scroll-behavior: smooth;

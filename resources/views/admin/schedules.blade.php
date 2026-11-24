@@ -10,7 +10,7 @@
         </x-slot:actions>
     </x-admin.header>
 
-    <main class="p-4 sm:p-8 space-y-5 sm:space-y-6 flex-1 overflow-y-auto">
+    <main class="p-4 sm:p-8 space-y-5 sm:space-y-6 flex-1">
 
         <!-- 3 Kartu Ringkasan Statistik Jadwal Sesi -->
         @php

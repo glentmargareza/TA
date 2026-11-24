@@ -10,7 +10,7 @@
         </x-slot:actions>
     </x-admin.header>
 
-        <main class="p-3.5 sm:p-6 md:p-8 space-y-4 sm:space-y-6 flex-1 max-w-6xl w-full mx-auto overflow-y-auto">
+        <main class="p-3.5 sm:p-6 md:p-8 space-y-4 sm:space-y-6 flex-1 max-w-6xl w-full mx-auto">
 
             <!-- NAVIGASI TAB UTAMA (SWIPEABLE HORIZONTAL DI MOBILE) -->
             <div class="bg-white p-1 sm:p-1.5 rounded-2xl border border-slate-200/90 shadow-2xs flex items-center gap-1 overflow-x-auto no-scrollbar scroll-smooth">

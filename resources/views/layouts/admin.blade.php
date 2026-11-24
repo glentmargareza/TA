@@ -26,12 +26,13 @@
             }
         }
     </script>
+    <!-- Global Custom CSS (Scrollbar, Utilities) -->
+    <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800;900&display=swap');
         body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
         .font-display, h1, h2, h3, h4, h5, h6 { font-family: 'Poppins', 'Inter', sans-serif; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
     @stack('styles')
     {{ $head ?? '' }}
