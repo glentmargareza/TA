@@ -593,6 +593,38 @@ Menghilangkan ratusan baris markup overlay backdrop, card, header, body, dan tom
 
 ---
 
+### I. Komponen Filter Card (`components/admin/filter-card.blade.php` / `components/card-filter.blade.php`)
+Diadopsi langsung dari arsitektur filter **`C:\xampp\htdocs\pos-apotek`**: Menyediakan card pembungkus form filter responsif, integrasi tombol submit Filter bernuansa hijau alam Wukirsari (`bg-gradient-to-r from-emerald-700 to-[#102b17]`), tombol Reset otomatis yang mendeteksi parameter query aktif, serta fitur **Live Search AJAX** bawaan yang aktif secara default (`:liveSearch="true"`).
+
+**Fitur Live Search:**
+1. **Debounce 300ms** pada input teks/pencarian sehingga tidak membebani server saat mengetik.
+2. **Immediate filter** saat nilai dropdown `<select>`, `<input type="date">`, radio, atau checkbox berubah.
+3. **Paging AJAX**: Klik tombol pagination halaman 2, 3, dst. otomatis diambil via AJAX tanpa refresh layar.
+4. **Auto-resolver Target**: Otomatis mendeteksi kartu tabel pembungkus (`data-table-container="true"` atau `.table-custom-container`) di halaman.
+5. **Sinkronisasi Otomatis**: Menyinkronkan teks summary/badge total, bilah aksi `<x-slot:actions>`, dan memicu event `live-filter:updated` untuk re-binding modal konfirmasi `data-confirm-...`.
+
+```html
+<x-admin.filter-card 
+    :action="route('admin.bookings')" 
+    :resetUrl="route('admin.bookings')"
+    :liveSearch="true"
+    gridCols="grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
+
+    <div>
+        <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Cari Booking / Nama</label>
+        <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Contoh: JKR-1025 / Budi" class="...">
+    </div>
+
+    <div>
+        <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Tanggal Trip</label>
+        <input type="date" name="trip_date" value="{{ $tripDate ?? '' }}" class="...">
+    </div>
+    <!-- Field lainnya; tombol Filter & Reset otomatis ter-render pada kolom terakhir -->
+</x-admin.filter-card>
+```
+
+---
+
 ## 4. Contoh Perbandingan Sebelum vs Sesudah Refactoring
 
 ### Contoh di Tabel Admin Booking:

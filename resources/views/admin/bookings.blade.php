@@ -3,7 +3,7 @@
     <!-- Header Banner -->
     <x-admin.header title="Manajemen Booking Wisatawan" subtitle="Kelola reservasi, verifikasi pembayaran loket, penugasan armada & driver, serta detail pemesan.">
         <x-slot:actions>
-            <span class="px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs">
+            <span class="px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs" data-summary-badge="true">
                 Total: {{ $bookings->total() }} Booking Terdaftar
             </span>
         </x-slot:actions>
@@ -12,59 +12,53 @@
     <main class="p-4 sm:p-8 space-y-5 sm:space-y-6 flex-1">
 
             <!-- CARD FORM PENCARIAN & FILTER LENGKAP -->
-            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5">
-                <form method="GET" action="{{ route('admin.bookings') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                    <!-- 1. Pencarian Kode Booking / Nama / Kontak -->
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Cari Booking / Nama</label>
-                        <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Contoh: JKR-1025 / Budi" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 shadow-2xs">
-                    </div>
+            <x-admin.filter-card 
+                :action="route('admin.bookings')" 
+                :resetUrl="route('admin.bookings')"
+                :liveSearch="true"
+                submitLabel="Filter"
+                gridCols="grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
 
-                    <!-- 2. Filter Tanggal Booking -->
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Tanggal Trip</label>
-                        <input type="date" name="trip_date" value="{{ $tripDate ?? '' }}" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 shadow-2xs">
-                    </div>
+                <!-- 1. Pencarian Kode Booking / Nama / Kontak -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Cari Booking / Nama</label>
+                    <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Contoh: JKR-1025 / Budi" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 shadow-2xs">
+                </div>
 
-                    <!-- 3. Filter Paket Wisata -->
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Paket Wisata</label>
-                        <select name="package_id" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 shadow-2xs">
-                            <option value="">Semua Paket</option>
-                            @foreach($packages as $p)
-                            <option value="{{ $p->id }}" {{ (isset($packageId) && (string)$packageId === (string)$p->id) ? 'selected' : '' }}>{{ $p->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
+                <!-- 2. Filter Tanggal Booking -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Tanggal Trip</label>
+                    <input type="date" name="trip_date" value="{{ $tripDate ?? '' }}" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 shadow-2xs">
+                </div>
 
-                    <!-- 4. Filter Status Pembayaran -->
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Status Pembayaran</label>
-                        <select name="status" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 shadow-2xs">
-                            <option value="">Semua Status</option>
-                            <option value="WAITING_CONFIRMATION" {{ (isset($status) && $status === 'WAITING_CONFIRMATION') ? 'selected' : '' }}>Menunggu Verifikasi Bukti</option>
-                            <option value="PENDING" {{ (isset($status) && $status === 'PENDING') ? 'selected' : '' }}>Menunggu Bayar</option>
-                            <option value="DP_PAID" {{ (isset($status) && $status === 'DP_PAID') ? 'selected' : '' }}>DP Terbayar</option>
-                            <option value="FULL_PAID" {{ (isset($status) && $status === 'FULL_PAID') ? 'selected' : '' }}>Lunas (100%)</option>
-                            <option value="COMPLETED" {{ (isset($status) && $status === 'COMPLETED') ? 'selected' : '' }}>Selesai</option>
-                            <option value="CANCELLED" {{ (isset($status) && $status === 'CANCELLED') ? 'selected' : '' }}>Dibatalkan</option>
-                        </select>
-                    </div>
+                <!-- 3. Filter Paket Wisata -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Paket Wisata</label>
+                    <select name="package_id" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 shadow-2xs">
+                        <option value="">Semua Paket</option>
+                        @foreach($packages as $p)
+                        <option value="{{ $p->id }}" {{ (isset($packageId) && (string)$packageId === (string)$p->id) ? 'selected' : '' }}>{{ $p->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
 
-                    <!-- 5. Tombol Aksi Filter -->
-                    <div class="flex items-end gap-2">
-                        <button type="submit" class="flex-1 py-2 px-3 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs shadow-xs transition-all cursor-pointer">
-                            Terapkan Filter
-                        </button>
-                        <a href="{{ route('admin.bookings') }}" class="py-2 px-3 rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 font-bold text-xs transition-all shadow-2xs cursor-pointer text-center" title="Reset Filter">
-                            Reset
-                        </a>
-                    </div>
-                </form>
-            </div>
+                <!-- 4. Filter Status Pembayaran -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Status Pembayaran</label>
+                    <select name="status" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 shadow-2xs">
+                        <option value="">Semua Status</option>
+                        <option value="WAITING_CONFIRMATION" {{ (isset($status) && $status === 'WAITING_CONFIRMATION') ? 'selected' : '' }}>Menunggu Verifikasi Bukti</option>
+                        <option value="PENDING" {{ (isset($status) && $status === 'PENDING') ? 'selected' : '' }}>Menunggu Bayar</option>
+                        <option value="DP_PAID" {{ (isset($status) && $status === 'DP_PAID') ? 'selected' : '' }}>DP Terbayar</option>
+                        <option value="FULL_PAID" {{ (isset($status) && $status === 'FULL_PAID') ? 'selected' : '' }}>Lunas (100%)</option>
+                        <option value="COMPLETED" {{ (isset($status) && $status === 'COMPLETED') ? 'selected' : '' }}>Selesai</option>
+                        <option value="CANCELLED" {{ (isset($status) && $status === 'CANCELLED') ? 'selected' : '' }}>Dibatalkan</option>
+                    </select>
+                </div>
+            </x-admin.filter-card>
 
             <!-- TABEL DATA LENGKAP BOOKING -->
-            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden table-custom-container" data-table-container="true">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs min-w-[820px]">
                         <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider text-[10px] border-b border-slate-200">

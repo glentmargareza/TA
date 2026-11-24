@@ -46,7 +46,7 @@
         </div>
 
         <!-- TABEL DAFTAR ULASAN -->
-        <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
+        <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden table-custom-container" data-table-container="true">
             <div class="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between">
                 <div>
                     <h3 class="font-bold text-slate-800 text-sm font-display">Daftar Seluruh Ulasan Masuk</h3>

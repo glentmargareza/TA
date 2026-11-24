@@ -59,95 +59,91 @@
         </div>
 
             <!-- B. FILTER & PENCARIAN -->
-            <div class="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-2xs space-y-4">
-                <form action="{{ route('admin.expenses') }}" method="GET" class="space-y-4">
-                    
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                        
-                        <!-- Pencarian -->
-                        <div class="sm:col-span-2">
-                            <label class="block text-xs font-bold text-slate-700 mb-1">Cari Pengeluaran</label>
-                            <div class="relative">
-                                <input type="text" name="search" value="{{ $search }}" placeholder="Ketik nama pengeluaran, no. bukti, keterangan..." class="w-full pl-9 pr-3.5 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition">
-                                <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                            </div>
-                        </div>
-
-                        <!-- Filter Kategori -->
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1">Kategori</label>
-                            <select name="category" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                                <option value="ALL">Semua Kategori (8)</option>
-                                @foreach($categories as $catKey => $catLabel)
-                                <option value="{{ $catKey }}" {{ $category === $catKey ? 'selected' : '' }}>{{ $catLabel }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <!-- Filter Periode Cepat -->
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1">Rentang Periode</label>
-                            <select name="period" id="periodSelect" onchange="toggleCustomDates(this.value)" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                                <option value="all" {{ $period === 'all' ? 'selected' : '' }}>Semua Waktu</option>
-                                <option value="today" {{ $period === 'today' ? 'selected' : '' }}>Hari Ini</option>
-                                <option value="this_month" {{ $period === 'this_month' ? 'selected' : '' }}>Bulan Ini</option>
-                                <option value="this_year" {{ $period === 'this_year' ? 'selected' : '' }}>Tahun Ini</option>
-                                <option value="custom" {{ $period === 'custom' ? 'selected' : '' }}>Kustom Tanggal</option>
-                            </select>
-                        </div>
-
+            <x-admin.filter-card :action="route('admin.expenses')" :resetUrl="route('admin.expenses')" :liveSearch="true">
+                
+                <!-- Pencarian -->
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Cari Pengeluaran</label>
+                    <div class="relative">
+                        <input type="text" name="search" value="{{ $search }}" placeholder="Ketik nama pengeluaran, no. bukti, keterangan..." class="w-full pl-9 pr-3.5 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition">
+                        <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                     </div>
+                </div>
 
-                    <!-- Input Tanggal Kustom (Jika dipilih) -->
-                    <div id="customDateRow" class="{{ $period === 'custom' ? 'grid' : 'hidden' }} grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2 border-t border-slate-100">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1">Mulai Tanggal</label>
-                            <input type="date" name="start_date" value="{{ $startDate }}" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1">Sampai Tanggal</label>
-                            <input type="date" name="end_date" value="{{ $endDate }}" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1">Urutan Berdasarkan</label>
-                            <select name="sort_by" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                                <option value="date" {{ $sortBy === 'date' ? 'selected' : '' }}>Tanggal Pengeluaran</option>
-                                <option value="amount" {{ $sortBy === 'amount' ? 'selected' : '' }}>Nominal Pengeluaran</option>
-                                <option value="created_at" {{ $sortBy === 'created_at' ? 'selected' : '' }}>Waktu Input</option>
-                                <option value="name" {{ $sortBy === 'name' ? 'selected' : '' }}>Nama Pengeluaran</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1">Arah Urutan</label>
-                            <select name="sort_order" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                                <option value="desc" {{ $sortOrder === 'desc' ? 'selected' : '' }}>Terbaru / Terbesar</option>
-                                <option value="asc" {{ $sortOrder === 'asc' ? 'selected' : '' }}>Terlama / Terkecil</option>
-                            </select>
-                        </div>
+                <!-- Filter Kategori -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Kategori</label>
+                    <select name="category" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <option value="ALL">Semua Kategori (8)</option>
+                        @foreach($categories as $catKey => $catLabel)
+                        <option value="{{ $catKey }}" {{ $category === $catKey ? 'selected' : '' }}>{{ $catLabel }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Filter Periode Cepat -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Rentang Periode</label>
+                    <select name="period" id="periodSelect" onchange="toggleCustomDates(this.value)" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <option value="all" {{ $period === 'all' ? 'selected' : '' }}>Semua Waktu</option>
+                        <option value="today" {{ $period === 'today' ? 'selected' : '' }}>Hari Ini</option>
+                        <option value="this_month" {{ $period === 'this_month' ? 'selected' : '' }}>Bulan Ini</option>
+                        <option value="this_year" {{ $period === 'this_year' ? 'selected' : '' }}>Tahun Ini</option>
+                        <option value="custom" {{ $period === 'custom' ? 'selected' : '' }}>Kustom Tanggal</option>
+                    </select>
+                </div>
+
+                <!-- Input Tanggal Kustom (Jika dipilih) -->
+                <div id="customDateRow" class="{{ $period === 'custom' ? 'grid' : 'hidden' }} col-span-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2 border-t border-slate-100">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Mulai Tanggal</label>
+                        <input type="date" name="start_date" value="{{ $startDate }}" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
                     </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Sampai Tanggal</label>
+                        <input type="date" name="end_date" value="{{ $endDate }}" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Urutan Berdasarkan</label>
+                        <select name="sort_by" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            <option value="date" {{ $sortBy === 'date' ? 'selected' : '' }}>Tanggal Pengeluaran</option>
+                            <option value="amount" {{ $sortBy === 'amount' ? 'selected' : '' }}>Nominal Pengeluaran</option>
+                            <option value="created_at" {{ $sortBy === 'created_at' ? 'selected' : '' }}>Waktu Input</option>
+                            <option value="name" {{ $sortBy === 'name' ? 'selected' : '' }}>Nama Pengeluaran</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Arah Urutan</label>
+                        <select name="sort_order" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            <option value="desc" {{ $sortOrder === 'desc' ? 'selected' : '' }}>Terbaru / Terbesar</option>
+                            <option value="asc" {{ $sortOrder === 'asc' ? 'selected' : '' }}>Terlama / Terkecil</option>
+                        </select>
+                    </div>
+                </div>
 
-                    <!-- Tombol Aksi Filter -->
-                    <div class="flex items-center justify-between pt-2">
+                <x-slot:actions>
+                    <div class="col-span-full flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-slate-100 filter-actions-bar">
                         <div class="text-xs text-slate-500">
                             Menampilkan hasil filter: <strong class="text-slate-800">{{ $expenses->total() }}</strong> transaksi (Total: <strong class="text-emerald-800">Rp {{ number_format($filteredTotal, 0, ',', '.') }}</strong>)
                         </div>
                         <div class="flex items-center gap-2">
                             @if($search || ($category && $category !== 'ALL') || $period !== 'all' || $startDate || $endDate)
-                            <a href="{{ route('admin.expenses') }}" class="px-3.5 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 text-xs font-semibold transition-all">
+                            <a href="{{ route('admin.expenses') }}" class="px-3.5 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 hover:text-rose-600 text-xs font-semibold transition-all shadow-2xs">
                                 Reset Filter
                             </a>
                             @endif
-                            <button type="submit" class="px-4 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition-all shadow-2xs cursor-pointer">
-                                Terapkan Filter
+                            <button type="submit" class="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-700 via-[#183c21] to-[#102b17] hover:from-emerald-600 hover:to-[#183c21] text-white text-xs font-bold transition-all shadow-xs hover:shadow active:scale-95 cursor-pointer inline-flex items-center gap-1.5">
+                                <x-icon name="search" class="w-3.5 h-3.5" />
+                                <span>Terapkan Filter</span>
                             </button>
                         </div>
                     </div>
+                </x-slot:actions>
 
-                </form>
-            </div>
+            </x-admin.filter-card>
 
             <!-- C. TABEL DATA PENGELUARAN -->
-            <div class="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
+            <div class="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden table-custom-container" data-table-container="true">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs border-collapse">
                         <thead>

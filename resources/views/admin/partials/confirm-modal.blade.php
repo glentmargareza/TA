@@ -251,6 +251,8 @@
             }
 
             setupConfirmInterceptors();
+            window.setupConfirmInterceptors = setupConfirmInterceptors;
+            document.addEventListener('live-filter:updated', setupConfirmInterceptors);
             // Re-run interceptor after a short tick in case dynamic elements exist
             setTimeout(setupConfirmInterceptors, 500);
         });
