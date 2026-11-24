@@ -334,6 +334,10 @@
         form.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(function(el) {
             el.checked = false;
         });
+        var defaultRadio = form.querySelector('input[type="radio"][value=""]');
+        if (defaultRadio) {
+            defaultRadio.checked = true;
+        }
 
         updateClearButtonState(form);
         var resetUrl = form.dataset.resetUrl || form.getAttribute('action') || window.location.pathname;

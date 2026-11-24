@@ -337,7 +337,7 @@
                         <span>Lihat Semua Ulasan →</span>
                     </a>
                     @guest
-                    <a href="{{ route('login') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-wukirsari-sage text-wukirsari-primary hover:bg-wukirsari-primary hover:text-white text-xs font-bold transition-all">
+                    <a href="{{ route('login', ['redirect' => url()->current() . '#tulis-ulasan']) }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-wukirsari-sage text-wukirsari-primary hover:bg-wukirsari-primary hover:text-white text-xs font-bold transition-all">
                         <span>Masuk untuk Review</span>
                     </a>
                     @endguest
@@ -349,43 +349,36 @@
                 @forelse($reviews as $rev)
                 <div class="bg-white p-6 rounded-3xl border border-wukirsari-border shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-4">
                     <div class="space-y-3">
-                        <div class="flex items-start justify-between gap-3">
-                            <div class="flex items-center gap-3 min-w-0">
+                        <div class="flex items-start justify-between gap-2 border-b border-wukirsari-border/70 pb-3">
+                            <div class="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
                                 <div class="w-10 h-10 rounded-2xl bg-wukirsari-sage text-wukirsari-primary flex items-center justify-center font-bold text-sm shrink-0 font-display">
                                     {{ strtoupper(substr($rev->user->name ?? 'W', 0, 1)) }}
                                 </div>
-                                <div class="min-w-0">
-                                    <h4 class="text-sm font-bold text-merapiText-primary font-display truncate">
+                                <div class="min-w-0 flex-1">
+                                    <h4 class="text-sm font-bold text-merapiText-primary font-display truncate" title="{{ $rev->user->name ?? 'Wisatawan' }}">
                                         {{ $rev->user->name ?? 'Wisatawan' }}
                                     </h4>
                                     <span class="text-xs text-merapiText-muted truncate block">
-                                        {{ $rev->city ?? 'Indonesia' }}
+                                        {{ $rev->city ?: 'Wisatawan' }}
                                     </span>
                                 </div>
                             </div>
 
                             @if(Auth::check() && (Auth::id() === $rev->user_id || Auth::user()->isAdmin()))
-                            <div class="flex items-center gap-1.5 shrink-0">
-                                <button type="button" 
+                            <div class="flex items-center gap-1 shrink-0">
+                                <x-action-button 
+                                    type="edit" 
                                     onclick="handleEditReviewClick(this)"
                                     data-id="{{ $rev->id }}"
                                     data-rating="{{ $rev->rating }}"
                                     data-city="{{ $rev->city }}"
                                     data-comment="{{ $rev->comment }}"
-                                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-wukirsari-sage/70 hover:bg-wukirsari-sage text-wukirsari-primary text-[11px] font-bold border border-wukirsari-border transition-all cursor-pointer shadow-xs" 
-                                    title="Edit Ulasan">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                                    <span>Edit</span>
-                                </button>
+                                    title="Edit Ulasan" />
+
                                 <form action="{{ route('reviews.destroy', $rev->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus ulasan ini?');" class="inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" 
-                                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 text-[11px] font-bold border border-rose-200 transition-all cursor-pointer shadow-xs" 
-                                        title="Hapus Ulasan">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                        <span>Delete</span>
-                                    </button>
+                                    <x-action-button type="delete" as="submit" title="Hapus Ulasan" />
                                 </form>
                             </div>
                             @endif
@@ -431,45 +424,149 @@
 
             <!-- Form Tulis Ulasan Jika Sedang Login -->
             @auth
-            <div class="bg-white p-6 sm:p-8 rounded-3xl border border-wukirsari-border shadow-xs mt-6 space-y-4">
+            @php
+                $myExistingReview = $reviews->firstWhere('user_id', Auth::id());
+            @endphp
+            <div id="tulis-ulasan" class="bg-white p-6 sm:p-8 rounded-3xl border border-wukirsari-border shadow-xs mt-6 space-y-4">
                 <div class="flex items-center justify-between border-b border-wukirsari-border pb-3">
                     <h4 class="text-sm sm:text-base font-bold text-merapiText-primary font-display flex items-center gap-2">
                         <svg class="w-4 h-4 text-wukirsari-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                        <span>Tulis Ulasan Anda untuk {{ $package->name }}</span>
+                        <span>{{ $myExistingReview ? 'Perbarui Ulasan Anda untuk ' . $package->name : 'Tulis Ulasan Anda untuk ' . $package->name }}</span>
                     </h4>
                     <span class="text-xs text-merapiText-muted">Sebagai: <strong class="text-wukirsari-primary">{{ Auth::user()->name }}</strong></span>
                 </div>
 
-                <form action="{{ route('reviews.store') }}" method="POST" class="space-y-4">
+                @if($myExistingReview)
+                <div class="bg-emerald-50/80 border border-emerald-200/90 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div class="space-y-1">
+                        <span class="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-900">
+                            <x-icon name="star" class="w-4 h-4 text-amber-500 shrink-0" />
+                            <span>Anda telah memberi nilai: {{ $myExistingReview->rating }}.0 / 5.0</span>
+                        </span>
+                        <p class="text-xs text-merapiText-secondary italic line-clamp-1">"{{ $myExistingReview->comment }}"</p>
+                    </div>
+                    <button type="button" 
+                        onclick="handleEditReviewClick(this)"
+                        data-id="{{ $myExistingReview->id }}"
+                        data-rating="{{ $myExistingReview->rating }}"
+                        data-city="{{ $myExistingReview->city }}"
+                        data-comment="{{ $myExistingReview->comment }}"
+                        class="px-4 py-1.5 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition-all shadow-2xs shrink-0 cursor-pointer">
+                        Edit Ulasan Ini
+                    </button>
+                </div>
+                @endif
+
+                <form action="{{ route('reviews.store') }}" method="POST" class="space-y-4" onsubmit="handlePkgReviewSubmit(event)">
                     @csrf
                     <input type="hidden" name="package_id" value="{{ $package->id }}">
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Rating Bintang Interaktif -->
                         <div>
-                            <label class="block text-xs font-semibold text-merapiText-primary mb-1">Penilaian (Bintang 1 - 5) *</label>
-                            <select name="rating" required class="w-full px-3.5 py-2.5 rounded-xl border border-wukirsari-border text-xs focus:outline-none focus:border-wukirsari-primary bg-white">
-                                <option value="5" selected>5 Bintang (5/5) - Sangat Puas</option>
-                                <option value="4">4 Bintang (4/5) - Puas</option>
-                                <option value="3">3 Bintang (3/5) - Cukup</option>
-                                <option value="2">2 Bintang (2/5) - Kurang</option>
-                                <option value="1">1 Bintang (1/5) - Kecewa</option>
-                            </select>
+                            <label class="block text-xs font-semibold text-merapiText-primary mb-1.5">Penilaian (Bintang 1 - 5) *</label>
+                            <input type="hidden" name="rating" id="pkgRatingInput" value="{{ old('rating', $myExistingReview ? $myExistingReview->rating : 5) }}">
+                            
+                            <div class="flex items-center gap-2">
+                                <div class="flex items-center gap-1" id="pkgStarContainer">
+                                    @for($s = 1; $s <= 5; $s++)
+                                    <button type="button" onclick="setPkgRating({{ $s }})" data-star="{{ $s }}" class="pkg-star-btn p-1 text-amber-400 hover:text-amber-400 focus:outline-none transition-colors">
+                                        <svg class="w-6 h-6 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                    </button>
+                                    @endfor
+                                </div>
+                                <span id="pkgRatingLabel" class="text-xs font-bold text-wukirsari-primary ml-1">5 Bintang (Sangat Puas)</span>
+                            </div>
+                            @error('rating')
+                            <p class="text-xs text-rose-600 mt-1 font-medium">{{ $message }}</p>
+                            @enderror
                         </div>
+
+                        <!-- Kota Asal -->
                         <div>
                             <label class="block text-xs font-semibold text-merapiText-primary mb-1">Kota Asal (Opsional)</label>
-                            <input type="text" name="city" placeholder="Contoh: Jakarta / Solo / Bandung" class="w-full px-3.5 py-2.5 rounded-xl border border-wukirsari-border text-xs focus:outline-none focus:border-wukirsari-primary">
+                            <input type="text" name="city" value="{{ old('city', $myExistingReview ? $myExistingReview->city : '') }}" maxlength="100" placeholder="Contoh: Jakarta / Solo / Bandung" class="w-full px-3.5 py-2.5 rounded-xl border border-wukirsari-border text-xs focus:outline-none focus:border-wukirsari-primary">
+                            @error('city')
+                            <p class="text-xs text-rose-600 mt-1 font-medium">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold text-merapiText-primary mb-1">Cerita Pengalaman Anda *</label>
-                        <textarea name="comment" rows="3" required placeholder="Bagikan bagaimana rute, driver, dan pengalaman seru Anda pada paket ini..." class="w-full px-3.5 py-2.5 rounded-xl border border-wukirsari-border text-xs focus:outline-none focus:border-wukirsari-primary"></textarea>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="block text-xs font-semibold text-merapiText-primary">Cerita Pengalaman Anda *</label>
+                            <span id="pkgCharCounter" class="text-[11px] text-merapiText-muted font-mono">0 / 1000</span>
+                        </div>
+                        <textarea name="comment" id="pkgCommentTextarea" rows="3" required minlength="3" maxlength="1000" oninput="updatePkgCharCount(this)" placeholder="Bagikan bagaimana rute, driver, dan pengalaman seru Anda pada paket ini..." class="w-full px-3.5 py-2.5 rounded-xl border border-wukirsari-border text-xs focus:outline-none focus:border-wukirsari-primary">{{ old('comment', $myExistingReview ? $myExistingReview->comment : '') }}</textarea>
+                        @error('comment')
+                        <p class="text-xs text-rose-600 mt-1 font-medium">{{ $message }}</p>
+                        @enderror
                     </div>
 
-                    <button type="submit" class="px-6 py-2.5 rounded-full bg-wukirsari-primary text-white text-xs font-bold hover:bg-wukirsari-hover transition-all shadow-sm">
-                        Kirim Ulasan Paket Ini →
+                    <button type="submit" id="btnPkgReviewSubmit" class="px-6 py-2.5 rounded-full bg-wukirsari-primary text-white text-xs font-bold hover:bg-wukirsari-hover transition-all shadow-sm flex items-center gap-1.5 cursor-pointer">
+                        <span>{{ $myExistingReview ? 'Perbarui Ulasan Paket Ini →' : 'Kirim Ulasan Paket Ini →' }}</span>
                     </button>
                 </form>
+
+                <script>
+                    const pkgRatingLabels = {
+                        1: '1 Bintang (Kecewa)',
+                        2: '2 Bintang (Kurang)',
+                        3: '3 Bintang (Cukup)',
+                        4: '4 Bintang (Puas)',
+                        5: '5 Bintang (Sangat Puas)'
+                    };
+
+                    function setPkgRating(val) {
+                        val = parseInt(val) || 5;
+                        const input = document.getElementById('pkgRatingInput');
+                        const label = document.getElementById('pkgRatingLabel');
+                        if (input) input.value = val;
+                        if (label) label.textContent = pkgRatingLabels[val] || (val + ' Bintang');
+
+                        const container = document.getElementById('pkgStarContainer');
+                        if (container) {
+                            container.querySelectorAll('.pkg-star-btn').forEach(btn => {
+                                const starVal = parseInt(btn.getAttribute('data-star')) || 1;
+                                if (starVal <= val) {
+                                    btn.classList.remove('text-slate-300');
+                                    btn.classList.add('text-amber-400');
+                                } else {
+                                    btn.classList.remove('text-amber-400');
+                                    btn.classList.add('text-slate-300');
+                                }
+                            });
+                        }
+                    }
+
+                    function updatePkgCharCount(textarea) {
+                        const counter = document.getElementById('pkgCharCounter');
+                        if (!counter || !textarea) return;
+                        const len = textarea.value.length;
+                        counter.textContent = len + ' / 1000';
+                        if (len > 950) {
+                            counter.classList.add('text-rose-600', 'font-bold');
+                        } else {
+                            counter.classList.remove('text-rose-600', 'font-bold');
+                        }
+                    }
+
+                    function handlePkgReviewSubmit(e) {
+                        const btn = document.getElementById('btnPkgReviewSubmit');
+                        if (btn) {
+                            btn.disabled = true;
+                            btn.classList.add('opacity-75', 'cursor-not-allowed');
+                            btn.innerHTML = '<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Mengirimkan...';
+                        }
+                    }
+
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const curRating = document.getElementById('pkgRatingInput')?.value || 5;
+                        setPkgRating(curRating);
+                        const textarea = document.getElementById('pkgCommentTextarea');
+                        if (textarea) updatePkgCharCount(textarea);
+                    });
+                </script>
             </div>
             @endauth
         </div>
@@ -546,8 +643,8 @@
                     <p class="text-xs text-emerald-200/90 mt-0.5">Ubah foto cover utama dan 4 foto thumbnail galeri paket wisata ini.</p>
                 </div>
             </div>
-            <button type="button" onclick="closePackagePhotosModal()" class="w-9 h-9 rounded-2xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer shrink-0" title="Tutup Modal">
-                ✕
+            <button type="button" onclick="closePackagePhotosModal()" class="w-9 h-9 rounded-2xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer shrink-0" title="Tutup Modal" aria-label="Tutup Modal">
+                <x-icon name="x-mark" class="w-4 h-4" />
             </button>
         </div>
 

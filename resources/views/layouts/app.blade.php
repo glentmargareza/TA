@@ -270,8 +270,8 @@
                         <span class="block text-[10px] text-merapiText-secondary uppercase tracking-wider">Adventure Tour</span>
                     </div>
                 </div>
-                <button type="button" id="btnMobileMenuClose" aria-label="Tutup Menu" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-merapiText-secondary flex items-center justify-center text-base font-bold transition-colors cursor-pointer">
-                    ✕
+                <button type="button" id="btnMobileMenuClose" aria-label="Tutup Menu" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-merapiText-secondary flex items-center justify-center transition-colors cursor-pointer">
+                    <x-icon name="x-mark" class="w-4 h-4" />
                 </button>
             </div>
 
@@ -585,9 +585,68 @@
     @endif
 
 
+    <!-- FLASH TOAST NOTIFICATIONS (Success / Error / Info) -->
+    <div id="globalToastContainer" class="fixed top-20 right-4 sm:right-6 z-[60] flex flex-col gap-2.5 max-w-sm sm:max-w-md w-full pointer-events-none transition-all">
+        @if(session('success'))
+        <div class="pointer-events-auto bg-white border border-emerald-200 shadow-xl rounded-2xl p-4 flex items-start gap-3 transform transition-all duration-300 translate-y-0 opacity-100" role="alert">
+            <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            </div>
+            <div class="flex-1 min-w-0 pt-0.5">
+                <p class="text-xs font-bold text-merapiText-primary font-display">Berhasil!</p>
+                <p class="text-xs text-merapiText-secondary mt-0.5 leading-relaxed">{{ session('success') }}</p>
+            </div>
+            <button type="button" onclick="this.closest('[role=alert]').remove()" class="text-slate-400 hover:text-slate-600 p-1 shrink-0 cursor-pointer" aria-label="Tutup notifikasi"><x-icon name="x-mark" class="w-4 h-4" /></button>
+        </div>
+        @endif
+
+        @if(session('error'))
+        <div class="pointer-events-auto bg-white border border-rose-200 shadow-xl rounded-2xl p-4 flex items-start gap-3 transform transition-all duration-300 translate-y-0 opacity-100" role="alert">
+            <div class="w-8 h-8 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center shrink-0">
+                <svg class="w-4 h-4 fill-none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div class="flex-1 min-w-0 pt-0.5">
+                <p class="text-xs font-bold text-merapiText-primary font-display">Perhatian</p>
+                <p class="text-xs text-merapiText-secondary mt-0.5 leading-relaxed">{{ session('error') }}</p>
+            </div>
+            <button type="button" onclick="this.closest('[role=alert]').remove()" class="text-slate-400 hover:text-slate-600 p-1 shrink-0 cursor-pointer" aria-label="Tutup notifikasi"><x-icon name="x-mark" class="w-4 h-4" /></button>
+        </div>
+        @endif
+
+        @if(session('info'))
+        <div class="pointer-events-auto bg-white border border-sky-200 shadow-xl rounded-2xl p-4 flex items-start gap-3 transform transition-all duration-300 translate-y-0 opacity-100" role="alert">
+            <div class="w-8 h-8 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center shrink-0">
+                <svg class="w-4 h-4 fill-none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div class="flex-1 min-w-0 pt-0.5">
+                <p class="text-xs font-bold text-merapiText-primary font-display">Informasi</p>
+                <p class="text-xs text-merapiText-secondary mt-0.5 leading-relaxed">{{ session('info') }}</p>
+            </div>
+            <button type="button" onclick="this.closest('[role=alert]').remove()" class="text-slate-400 hover:text-slate-600 p-1 shrink-0 cursor-pointer" aria-label="Tutup notifikasi"><x-icon name="x-mark" class="w-4 h-4" /></button>
+        </div>
+        @endif
+
+        @if($errors->any())
+        <div class="pointer-events-auto bg-white border border-rose-300 shadow-xl rounded-2xl p-4 flex items-start gap-3 transform transition-all duration-300 translate-y-0 opacity-100" role="alert">
+            <div class="w-8 h-8 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center shrink-0">
+                <svg class="w-4 h-4 fill-none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            </div>
+            <div class="flex-1 min-w-0 pt-0.5">
+                <p class="text-xs font-bold text-merapiText-primary font-display">Terjadi Kesalahan Pengisian</p>
+                <ul class="text-[11px] text-rose-600 mt-1 space-y-0.5 list-disc list-inside">
+                    @foreach($errors->all() as $err)
+                    <li>{{ $err }}</li>
+                    @endforeach
+                </ul>
+            </div>
+            <button type="button" onclick="this.closest('[role=alert]').remove()" class="text-slate-400 hover:text-slate-600 p-1 shrink-0 cursor-pointer" aria-label="Tutup notifikasi"><x-icon name="x-mark" class="w-4 h-4" /></button>
+        </div>
+        @endif
+    </div>
+
     <!-- MODAL EDIT ULASAN WISATAWAN -->
     <div id="editReviewModal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-wukirsari-border relative transition-all">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-wukirsari-border relative transition-all" onclick="event.stopPropagation()">
             <div class="flex items-center justify-between pb-4 border-b border-wukirsari-border">
                 <div class="flex items-center gap-2.5">
                     <div class="w-10 h-10 rounded-2xl bg-wukirsari-sage text-wukirsari-primary flex items-center justify-center font-bold">
@@ -598,45 +657,53 @@
                         <p class="text-xs text-merapiText-muted">Perbarui rating bintang dan cerita pengalaman Anda</p>
                     </div>
                 </div>
-                <button type="button" onclick="closeEditReviewModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-merapiText-secondary flex items-center justify-center text-sm font-bold transition-colors">
-                    ✕
+                <button type="button" onclick="closeEditReviewModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-merapiText-secondary flex items-center justify-center transition-colors cursor-pointer" aria-label="Tutup Modal">
+                    <x-icon name="x-mark" class="w-4 h-4" />
                 </button>
             </div>
 
-            <form id="editReviewForm" method="POST" action="" class="space-y-4 pt-4">
+            <form id="editReviewForm" method="POST" action="" class="space-y-4 pt-4" onsubmit="handleEditReviewSubmit(event)">
                 @csrf
                 @method('PUT')
 
-                <!-- Rating Bintang -->
+                <!-- Rating Bintang Interaktif -->
                 <div>
-                    <label class="block text-xs font-semibold text-merapiText-primary mb-1">Penilaian Bintang *</label>
-                    <select name="rating" id="editRatingSelect" required class="w-full px-3.5 py-2.5 rounded-xl border border-wukirsari-border text-xs focus:outline-none focus:border-wukirsari-primary bg-white">
-                        <option value="5">⭐⭐⭐⭐⭐ (5/5) Sangat Puas</option>
-                        <option value="4">⭐⭐⭐⭐ (4/5) Puas</option>
-                        <option value="3">⭐⭐⭐ (3/5) Cukup</option>
-                        <option value="2">⭐⭐ (2/5) Kurang</option>
-                        <option value="1">⭐ (1/5) Kecewa</option>
-                    </select>
+                    <label class="block text-xs font-semibold text-merapiText-primary mb-1.5">Penilaian Bintang *</label>
+                    <input type="hidden" name="rating" id="editRatingInput" value="5">
+                    
+                    <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-1" id="editStarContainer">
+                            @for($s = 1; $s <= 5; $s++)
+                            <button type="button" onclick="setEditRating({{ $s }})" data-star="{{ $s }}" class="edit-star-btn p-1 text-slate-300 hover:text-amber-400 focus:outline-none transition-colors">
+                                <svg class="w-6 h-6 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                            </button>
+                            @endfor
+                        </div>
+                        <span id="editRatingLabel" class="text-xs font-bold text-wukirsari-primary ml-1">5 Bintang (Sangat Puas)</span>
+                    </div>
                 </div>
 
                 <!-- Kota Asal -->
                 <div>
-                    <label class="block text-xs font-semibold text-merapiText-primary mb-1">Kota / Daerah Asal</label>
-                    <input type="text" name="city" id="editCityInput" placeholder="Contoh: Jakarta / Sleman" class="w-full px-3.5 py-2.5 rounded-xl border border-wukirsari-border text-xs focus:outline-none focus:border-wukirsari-primary">
+                    <label class="block text-xs font-semibold text-merapiText-primary mb-1">Kota / Daerah Asal (Opsional)</label>
+                    <input type="text" name="city" id="editCityInput" maxlength="100" placeholder="Contoh: Jakarta / Sleman" class="w-full px-3.5 py-2.5 rounded-xl border border-wukirsari-border text-xs focus:outline-none focus:border-wukirsari-primary">
                 </div>
 
                 <!-- Komentar -->
                 <div>
-                    <label class="block text-xs font-semibold text-merapiText-primary mb-1">Komentar / Pengalaman *</label>
-                    <textarea name="comment" id="editCommentTextarea" rows="4" required class="w-full px-3.5 py-2.5 rounded-xl border border-wukirsari-border text-xs focus:outline-none focus:border-wukirsari-primary"></textarea>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block text-xs font-semibold text-merapiText-primary">Komentar / Pengalaman *</label>
+                        <span id="editCharCounter" class="text-[11px] text-merapiText-muted font-mono">0 / 1000</span>
+                    </div>
+                    <textarea name="comment" id="editCommentTextarea" rows="4" required minlength="3" maxlength="1000" oninput="updateEditCharCount(this)" placeholder="Ceritakan pengalaman seru Anda..." class="w-full px-3.5 py-2.5 rounded-xl border border-wukirsari-border text-xs focus:outline-none focus:border-wukirsari-primary"></textarea>
                 </div>
 
                 <div class="flex items-center justify-end gap-2 pt-2">
                     <button type="button" onclick="closeEditReviewModal()" class="px-4 py-2.5 rounded-full border border-wukirsari-border text-merapiText-secondary hover:bg-slate-50 text-xs font-semibold transition-all">
                         Batal
                     </button>
-                    <button type="submit" class="px-6 py-2.5 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-xs font-bold transition-all shadow-sm">
-                        Simpan Perubahan
+                    <button type="submit" id="btnEditReviewSubmit" class="px-6 py-2.5 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1.5">
+                        <span>Simpan Perubahan</span>
                     </button>
                 </div>
             </form>
@@ -645,6 +712,57 @@
 
     <!-- Dropdown Menu, Mobile Drawer & Modal Controller -->
     <script>
+        const editRatingLabels = {
+            1: '1 Bintang (Kecewa)',
+            2: '2 Bintang (Kurang)',
+            3: '3 Bintang (Cukup)',
+            4: '4 Bintang (Puas)',
+            5: '5 Bintang (Sangat Puas)'
+        };
+
+        function setEditRating(val) {
+            val = parseInt(val) || 5;
+            const input = document.getElementById('editRatingInput');
+            const label = document.getElementById('editRatingLabel');
+            if (input) input.value = val;
+            if (label) label.textContent = editRatingLabels[val] || (val + ' Bintang');
+
+            const container = document.getElementById('editStarContainer');
+            if (container) {
+                container.querySelectorAll('.edit-star-btn').forEach(btn => {
+                    const starVal = parseInt(btn.getAttribute('data-star')) || 1;
+                    if (starVal <= val) {
+                        btn.classList.remove('text-slate-300');
+                        btn.classList.add('text-amber-400');
+                    } else {
+                        btn.classList.remove('text-amber-400');
+                        btn.classList.add('text-slate-300');
+                    }
+                });
+            }
+        }
+
+        function updateEditCharCount(textarea) {
+            const counter = document.getElementById('editCharCounter');
+            if (!counter || !textarea) return;
+            const len = textarea.value.length;
+            counter.textContent = len + ' / 1000';
+            if (len > 950) {
+                counter.classList.add('text-rose-600', 'font-bold');
+            } else {
+                counter.classList.remove('text-rose-600', 'font-bold');
+            }
+        }
+
+        function handleEditReviewSubmit(e) {
+            const btn = document.getElementById('btnEditReviewSubmit');
+            if (btn) {
+                btn.disabled = true;
+                btn.classList.add('opacity-75', 'cursor-not-allowed');
+                btn.innerHTML = '<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Menyimpan...';
+            }
+        }
+
         function handleEditReviewClick(btn) {
             if (!btn) return;
             const id = btn.getAttribute('data-id');
@@ -657,16 +775,18 @@
         function openEditReviewModal(id, rating, city, comment) {
             const modal = document.getElementById('editReviewModal');
             const form = document.getElementById('editReviewForm');
-            const ratingSelect = document.getElementById('editRatingSelect');
             const cityInput = document.getElementById('editCityInput');
             const commentText = document.getElementById('editCommentTextarea');
 
             if (!modal || !form) return;
 
             form.action = "{{ url('/reviews') }}/" + id;
-            ratingSelect.value = rating;
-            cityInput.value = city;
-            commentText.value = comment;
+            setEditRating(rating);
+            if (cityInput) cityInput.value = city;
+            if (commentText) {
+                commentText.value = comment;
+                updateEditCharCount(commentText);
+            }
 
             modal.classList.remove('hidden');
         }
@@ -724,8 +844,18 @@
             });
 
             document.addEventListener('keydown', function (e) {
-                if (e.key === 'Escape') closeMobileDrawer();
+                if (e.key === 'Escape') {
+                    closeMobileDrawer();
+                    closeEditReviewModal();
+                }
             });
+
+            const editModal = document.getElementById('editReviewModal');
+            if (editModal) {
+                editModal.addEventListener('click', function(e) {
+                    if (e.target === editModal) closeEditReviewModal();
+                });
+            }
 
             // Desktop Dropdown Setup
             function setupDropdownToggle(btnId, menuId) {

@@ -132,8 +132,8 @@ Route::post('/profile/claim-booking', [AuthController::class, 'claimBooking'])->
 
 // 7. Ulasan & Review Wisatawan (Wajib Login untuk menulis)
 Route::get('/ulasan', [\App\Http\Controllers\ReviewController::class, 'index'])->name('reviews.index');
-Route::post('/reviews', [\App\Http\Controllers\ReviewController::class, 'store'])->name('reviews.store');
-Route::put('/reviews/{id}', [\App\Http\Controllers\ReviewController::class, 'update'])->name('reviews.update');
-Route::delete('/reviews/{id}', [\App\Http\Controllers\ReviewController::class, 'destroy'])->name('reviews.destroy');
+Route::post('/reviews', [\App\Http\Controllers\ReviewController::class, 'store'])->middleware(['auth', 'throttle:15,1'])->name('reviews.store');
+Route::put('/reviews/{id}', [\App\Http\Controllers\ReviewController::class, 'update'])->middleware(['auth', 'throttle:30,1'])->name('reviews.update');
+Route::delete('/reviews/{id}', [\App\Http\Controllers\ReviewController::class, 'destroy'])->middleware(['auth'])->name('reviews.destroy');
 
 

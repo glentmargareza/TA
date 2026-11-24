@@ -203,7 +203,7 @@
                         {{ $myReviews->count() }}
                     </span>
                 </div>
-                <a href="{{ route('home') }}#tulis-ulasan" class="px-3.5 py-1.5 rounded-full border border-wukirsari-border bg-white text-wukirsari-primary hover:bg-wukirsari-sage/50 text-xs font-semibold transition-colors shadow-2xs">
+                <a href="{{ route('reviews.index', ['action' => 'write']) }}" class="px-3.5 py-1.5 rounded-full border border-wukirsari-border bg-white text-wukirsari-primary hover:bg-wukirsari-sage/50 text-xs font-semibold transition-colors shadow-2xs">
                     Tulis Ulasan Baru
                 </a>
             </div>
@@ -214,7 +214,7 @@
                     Anda belum menuliskan ulasan. Bagikan cerita keseruan Anda setelah trip offroad lereng Merapi!
                 </p>
                 <div>
-                    <a href="{{ route('home') }}#tulis-ulasan" class="inline-flex items-center px-5 py-2.5 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-xs font-semibold transition-all shadow-xs active:scale-95">
+                    <a href="{{ route('reviews.index', ['action' => 'write']) }}" class="inline-flex items-center px-5 py-2.5 rounded-full bg-wukirsari-primary hover:bg-wukirsari-hover text-white text-xs font-semibold transition-all shadow-xs active:scale-95">
                         Tulis Ulasan Sekarang
                     </a>
                 </div>
@@ -234,26 +234,21 @@
                                 </div>
                             </div>
 
-                            <!-- Tombol Edit & Delete -->
-                            <div class="flex items-center gap-1.5 shrink-0">
-                                <button type="button"
+                            <!-- Tombol Edit & Delete (Icon-only dari Komponen) -->
+                            <div class="flex items-center gap-1 shrink-0">
+                                <x-action-button 
+                                    type="edit" 
                                     onclick="handleEditReviewClick(this)"
                                     data-id="{{ $rev->id }}"
                                     data-rating="{{ $rev->rating }}"
                                     data-city="{{ $rev->city }}"
                                     data-comment="{{ $rev->comment }}"
-                                    class="px-2.5 py-1 rounded-full bg-wukirsari-sage/70 hover:bg-wukirsari-sage text-wukirsari-primary text-[11px] font-semibold border border-wukirsari-border/70 transition-all cursor-pointer shadow-2xs"
-                                    title="Edit Ulasan">
-                                    Edit
-                                </button>
+                                    title="Edit Ulasan" />
+
                                 <form action="{{ route('reviews.destroy', $rev->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus ulasan ini?');" class="inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit"
-                                        class="px-2.5 py-1 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 text-[11px] font-semibold border border-rose-200/80 transition-all cursor-pointer shadow-2xs"
-                                        title="Hapus Ulasan">
-                                        Hapus
-                                    </button>
+                                    <x-action-button type="delete" as="submit" title="Hapus Ulasan" />
                                 </form>
                             </div>
                         </div>

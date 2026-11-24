@@ -65,13 +65,19 @@
                     @if(Auth::user()->isAdmin())
                     <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#091D10]/60 backdrop-blur-md border border-emerald-400/40 text-emerald-200 text-xs shadow-lg">
                         <span>Admin: <strong class="text-white">{{ Auth::user()->name }}</strong></span>
-                        <a href="{{ route('admin.dashboard') }}" class="ml-1 font-bold text-emerald-300 hover:underline">Dashboard →</a>
+                        <a href="{{ route('admin.dashboard') }}" class="ml-1 font-bold text-emerald-300 hover:underline inline-flex items-center gap-1">
+                            <span>Dashboard</span>
+                            <x-icon name="arrow-right" class="w-3 h-3" />
+                        </a>
                     </div>
                     @else
                     <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#091D10]/60 backdrop-blur-md border border-white/30 text-white text-xs shadow-lg">
                         <span>Halo, <strong>{{ Auth::user()->name }}</strong></span>
                         <span class="text-white/40">•</span>
-                        <a href="{{ route('profile') }}" class="font-bold text-emerald-300 hover:underline">Tiket Saya →</a>
+                        <a href="{{ route('profile') }}" class="font-bold text-emerald-300 hover:underline inline-flex items-center gap-1">
+                            <span>Tiket Saya</span>
+                            <x-icon name="arrow-right" class="w-3 h-3" />
+                        </a>
                     </div>
                     @endif
                 @endauth
@@ -854,6 +860,7 @@
     </section>
 
     <!-- 6. TESTIMONI (APA KATA MEREKA?) -->
+    <div id="tulis-ulasan" class="-mt-20 pt-20"></div>
     <section id="ulasan" class="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-wukirsari-cream via-white to-wukirsari-cream border-t border-wukirsari-border">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="mb-8 sm:mb-12">
@@ -890,9 +897,9 @@
                             </p>
                         </div>
                         <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
-                            <div class="flex items-center gap-1 text-amber-400 text-base">
+                            <div class="flex items-center gap-1 text-amber-400">
                                 @for($i = 1; $i <= 5; $i++)
-                                    <span>{{ $i <= $review->rating ? '★' : '☆' }}</span>
+                                    <x-icon :name="$i <= $review->rating ? 'star' : 'star-outline'" class="w-4 h-4 text-amber-400" />
                                 @endfor
                             </div>
                             @if($review->package)
@@ -919,8 +926,10 @@
                                 "Pengalaman yang luar biasa! Driver-nya ramah dan sangat berpengalaman. Pemandangannya keren banget!"
                             </p>
                         </div>
-                        <div class="pt-3 border-t border-slate-100 flex items-center gap-1 text-amber-400 text-base">
-                            ★★★★★
+                        <div class="pt-3 border-t border-slate-100 flex items-center gap-1 text-amber-400">
+                            @for($i = 0; $i < 5; $i++)
+                                <x-icon name="star" class="w-4 h-4 text-amber-400" />
+                            @endfor
                         </div>
                     </div>
 
@@ -939,8 +948,10 @@
                                 "Sunrise di Merapi benar-benar magical. Timnya profesional dan semua sesuai dengan yang dijanjikan."
                             </p>
                         </div>
-                        <div class="pt-3 border-t border-slate-100 flex items-center gap-1 text-amber-400 text-base">
-                            ★★★★★
+                        <div class="pt-3 border-t border-slate-100 flex items-center gap-1 text-amber-400">
+                            @for($i = 0; $i < 5; $i++)
+                                <x-icon name="star" class="w-4 h-4 text-amber-400" />
+                            @endfor
                         </div>
                     </div>
 
@@ -959,17 +970,25 @@
                                 "Booking-nya mudah, adminnya responsif, dan semuanya sesuai dengan yang dijanjikan."
                             </p>
                         </div>
-                        <div class="pt-3 border-t border-slate-100 flex items-center gap-1 text-amber-400 text-base">
-                            ★★★★★
+                        <div class="pt-3 border-t border-slate-100 flex items-center gap-1 text-amber-400">
+                            @for($i = 0; $i < 5; $i++)
+                                <x-icon name="star" class="w-4 h-4 text-amber-400" />
+                            @endfor
                         </div>
                     </div>
                 @endforelse
             </div>
 
             <!-- Link to Full Reviews / Form -->
-            <div class="text-center pt-2">
+            <div class="text-center pt-2 flex items-center justify-center gap-3 sm:gap-4 flex-wrap">
                 <a href="{{ route('reviews.index') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-emerald-800 transition-colors">
-                    <span>Lihat Semua Ulasan & Kirim Testimoni Wisatawan →</span>
+                    <span>Lihat Semua Ulasan Wisatawan</span>
+                    <x-icon name="arrow-right" class="w-3.5 h-3.5" />
+                </a>
+                <span class="text-slate-300">•</span>
+                <a href="{{ route('reviews.index', ['action' => 'write']) }}" class="inline-flex items-center gap-1.5 text-xs font-bold text-wukirsari-primary hover:text-wukirsari-hover transition-colors">
+                    <x-icon name="pencil" class="w-3.5 h-3.5 text-wukirsari-primary" />
+                    <span>Tulis Testimoni Anda</span>
                 </a>
             </div>
         </div>

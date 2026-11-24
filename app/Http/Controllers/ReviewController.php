@@ -15,6 +15,7 @@ class ReviewController extends Controller
     {
         $ratingFilter = $request->query('rating');
         $packageFilter = $request->query('package');
+        $search = $request->query('search');
 
         $query = Review::with(['user', 'package'])->where('is_approved', true);
 
@@ -28,13 +29,41 @@ class ReviewController extends Controller
             });
         }
 
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('comment', 'like', "%{$search}%")
+                    ->orWhere('city', 'like', "%{$search}%")
+                    ->orWhereHas('user', function ($uq) use ($search) {
+                        $uq->where('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
         $reviews = $query->latest()->paginate(9)->withQueryString();
         $packages = \App\Models\Package::where('is_active', true)->get();
 
         $totalReviews = Review::where('is_approved', true)->count();
         $avgRating = Review::where('is_approved', true)->avg('rating') ?: 5.0;
 
-        return view('reviews.index', compact('reviews', 'packages', 'totalReviews', 'avgRating', 'ratingFilter', 'packageFilter'));
+        $selectedPackage = $packageFilter ? $packages->firstWhere('slug', $packageFilter) : null;
+
+        $verifiedEmails = \App\Models\Booking::whereIn('booking_status', ['FULL_PAID', 'DP_PAID', 'SETTLED', 'COMPLETED', 'CONFIRMED'])
+            ->pluck('customer_email')
+            ->filter()
+            ->unique()
+            ->toArray();
+
+        return view('reviews.index', compact(
+            'reviews',
+            'packages',
+            'totalReviews',
+            'avgRating',
+            'ratingFilter',
+            'packageFilter',
+            'selectedPackage',
+            'verifiedEmails',
+            'search'
+        ));
     }
 
     /**
@@ -53,16 +82,35 @@ class ReviewController extends Controller
             'city' => 'nullable|string|max:100',
         ]);
 
+        $userId = Auth::id();
+
+        // Jika ulasan untuk paket tertentu, cek apakah sudah pernah memberi ulasan
+        if (!empty($validated['package_id'])) {
+            $existing = Review::where('user_id', $userId)
+                ->where('package_id', $validated['package_id'])
+                ->first();
+
+            if ($existing) {
+                $existing->update([
+                    'rating' => (int) $validated['rating'],
+                    'comment' => $validated['comment'],
+                    'city' => !empty($validated['city']) ? trim($validated['city']) : $existing->city,
+                ]);
+
+                return redirect()->back()->with('success', 'Ulasan Anda untuk paket wisata ini berhasil diperbarui!');
+            }
+        }
+
         Review::create([
-            'user_id' => Auth::id(),
+            'user_id' => $userId,
             'package_id' => $validated['package_id'] ?? null,
             'rating' => (int) $validated['rating'],
             'comment' => $validated['comment'],
-            'city' => !empty($validated['city']) ? $validated['city'] : 'Wisatawan',
+            'city' => !empty($validated['city']) ? trim($validated['city']) : null,
             'is_approved' => true,
         ]);
 
-        return redirect()->back()->with('success', 'Terima kasih atas ulasan dan penilaian Anda! Ulasan Anda kini telah dipublikasikan.');
+        return redirect()->back()->with('success', 'Terima kasih atas ulasan dan penilaian Anda! Ulasan Anda telah berhasil dipublikasikan.');
     }
 
     /**
@@ -92,7 +140,7 @@ class ReviewController extends Controller
         $review->update([
             'rating' => (int) $validated['rating'],
             'comment' => $validated['comment'],
-            'city' => !empty($validated['city']) ? $validated['city'] : $review->city,
+            'city' => !empty($validated['city']) ? trim($validated['city']) : null,
         ]);
 
         return redirect()->back()->with('success', 'Ulasan berhasil diperbarui.');

@@ -45,6 +45,11 @@ class Package extends Model
         });
     }
 
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+
     public function getFormattedPriceAttribute()
     {
         return 'Rp ' . number_format($this->price_per_jeep, 0, ',', '.');
