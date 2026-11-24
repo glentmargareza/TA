@@ -414,6 +414,19 @@
             }, 150);
         }
 
+        // Auto-refresh jadwal & kuota setiap 25 detik saat tab aktif
+        setInterval(() => {
+            if (document.visibilityState === 'visible') {
+                const modalCreate = document.getElementById('modalCreateSchedule');
+                const modalEdit = document.getElementById('modalEditSchedule');
+                const isModalOpen = (modalCreate && !modalCreate.classList.contains('hidden')) ||
+                                    (modalEdit && !modalEdit.classList.contains('hidden'));
+                if (!isModalOpen) {
+                    window.location.reload();
+                }
+            }
+        }, 25000);
+
         // Close on ESC
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {

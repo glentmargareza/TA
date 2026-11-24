@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class BookingController extends Controller
@@ -119,27 +120,8 @@ class BookingController extends Controller
         $bookingData = [
             'selectedId'   => $selectedPackage?->id,
             'defaultDate'  => $defaultDate,
-            'packages'    => $packages->map(fn ($p) => [
-                'id'         => $p->id,
-                'name'       => $p->name,
-                'slug'       => $p->slug,
-                'is_sunrise' => str_contains(strtolower($p->slug . ' ' . $p->name), 'sunrise'),
-                'price'      => (int) $p->price_per_jeep,
-                'dur'        => $p->duration ?? '',
-            ])->values(),
-            'slots'       => $slots->map(function ($s) {
-                $time  = substr((string) $s->start_time, 0, 5);
-                $label = trim((string) $s->slot_label) ?: ('Sesi ' . $s->id);
-                // Cegah teks duplikat jam jika label database sudah memuat format (HH:MM WIB)
-                $cleanLabel = preg_match('/\(\d{2}:\d{2}\s*WIB\)/i', $label) ? $label : ($label . ' (' . $time . ' WIB)');
-                $isSunrise = str_contains(strtolower($s->slot_label), 'sunrise') || $time === '04:30';
-                return [
-                    'id'         => $s->id,
-                    'label'      => $cleanLabel,
-                    'time'       => $time,
-                    'is_sunrise' => $isSunrise,
-                ];
-            })->values(),
+            'packages'    => \App\Services\SlotAvailabilityService::getActivePackages(),
+            'slots'       => \App\Services\SlotAvailabilityService::getActiveSlots(),
         ];
 
         return view('booking.create', compact('packages', 'selectedPackage', 'slots', 'bookingData', 'defaultDate'));
@@ -157,65 +139,10 @@ class BookingController extends Controller
             return response()->json(['error' => 'Tanggal wajib disertakan'], 422);
         }
 
-        $now = now();
-        $isToday = $date === $now->format('Y-m-d');
-        $nowTime = $now->format('H:i');
+        $result = \App\Services\SlotAvailabilityService::getSlotAvailability($date, $jeeps);
 
-        $slots = ScheduleSlot::where('is_active', true)->orderBy('start_time')->get();
-
-        $data = $slots->map(function ($s) use ($date, $isToday, $nowTime, $jeeps) {
-            $time = substr((string) $s->start_time, 0, 5);
-            $label = trim((string) $s->slot_label) ?: ('Sesi ' . $s->id);
-            $cleanLabel = preg_match('/\(\d{2}:\d{2}\s*WIB\)/i', $label) ? $label : ($label . ' (' . $time . ' WIB)');
-            $isSunrise = str_contains(strtolower($s->slot_label), 'sunrise') || $time === '04:30';
-
-            $booked = $s->bookedJeepsCount($date);
-            $remaining = max(0, $s->max_jeeps - $booked);
-            $passed = $isToday && ($time <= $nowTime);
-            $available = !$passed && ($remaining >= $jeeps);
-
-            return [
-                'id'           => $s->id,
-                'label'        => $cleanLabel,
-                'time'         => $time,
-                'is_sunrise'   => $isSunrise,
-                'booked_jeeps' => $booked,
-                'remaining'    => $remaining,
-                'max_jeeps'    => $s->max_jeeps,
-                'passed'       => $passed,
-                'available'    => $available,
-            ];
-        });
-
-        $totalBookedJeeps = (int) $data->sum('booked_jeeps');
-        $hasBookings = $totalBookedJeeps > 0;
-
-        // Ambil overview booking untuk bulan terkait agar kalender interaktif dapat mendeteksi tanggal bookingan
-        $month = substr($date, 0, 7);
-        $monthBookings = Booking::where('trip_date', 'like', $month . '%')
-            ->whereIn('booking_status', ['PENDING', 'DP_PAID', 'FULL_PAID'])
-            ->where(function ($q) {
-                $q->whereNull('lock_expires_at')->orWhere('lock_expires_at', '>', now());
-            })
-            ->selectRaw('trip_date, SUM(jeep_quantity) as total_jeeps, COUNT(*) as total_orders')
-            ->groupBy('trip_date')
-            ->get()
-            ->mapWithKeys(function ($item) {
-                $d = is_string($item->trip_date) ? substr($item->trip_date, 0, 10) : $item->trip_date->format('Y-m-d');
-                return [$d => [
-                    'total_jeeps'  => (int) $item->total_jeeps,
-                    'total_orders' => (int) $item->total_orders,
-                ]];
-            });
-
-        return response()->json([
-            'date'               => $date,
-            'is_today'           => $isToday,
-            'has_bookings'       => $hasBookings,
-            'total_booked_jeeps' => $totalBookedJeeps,
-            'slots'              => $data,
-            'month_bookings'     => $monthBookings,
-        ]);
+        return response()->json($result)
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
     }
 
     public function store(Request $request)
@@ -302,14 +229,6 @@ class BookingController extends Controller
         $minJeeps = ($pax === 5 && $childCount >= 1) ? 1 : (int) ceil($pax / 4);
         $jeepQuantity = max((int) ($validated['jeep_quantity'] ?? $minJeeps), $minJeeps);
 
-        // Validasi Ketersediaan Slot Jadwal (Batas Kapasitas Armada)
-        if (!$slot->isAvailableFor($validated['trip_date'], $jeepQuantity)) {
-            $remaining = $slot->remainingJeepsFor($validated['trip_date']);
-            return back()->withInput()->withErrors([
-                'slot_id' => "Mohon maaf, kuota armada untuk sesi {$slot->slot_label} pada tanggal {$validated['trip_date']} tersisa {$remaining} Jeep. Silakan pilih sesi jadwal lain."
-            ]);
-        }
-
         $packageSubtotal = $package->price_per_jeep * $jeepQuantity;
 
         $arrivalType   = $validated['arrival_type'] ?? 'self_drive';
@@ -371,6 +290,52 @@ class BookingController extends Controller
 
         $bookingCode = 'WKR-' . strtoupper(Str::random(6));
 
+        // Anti Overbooking: Lock baris ScheduleSlot dan simpan booking di dalam DB::transaction
+        try {
+            $booking = DB::transaction(function () use (
+                $validated, $package, $arrivalType, $address, $pickupFee, $pickupKm,
+                $pickupLat, $pickupLng, $pickupZoneId, $jeepQuantity, $packageSubtotal,
+                $totalAmount, $payableAmount, $remainingAmount, $bookingCode
+            ) {
+                $lockedSlot = ScheduleSlot::whereKey($validated['slot_id'])->lockForUpdate()->firstOrFail();
+
+                if (!$lockedSlot->isAvailableFor($validated['trip_date'], $jeepQuantity)) {
+                    $remaining = $lockedSlot->remainingJeepsFor($validated['trip_date']);
+                    throw new \DomainException("Mohon maaf, kuota armada untuk sesi {$lockedSlot->slot_label} pada tanggal {$validated['trip_date']} tersisa {$remaining} Jeep. Silakan pilih sesi jadwal lain.");
+                }
+
+                return Booking::create([
+                    'booking_code' => $bookingCode,
+                    'customer_name' => $validated['customer_name'],
+                    'customer_phone' => $validated['customer_phone'],
+                    'customer_email' => $validated['customer_email'] ?? null,
+                    'package_id' => $package->id,
+                    'slot_id' => $lockedSlot->id,
+                    'trip_date' => $validated['trip_date'],
+                    'jeep_quantity' => $jeepQuantity,
+                    'passenger_count' => $validated['passenger_count'],
+                    'arrival_type' => $arrivalType,
+                    'pickup_zone_id' => $pickupZoneId,
+                    'pickup_address' => $address,
+                    'pickup_lat' => $pickupLat,
+                    'pickup_lng' => $pickupLng,
+                    'pickup_distance_km' => $pickupKm,
+                    'package_subtotal' => $packageSubtotal,
+                    'pickup_fee' => $pickupFee,
+                    'total_amount' => $totalAmount,
+                    'paid_amount' => $payableAmount,
+                    'remaining_amount' => $remainingAmount,
+                    'payment_mode' => $validated['payment_mode'],
+                    'booking_status' => 'PENDING',
+                    'lock_expires_at' => now()->addMinutes(30),
+                    'snap_token' => null,
+                ]);
+            });
+        } catch (\DomainException $de) {
+            return back()->withInput()->withErrors(['slot_id' => $de->getMessage()]);
+        }
+
+        // Panggilan Midtrans dilakukan setelah transaksi database selesai
         $snapToken = null;
         try {
             \Midtrans\Config::$serverKey = config('services.midtrans.server_key');
@@ -399,6 +364,9 @@ class BookingController extends Controller
             ];
 
             $snapToken = \Midtrans\Snap::getSnapToken($params);
+            if ($snapToken) {
+                $booking->update(['snap_token' => $snapToken]);
+            }
         } catch (\Exception $e) {
             Log::warning('Midtrans Snap Token skipped: ' . $e->getMessage());
         }
@@ -668,6 +636,7 @@ class BookingController extends Controller
         ]);
 
         $booking->booking_status = $booking->payment_mode === 'DP' ? 'DP_PAID' : 'FULL_PAID';
+        $booking->lock_expires_at = null;
         $booking->save();
 
         // Otomatis alokasikan Driver dan Armada Jeep untuk pembayaran kasir loket

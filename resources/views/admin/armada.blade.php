@@ -115,6 +115,25 @@
                 </div>
             </div>
 
+            <!-- PANEL: PEMAKAIAN ARMADA PER SESI (SINKRON DENGAN BOOKING) -->
+<div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+    <div class="p-5 sm:p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-slate-50 to-white">
+        <div>
+            <h3 class="text-base font-bold text-slate-800">Pemakaian Armada per Sesi</h3>
+            <p class="text-xs text-slate-500 mt-0.5" id="quotaSub">Data langsung dari sistem booking. Berkurang otomatis saat ada pesanan.</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <button type="button" id="quotaPrev" class="w-8 h-8 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 flex items-center justify-center cursor-pointer">‹</button>
+            <input type="date" id="quotaDate" class="px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            <button type="button" id="quotaNext" class="w-8 h-8 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 flex items-center justify-center cursor-pointer">›</button>
+            <button type="button" id="quotaToday" class="px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-[11px] font-bold text-slate-700 cursor-pointer">Hari Ini</button>
+        </div>
+    </div>
+    <div class="p-5 sm:p-6 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4" id="quotaGrid">
+        <div class="col-span-full text-xs text-slate-400">Memuat data kuota...</div>
+    </div>
+</div>
+
             <!-- PANEL: MONITORING DRIVER PAGUYUBAN (AKTIF & TIDAK AKTIF) -->
             <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
                 <div class="p-5 sm:p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-slate-50 to-white">
@@ -397,6 +416,78 @@
             });
         }
     </script>
+
+    <script>
+(function () {
+    const URL_AVAIL = "{{ route('booking.slot_availability') }}";
+    const dateEl = document.getElementById('quotaDate');
+    const grid   = document.getElementById('quotaGrid');
+    const sub    = document.getElementById('quotaSub');
+
+    const iso = d => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const fmt = s => {
+        const [y, m, d] = s.split('-').map(Number);
+        return new Date(y, m - 1, d).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    };
+
+    dateEl.value = iso(new Date());
+
+    async function load() {
+        const date = dateEl.value;
+        if (!date) return;
+        try {
+            const res = await fetch(`${URL_AVAIL}?trip_date=${encodeURIComponent(date)}&jeep_quantity=1`, { cache: 'no-store' });
+            if (!res.ok) return;
+            const data = await res.json();
+            if (date !== dateEl.value || !Array.isArray(data.slots)) return;
+
+            sub.textContent = 'Jadwal ' + fmt(date) + ' • diperbarui ' + new Date().toLocaleTimeString('id-ID');
+
+            grid.innerHTML = data.slots.map(s => {
+                const max    = Number(s.max_jeeps ?? 0);
+                const booked = Number(s.booked_jeeps ?? 0);
+                const sisa   = Math.max(typeof s.remaining === 'number' ? s.remaining : max - booked, 0);
+                const pct    = max > 0 ? Math.min(Math.round(booked / max * 100), 100) : 0;
+                const full   = sisa <= 0;
+                const bar    = full ? 'bg-rose-500' : (booked > 0 ? 'bg-amber-500' : 'bg-emerald-500');
+                const box    = full ? 'border-rose-200 bg-rose-50/50'
+                             : booked > 0 ? 'border-amber-300 bg-amber-50/40'
+                             : 'border-slate-200 bg-white';
+                return `
+                <div class="p-4 rounded-2xl border ${box} space-y-3 ${s.passed ? 'opacity-60' : ''}">
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="font-bold text-sm text-slate-900">${esc(s.label)}</span>
+                        ${s.passed ? '<span class="text-[10px] font-bold text-slate-500">Sudah lewat</span>'
+                          : full ? '<span class="text-[10px] font-bold text-rose-600">PENUH</span>' : ''}
+                    </div>
+                    <div class="h-2 rounded-full bg-slate-100 overflow-hidden">
+                        <div class="h-full ${bar} transition-all" style="width:${pct}%"></div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 text-center">
+                        <div><span class="block text-lg font-extrabold text-slate-900">${max}</span><span class="text-[10px] text-slate-500">Kuota</span></div>
+                        <div><span class="block text-lg font-extrabold text-amber-700">${booked}</span><span class="text-[10px] text-slate-500">Dipesan</span></div>
+                        <div><span class="block text-lg font-extrabold ${full ? 'text-rose-600' : 'text-emerald-700'}">${sisa}</span><span class="text-[10px] text-slate-500">Sisa</span></div>
+                    </div>
+                </div>`;
+            }).join('') || '<div class="col-span-full text-xs text-slate-400">Tidak ada sesi.</div>';
+        } catch (e) { /* abaikan error jaringan */ }
+    }
+
+    const shift = n => {
+        const [y, m, d] = dateEl.value.split('-').map(Number);
+        dateEl.value = iso(new Date(y, m - 1, d + n));
+        load();
+    };
+    document.getElementById('quotaPrev').onclick  = () => shift(-1);
+    document.getElementById('quotaNext').onclick  = () => shift(1);
+    document.getElementById('quotaToday').onclick = () => { dateEl.value = iso(new Date()); load(); };
+    dateEl.addEventListener('change', load);
+
+    load();
+    setInterval(() => { if (document.visibilityState === 'visible') load(); }, 15000);
+})();
+</script>
 </body>
 </html>
 

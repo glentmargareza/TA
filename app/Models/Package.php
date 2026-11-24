@@ -42,6 +42,17 @@ class Package extends Model
         'is_active' => 'boolean',
     ];
 
+    protected static function booted()
+    {
+        static::saved(function () {
+            \App\Services\SlotAvailabilityService::clearCache();
+        });
+
+        static::deleted(function () {
+            \App\Services\SlotAvailabilityService::clearCache();
+        });
+    }
+
     public function getFormattedPriceAttribute()
     {
         return 'Rp ' . number_format($this->price_per_jeep, 0, ',', '.');
